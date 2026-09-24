@@ -13,11 +13,11 @@ services:
     ports:
       - "5432:5432"
 
-  web:
+  api:
     build:
       context: ./Backend
       dockerfile: Dockerfile
-    container_name: agiles_backend
+    container_name: agiles_api
     restart: unless-stopped
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -28,6 +28,20 @@ services:
       - .env
     depends_on:
       - db
+
+  web:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: agiles_web
+    restart: unless-stopped
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
