@@ -18,6 +18,15 @@ fi
 
 detect_host_ip() {
   if command -v ipconfig.exe >/dev/null 2>&1; then
+    if command -v powershell.exe >/dev/null 2>&1; then
+      windows_ip=$(powershell.exe -NoProfile -Command "\$configuration = Get-NetIPConfiguration | Where-Object { \$_.IPv4DefaultGateway -ne \$null -and \$_.IPv4Address -ne \$null } | Select-Object -First 1; \$configuration.IPv4Address.IPAddress" 2>/dev/null | tr -d '\r' || true)
+
+      if [ -n "$windows_ip" ]; then
+        printf '%s\n' "$windows_ip"
+        return 0
+      fi
+    fi
+
     ipconfig.exe | awk '/IPv4 Address|Direcci.n IPv4/ {print $NF}' | tr -d '\r' | tail -n 1
   elif [ "$(uname -s)" = "Darwin" ]; then
     ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null
