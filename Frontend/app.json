@@ -6,9 +6,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "utngrupo02",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "plugins": [
       "expo-status-bar"
     ]

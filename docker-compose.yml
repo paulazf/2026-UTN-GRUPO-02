@@ -36,11 +36,14 @@ services:
     container_name: agiles_mobile
     restart: unless-stopped
     command: sh -c "npm install --no-audit --no-fund && npm run start -- --lan"
+    environment:
+      EXPO_NO_TELEMETRY: "1"
     stdin_open: true
     tty: true
     volumes:
       - ./Frontend:/app
       - /app/node_modules
+      - expo_credentials:/root/.expo
     ports:
       - "8081:8081"
       - "8082:8082"
@@ -50,3 +53,4 @@ services:
 
 volumes:
   postgres_data:
+  expo_credentials:

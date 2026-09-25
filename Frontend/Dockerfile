@@ -10,4 +10,6 @@ COPY . .
 
 EXPOSE 8081 8082 19000
 
+ENV EXPO_NO_TELEMETRY=1
+
 CMD ["sh", "-c", "npm install --no-audit --no-fund && npm run start -- --lan"]
