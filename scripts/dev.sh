@@ -19,12 +19,26 @@ fi
 detect_host_ip() {
   if command -v ipconfig.exe >/dev/null 2>&1; then
     ipconfig.exe | awk '/IPv4 Address|Direcci.n IPv4/ {print $NF}' | tr -d '\r' | tail -n 1
+  elif [ "$(uname -s)" = "Darwin" ]; then
+    ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null
+  elif command -v ip >/dev/null 2>&1; then
+    ip route get 1.1.1.1 2>/dev/null | awk '{for (field = 1; field <= NF; field++) if ($field == "src") {print $(field + 1); exit}}'
+  elif command -v hostname >/dev/null 2>&1; then
+    hostname -I 2>/dev/null | awk '{print $1}'
   else
-    ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "127.0.0.1"
+    return 1
   fi
 }
 
 HOST_IP=${EXPO_HOST_IP:-$(detect_host_ip)}
+
+if [ -z "$HOST_IP" ] || [ "$HOST_IP" = "127.0.0.1" ]; then
+  echo "Error: no se pudo detectar una IP LAN utilizable."
+  echo "Definila manualmente y volve a ejecutar, por ejemplo:"
+  echo "EXPO_HOST_IP=192.168.1.25 ./scripts/dev.sh"
+  exit 1
+fi
+
 API_URL=${EXPO_PUBLIC_API_URL:-http://${HOST_IP}:8000}
 
 cat > Frontend/.env.local <<EOF
