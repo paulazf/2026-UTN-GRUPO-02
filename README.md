@@ -55,28 +55,49 @@ Abre una terminal y sigue estos pasos:
 
 ---
 
-### 3. Levantar el Frontend (React + Vite)
+### 3. Levantar el Frontend móvil (React Native + Expo Go)
 
 Abre una **nueva terminal** (manteniendo la del Backend corriendo) y sigue estos pasos:
 
-1. **Navega a la carpeta del Frontend**:
+1. **Desde la raíz del proyecto, inicia Docker con la IP local**:
    ```bash
-   cd Frontend
+   ./scripts/dev.sh
    ```
 
-2. **Instala las dependencias**:
-   ```bash
-   npm install
-   ```
+   El script inicia Django, PostgreSQL y Metro, y configura automáticamente la IP que Expo Go necesita para acceder a la API.
 
-3. **Inicia el servidor de desarrollo**:
+2. **Instala Expo Go** en tu teléfono y conéctalo a la misma red Wi-Fi que tu computadora.
+
+3. **Escanea el código QR** que muestra Metro en la terminal o Docker Desktop.
+
+Para ejecutar Expo fuera de Docker:
+
+```bash
+cd Frontend
+npm install
+npm start
+```
+
+### 4. Frontend web
+
+El frontend ahora usa React Native + Expo. La carpeta `Frontend` ya no se ejecuta con Vite.
+
+### 5. Detener Docker
+
+```bash
+docker compose down
+```
+
+### 6. Variables de entorno
+
+Si no existe `.env`, créalo a partir del ejemplo:
+
    ```bash
-   npm run dev
+   cp .env.example .env
    ```
-   El frontend estará corriendo por defecto en `http://localhost:5173/` (o el puerto que te indique la terminal).
 
 ---
 
 ## 🛠️ Herramientas y tecnologías utilizadas
-- **Frontend**: React 19, TypeScript, Vite, ESLint.
-- **Backend**: Python, Django 6, Django REST Framework, SQLite (por defecto).
+- **Frontend**: React Native, Expo Go, TypeScript y NativeWind.
+- **Backend**: Python, Django 6, Django REST Framework y PostgreSQL.

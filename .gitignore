@@ -49,6 +49,7 @@ lerna-debug.log*
 # ==========================================
 .vscode/
 .idea/
+.expo/
 
 # Archivos específicos de Visual Studio
 *.suo
