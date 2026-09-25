@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "UTN Grupo 02",
+    "slug": "utn-grupo-02",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "utngrupo02",
+    "plugins": [
+      "expo-status-bar"
+    ]
+  }
+}

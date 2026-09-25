@@ -1,7 +1,7 @@
 # 2026-UTN-GRUPO-02
 
 ¡Bienvenido al repositorio del proyecto! Este proyecto está dividido en dos partes principales:
-- **Frontend**: Aplicación web desarrollada con React, TypeScript y Vite.
+- **Mobile**: Aplicación móvil desarrollada con React Native, Expo Go, TypeScript y NativeWind.
 - **Backend**: API desarrollada con Python, Django y Django REST Framework.
 
 A continuación, encontrarás los comandos que debes ejecutar para configurar y levantar ambas partes del proyecto en tu entorno local.
@@ -55,28 +55,39 @@ Abre una terminal y sigue estos pasos:
 
 ---
 
-### 3. Levantar el Frontend (React + Vite)
+### 3. Levantar el Frontend móvil (React Native + Expo Go)
 
 Abre una **nueva terminal** (manteniendo la del Backend corriendo) y sigue estos pasos:
 
-1. **Navega a la carpeta del Frontend**:
+1. **Desde la raíz del proyecto, inicia Docker con la IP local**:
    ```bash
-   cd Frontend
+   ./scripts/dev.sh
    ```
 
-2. **Instala las dependencias**:
-   ```bash
-   npm install
-   ```
+   El script inicia Django, PostgreSQL y Expo/Metro dentro de Docker, y configura automáticamente la IP que Expo Go necesita para acceder a la API.
 
-3. **Inicia el servidor de desarrollo**:
+2. **Instala Expo Go** en tu teléfono y conéctalo a la misma red Wi-Fi que tu computadora.
+
+3. **Escanea el código QR** que muestra Expo en la terminal. Si no aparece, usa la URL indicada por el script, por ejemplo `exp://192.168.0.13:8081`.
+
+El frontend usa React Native + Expo Go. Metro es el empaquetador interno que Expo inicia automáticamente.
+
+### 4. Detener Docker
+
+```bash
+docker compose down
+```
+
+### 5. Variables de entorno
+
+Si no existe `.env`, créalo a partir del ejemplo:
+
    ```bash
-   npm run dev
+   cp .env.example .env
    ```
-   El frontend estará corriendo por defecto en `http://localhost:5173/` (o el puerto que te indique la terminal).
 
 ---
 
 ## 🛠️ Herramientas y tecnologías utilizadas
-- **Frontend**: React 19, TypeScript, Vite, ESLint.
-- **Backend**: Python, Django 6, Django REST Framework, SQLite (por defecto).
+- **Frontend**: React Native, Expo Go, TypeScript y NativeWind.
+- **Backend**: Python, Django 6, Django REST Framework y PostgreSQL.

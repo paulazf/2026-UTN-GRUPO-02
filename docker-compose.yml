@@ -29,19 +29,28 @@ services:
     depends_on:
       - db
 
-  web:
+  mobile:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
-    container_name: agiles_web
+    container_name: agiles_mobile
     restart: unless-stopped
+    command: sh -c "npm install --no-audit --no-fund && npm run start -- --lan"
+    environment:
+      EXPO_NO_TELEMETRY: "1"
+    stdin_open: true
+    tty: true
     volumes:
       - ./Frontend:/app
       - /app/node_modules
+      - expo_credentials:/root/.expo
     ports:
-      - "5173:5173"
+      - "8081:8081"
+      - "8082:8082"
+      - "19000:19000"
     depends_on:
       - api
 
 volumes:
   postgres_data:
+  expo_credentials:

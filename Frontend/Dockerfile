@@ -4,10 +4,12 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --no-audit --no-fund
 
 COPY . .
 
-EXPOSE 5173
+EXPOSE 8081 8082 19000
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+ENV EXPO_NO_TELEMETRY=1
+
+CMD ["sh", "-c", "npm install --no-audit --no-fund && npm run start -- --lan"]
