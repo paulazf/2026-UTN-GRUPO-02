@@ -1,7 +1,7 @@
 # 2026-UTN-GRUPO-02
 
 ¡Bienvenido al repositorio del proyecto! Este proyecto está dividido en dos partes principales:
-- **Frontend**: Aplicación web desarrollada con React, TypeScript y Vite.
+- **Mobile**: Aplicación móvil desarrollada con React Native, Expo Go, TypeScript y NativeWind.
 - **Backend**: API desarrollada con Python, Django y Django REST Framework.
 
 A continuación, encontrarás los comandos que debes ejecutar para configurar y levantar ambas partes del proyecto en tu entorno local.
@@ -64,31 +64,21 @@ Abre una **nueva terminal** (manteniendo la del Backend corriendo) y sigue estos
    ./scripts/dev.sh
    ```
 
-   El script inicia Django, PostgreSQL y Metro, y configura automáticamente la IP que Expo Go necesita para acceder a la API.
+   El script inicia Django, PostgreSQL y Expo/Metro dentro de Docker, y configura automáticamente la IP que Expo Go necesita para acceder a la API.
 
 2. **Instala Expo Go** en tu teléfono y conéctalo a la misma red Wi-Fi que tu computadora.
 
-3. **Escanea el código QR** que muestra Metro en la terminal o Docker Desktop.
+3. **Escanea el código QR** que muestra Expo en la terminal. Si no aparece, usa la URL indicada por el script, por ejemplo `exp://192.168.0.13:8081`.
 
-Para ejecutar Expo fuera de Docker:
+El frontend usa React Native + Expo Go. Metro es el empaquetador interno que Expo inicia automáticamente.
 
-```bash
-cd Frontend
-npm install
-npm start
-```
-
-### 4. Frontend web
-
-El frontend ahora usa React Native + Expo. La carpeta `Frontend` ya no se ejecuta con Vite.
-
-### 5. Detener Docker
+### 4. Detener Docker
 
 ```bash
 docker compose down
 ```
 
-### 6. Variables de entorno
+### 5. Variables de entorno
 
 Si no existe `.env`, créalo a partir del ejemplo:
 

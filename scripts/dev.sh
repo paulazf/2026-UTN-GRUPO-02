@@ -34,5 +34,6 @@ EOF
 
 echo "Expo Go usara la API: ${API_URL}"
 echo "Metro se anunciara en: ${HOST_IP}"
+echo "Abrir Expo Go con: exp://${HOST_IP}:8081"
 
 docker compose up --build "$@"

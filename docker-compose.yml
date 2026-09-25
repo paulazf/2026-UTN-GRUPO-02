@@ -29,13 +29,15 @@ services:
     depends_on:
       - db
 
-  web:
+  mobile:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
-    container_name: agiles_web
+    container_name: agiles_mobile
     restart: unless-stopped
-    command: sh -c "npm install && npm run start -- --lan"
+    command: sh -c "npm install --no-audit --no-fund && npm run start -- --lan"
+    stdin_open: true
+    tty: true
     volumes:
       - ./Frontend:/app
       - /app/node_modules
