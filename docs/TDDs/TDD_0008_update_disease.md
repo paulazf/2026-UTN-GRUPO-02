@@ -96,6 +96,8 @@ titulo: Modificación de Enfermedad
 | **Nombre vacío** | El campo `name` se envía vacío o solo con espacios. | `400 Bad Request` |
 | **Colisión con otra enfermedad** | El nuevo nombre coincide con el nombre de otra enfermedad activa distinta. | `409 Conflict` |
 | **Mismo nombre actual** | Si se envía el mismo nombre que la entidad ya posee, la validación permite la operación sin lanzar colisión con ella misma. | `200 OK` |
+| **Falla de Persistencia** | Error interno de conexión con la base de datos PostgreSQL. | `500 Internal Server Error` |
+
 
 ---
 
