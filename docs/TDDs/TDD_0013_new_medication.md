@@ -2,7 +2,7 @@
 id: 0013
 estado: Por implementar
 autor: Matías Cortés
-fecha: 02-10-2026
+fecha: 05-10-2026
 titulo: Alta de Medicamento en Catálogo
 ---
 
@@ -11,36 +11,35 @@ titulo: Alta de Medicamento en Catálogo
 ## Contexto de Negocio (PRD)
 
 ### Objetivo
-- **Problema que resuelve:** Para prescribir o registrar tratamientos en las mascotas, el sistema necesita contar con un catálogo centralizado de medicamentos.
-- **Resultado esperado:** Permitir que el usuario (dueño o profesional) registre un nuevo medicamento (`Medication`) en el catálogo base indicando su nombre, dosis estándar y una descripción opcional donde puede detallar las drogas que lo componen, el laboratorio o notas adicionales.
+- **Problema que resuelve:** Para garantizar la consistencia y evitar la proliferación de duplicados o errores tipográficos cuando los usuarios cargan el historial médico de sus mascotas, la aplicación requiere un catálogo precargado y centralizado de medicamentos.
+- **Resultado esperado:** Permitir el registro de nuevos medicamentos (`Medication`) en el catálogo general del sistema indicando su nombre, dosis estándar y descripción, mediante una operación administrativa/precarga.
 
 ### User Persona
-- **Dueño / Tutor (`Owner`) / Usuario de la App:** Usuario que desea registrar un medicamento comercial en la base global para luego poder asignarlo a la historia clínica de su mascota.
+- **Administrador de Sistema / Precarga:** Rol encargado de gestionar y mantener actualizado el catálogo global de medicamentos para que estén disponibles cuando los usuarios necesiten registrar la historia clínica de sus mascotas.
 
 ### User Story
-**Como** usuario de la app, **quiero** dar de alta un medicamento indicando su nombre, dosis y detalles adicionales, **para que** quede disponible en el catálogo del sistema y pueda ser prescripto en los tratamientos.
+**Como** administrador del sistema, **quiero** dar de alta un nuevo medicamento en el catálogo global, **para que** pueda estar disponible como opción cuando los dueños registren las medicaciones que toman sus mascotas.
 
 ### Criterios de Aceptación
 - **Escenario de éxito:**
-  - Si se ingresan datos válidos (`name`, `dose` y opcionalmente `description`), el sistema registra el medicamento en `Medication` y asigna `isDeleted = false`.
+  - Si se ingresan datos válidos que no existen en la base de datos, el sistema crea el registro asignando un `idMedication` autonumérico y marcando `isDeleted = false`.
 - **Escenario de fallo (Datos obligatorios faltantes):**
-  - Si se omiten campos requeridos (`name` o `dose`), el sistema impide la creación y retorna `400 Bad Request`.
-- **Escenario de fallo (Medicamento duplicado activo):**
-  - Si se intenta crear un medicamento con el mismo nombre y concentración que uno ya existente y activo (`isDeleted = false`), el sistema rechaza la operación devolviendo `409 Conflict`.
+  - Si se omite `name` o `dose`, o si el nombre es solo espacios en blanco, el sistema rechaza la solicitud devolviendo `400 Bad Request`.
+- **Escenario de fallo (Nombre y dosis duplicados / Case-Insensitive):**
+  - Si se intenta registrar un medicamento cuya combinación de nombre (ignorando mayúsculas/minúsculas) y dosis ya existe y está activa, el sistema impide la creación y devuelve `409 Conflict`.
 
 ---
 
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **Modelado Base:** Definición de la tabla `Medication` sin dependencias externas complejas.
+1. **Infraestructura de Base de Datos:** PostgreSQL configurado para búsquedas case-insensitive en las restricciones (mediante `Lower()`).
 
 ### Estimación
-- **Estimación total:** **3 Story Points** (Escala Fibonacci).
+- **Estimación total:** **2 Story Points** (Escala Fibonacci).
 - **Desglose:**
   - Modelo ORM y migraciones: *1 SP*
-  - Serializer y endpoint `POST /api/v1/medications/`: *1 SP*
-  - Formulario de alta en Expo: *1 SP*
+  - Serializer, validación case-insensitive y endpoint `POST /api/v1/medications/`: *1 SP*
 
 ---
 
@@ -50,9 +49,10 @@ titulo: Alta de Medicamento en Catálogo
 
 ```python
 from django.db import models
-from django.db.models import Q
+from django.db.models.functions import Lower
 
 class Medication(models.Model):
+    idMedication = models.AutoField(primary_key=True, db_column="idMedication")
     name = models.CharField(max_length=100)
     dose = models.DecimalField(
         max_digits=6, 
@@ -70,9 +70,9 @@ class Medication(models.Model):
         db_table = "medication"
         constraints = [
             models.UniqueConstraint(
-                fields=['name', 'dose'],
-                condition=Q(isDeleted=False),
-                name='unique_active_medication_name_dose'
+                Lower('name'), 'dose',
+                condition=models.Q(isDeleted=False),
+                name='unique_active_medication_case_insensitive'
             )
         ]
 
@@ -80,7 +80,7 @@ class Medication(models.Model):
         return f"{self.name} - {self.dose}"
 ```
 
-### Contrato de API (Django REST Framework ↔ Expo Mobile)
+### Contrato de API (Django REST Framework)
 
 - **Endpoint:** `POST /api/v1/medications/`
 - **Content-Type:** `application/json`
@@ -91,7 +91,7 @@ class Medication(models.Model):
 {
   "name": "Amoxidal Duo",
   "dose": 500.000,
-  "description": "Compuesto por Amoxicilina y Ácido Clavulánico. Laboratorio Roemmers."
+  "description": "Laboratorio Roemmers."
 }
 ```
 
@@ -99,12 +99,12 @@ class Medication(models.Model):
 
 ```json
 {
-  "id": 10,
+  "idMedication": 10,
   "name": "Amoxidal Duo",
   "dose": "500.000",
-  "description": "Compuesto por Amoxicilina y Ácido Clavulánico. Laboratorio Roemmers.",
+  "description": "Laboratorio Roemmers.",
   "isDeleted": false,
-  "created_at": "2026-10-02T10:48:00Z"
+  "created_at": "2026-10-05T10:48:00Z"
 }
 ```
 
@@ -112,11 +112,14 @@ class Medication(models.Model):
 
 ## Arquitectura y Flujo (Cliente-Servidor)
 
-1. **Cliente (React Native + Expo Go):** El usuario completa el formulario de "Nuevo Medicamento" con nombre, dosis y descripción (opcional). Al guardar, la app arma el payload y envía `POST /api/v1/medications/`.
+1. **Cliente (Admin App / Script / Postman):** 
+   - Envía una petición `POST /api/v1/medications/` con el payload conteniendo los datos del medicamento.
 2. **Servidor (Django REST Framework):**
-   - `MedicationSerializer` valida los datos recibidos (asegurando que se cumplan las restricciones de datos y de unicidad de nombre y dosis activa).
-   - `MedicationViewSet` (mediante el serializer) guarda el registro directamente en la tabla unificada `Medication` de PostgreSQL.
-3. **Respuesta:** El servidor devuelve `201 Created` con el objeto serializado del medicamento; el cliente muestra un mensaje de éxito y redirige al usuario al listado del catálogo general.
+   - `MedicationSerializer` recorta espacios en blanco del nombre (`strip()`) y valida los campos requeridos.
+   - Aplica validación para asegurar que no exista otro medicamento activo con la misma combinación de `Lower(name)` y `dose`.
+   - Inserta el registro en la tabla `medication`.
+3. **Respuesta:** 
+   - Devuelve `201 Created` con el objeto `Medication` persistido.
 
 ---
 
@@ -124,21 +127,19 @@ class Medication(models.Model):
 
 | Escenario de Error | Validación / Regla de Negocio | Código HTTP |
 | --- | --- | --- |
-| **Datos obligatorios faltantes** | Se omite `name` o `dose` en el payload. | `400 Bad Request` |
-| **Nombre vacío o inválido** | El campo `name` se envía vacío o solo contiene espacios (se debe aplicar `strip()`). | `400 Bad Request` |
+| **Datos obligatorios faltantes** | Se omite `name` o `dose`. | `400 Bad Request` |
+| **Nombre vacío o inválido** | El `name` se envía vacío o solo contiene espacios (se debe aplicar `strip()`). | `400 Bad Request` |
 | **Dosis inválida** | El campo `dose` es menor o igual a `0`. | `400 Bad Request` |
-| **Medicamento duplicado** | Intento de registrar un medicamento con el mismo `name` y `dose` que otro ya activo. | `409 Conflict` |
-| **Falla de Persistencia** | Error interno de conexión con la base de datos PostgreSQL. | `500 Internal Server Error` |
+| **Duplicado Case-Insensitive** | Intento de registrar "amoxidal duo" con dosis 500 cuando ya existe "Amoxidal Duo" con dosis 500 activo. | `409 Conflict` |
+| **Falla de Persistencia** | Error de conexión con PostgreSQL. | `500 Internal Server Error` |
 
 ---
 
 ## Plan de Implementación
 
-1. **Etapa 1 - Persistencia (Backend):**
-   - Implementar el modelo `Medication` en `Backend/api/models.py`.
-   - Ejecutar `makemigrations` y `migrate` en PostgreSQL.
-2. **Etapa 2 - Endpoint (Backend):**
-   - Crear `MedicationSerializer` y `MedicationViewSet`.
-   - Habilitar el endpoint `POST /api/v1/medications/`.
-3. **Etapa 3 - Frontend (Expo Mobile):**
-   - Crear la pantalla `CreateMedicationScreen` con el formulario correspondiente.
+1. **Etapa 1 - Persistencia y Modelo:**
+   - Implementar el modelo `Medication` en `Backend/api/models.py` agregando la constraint con `Lower('name')`.
+   - Ejecutar `makemigrations` y `migrate`.
+2. **Etapa 2 - Endpoint y Serializer:**
+   - Crear `MedicationSerializer` validando `strip()` y unicidad case-insensitive + dosis.
+   - Habilitar `MedicationViewSet` para creación.
