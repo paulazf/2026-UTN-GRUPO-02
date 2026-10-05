@@ -39,7 +39,7 @@ titulo: Alta de Enfermedad
 - **Estimación total:** **2 Story Points** (Escala Fibonacci).
 - **Desglose:**
   - Modelo `Disease` y migraciones: *1 SP*
-  - Serializer, validación case-insensitive y endpoint `POST /api/v1/disease/`: *1 SP*
+  - Serializer, validación case-insensitive y endpoint `POST /api/v1/diseases/`: *1 SP*
 
 ---
 
@@ -72,7 +72,7 @@ class Disease(models.Model):
 
 ### Contrato de API (Django REST Framework)
 
-- **Endpoint:** `POST /api/v1/disease/`
+- **Endpoint:** `POST /api/v1/diseases/`
 - **Content-Type:** `application/json`
 
 #### Request Body (JSON)
@@ -98,7 +98,7 @@ class Disease(models.Model):
 ## Arquitectura y Flujo (Cliente-Servidor)
 
 1. **Cliente (Admin App / Script / Postman)**:
-   - Envía una petición `POST /api/v1/disease/` con el payload conteniendo el nombre de la enfermedad.
+   - Envía una petición `POST /api/v1/diseases/` con el payload conteniendo el nombre de la enfermedad.
 2. **Servidor (Django REST Framework)**:
    - `DiseaseSerializer`: Recorta espacios en blanco (`strip()`) y valida que el campo no esté vacío.
    - Aplica validación personalizada para comprobar que no exista una enfermedad activa (`isDeleted = False`) con el mismo nombre (mediante `name__iexact`).
@@ -128,4 +128,4 @@ class Disease(models.Model):
    - Crear `DiseaseSerializer` en `Backend/api/serializers.py` con método `validate_name` para limpiezas (`strip()`) y verificación case-insensitive.
 3. **Etapa 3 - Endpoint y Enrutamiento:**
    - Definir `DiseaseViewSet` en `Backend/api/views.py` permitiendo la acción de creación (`create`).
-   - Registrar la ruta `disease/` en `urls.py`.
+   - Registrar la ruta `diseases/` en `urls.py`.

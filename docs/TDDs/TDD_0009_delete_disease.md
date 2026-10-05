@@ -60,7 +60,7 @@ class Disease(models.Model):
 
 ### Contrato de API (Django REST Framework)
 
-- **Endpoint:** `DELETE /api/v1/disease/{idDisease}/`
+- **Endpoint:** `DELETE /api/v1/diseases/{idDisease}/`
 
 #### Response Body (`204 No Content`)
 - *Respuesta vacía al completarse el soft delete.*
@@ -79,7 +79,7 @@ class Disease(models.Model):
      instance.save()
      ```
    - Al tratarse de una actualización de flag (`isDeleted = True`), los registros existentes en `PetDisease` conservan intacta la FK hacia `idDisease`.
-   - El catálogo de consultas públicas (`GET /api/v1/disease /`) filtra automáticamente `isDeleted = False`, impidiendo que la enfermedad sea elegida para nuevos diagnósticos.
+   - El catálogo de consultas públicas (`GET /api/v1/diseases/`) filtra automáticamente `isDeleted = False`, impidiendo que la enfermedad sea elegida para nuevos diagnósticos.
 3. **Respuesta**:
    - Devuelve HTTP `204 No Content`.
 
@@ -91,7 +91,7 @@ class Disease(models.Model):
 | --- | --- | --- |
 | **ID Inexistente** | Petición `DELETE` sobre un `idDisease` que no existe en DB. | `404 Not Found` |
 | **Enfermedad ya eliminada** | Petición `DELETE` sobre un registro cuyo `isDeleted` ya es `true`. | `404 Not Found` |
-| **Listado público tras baja** | Al consultar `GET /api/v1/disease/`, la enfermedad dada de baja lógica no debe figurar en el resultado. | `200 OK` (excluido) |
+| **Listado público tras baja** | Al consultar `GET /api/v1/diseases/`, la enfermedad dada de baja lógica no debe figurar en el resultado. | `200 OK` (excluido) |
 | **Falla de Persistencia** | Error interno de conexión con la base de datos PostgreSQL. | `500 Internal Server Error` |
 
 

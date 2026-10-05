@@ -49,7 +49,7 @@ titulo: Modificación de Enfermedad
 
 ### Contrato de API (Django REST Framework)
 
-- **Endpoint:** `PUT /api/v1/disease/{idDisease}/` (o `PATCH /api/v1/disease/{idDisease}/`)
+- **Endpoint:** `PUT /api/v1/diseases/{idDisease}/` (o `PATCH /api/v1/diseases/{idDisease}/`)
 - **Content-Type:** `application/json`
 
 #### Request Body (JSON)
@@ -75,7 +75,7 @@ titulo: Modificación de Enfermedad
 ## Arquitectura y Flujo (Cliente-Servidor)
 
 1. **Cliente (Admin App / API Client)**:
-   - Envía `PUT /api/v1/disease/{idDisease}/` especificando el ID en la URL y el nuevo nombre en el body.
+   - Envía `PUT /api/v1/diseases/{idDisease}/` especificando el ID en la URL y el nuevo nombre en el body.
 2. **Servidor (Django REST Framework)**:
    - `DiseaseViewSet`: Busca el objeto por `idDisease` filtrando que `isDeleted == False`. Si no existe, lanza `404 Not Found`.
    - `DiseaseSerializer`: En la edición, valida que el nuevo `name` no pertenezca a otra entidad distinta (`idDisease != instance.idDisease`) comparando de forma case-insensitive.
