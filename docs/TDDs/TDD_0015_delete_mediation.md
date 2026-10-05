@@ -2,7 +2,7 @@
 id: 0015
 estado: Por implementar
 autor: Matías Cortés
-fecha: 02-10-2026
+fecha: 05-10-2026
 titulo: Baja Lógica de Medicamento en Catálogo
 ---
 
@@ -11,22 +11,20 @@ titulo: Baja Lógica de Medicamento en Catálogo
 ## Contexto de Negocio (PRD)
 
 ### Objetivo
-- **Problema que resuelve:** Si un medicamento fue cargado por error o se discontinuó, debe poder retirarse del catálogo sin perder la integridad referencial de los historiales clínicos pasados.
-- **Resultado esperado:** Deshabilitar un medicamento marcándolo como eliminado (`isDeleted = true`), de modo que no vuelva a aparecer en los selectores de nuevos tratamientos.
+- **Problema que resuelve:** Inactivar medicamentos del catálogo general para que no se puedan seleccionar en nuevos registros de salud, resguardando la integridad referencial y el historial clínico de las mascotas que los hayan consumido previamente.
+- **Resultado esperado:** Realizar la baja lógica (`isDeleted = true`) de un medicamento mediante una operación administrativa.
 
 ### User Persona
-- **Dueño / Tutor (`Owner`) / Usuario de la App:** Usuario que desea ocultar o retirar un medicamento del catálogo.
+- **Administrador de Sistema / Precarga:** Usuario encargado de deshabilitar medicamentos discontinuados o erróneos del catálogo activo.
 
 ### User Story
-**Como** usuario de la app, **quiero** dar de baja un medicamento del catálogo, **para que** no vuelva a figurar entre las opciones seleccionables para nuevos tratamientos.
+**Como** administrador del sistema, **quiero** dar de baja un medicamento del catálogo, **para que** no pueda ser seleccionado en nuevas anotaciones clínicas, manteniendo intacto el registro de las mascotas que ya lo tienen cargado.
 
 ### Criterios de Aceptación
-- **Escenario de éxito:**
-  - Al solicitar la baja de un medicamento activo (`isDeleted = false`), el sistema cambia su flag a `isDeleted = true`.
-- **Escenario de fallo (Medicamento no encontrado):**
-  - Si el `id` no existe, el sistema retorna `404 Not Found`.
-- **Escenario de fallo (Medicamento ya dado de baja):**
-  - Si se intenta dar de baja un medicamento que ya posee `isDeleted = true`, el sistema devuelve `404 Not Found`.
+- **Escenario de éxito (Baja lógica):**
+  - Si el medicamento existe, el sistema establece `isDeleted = true` en la tabla `Medication`. Al ser una baja lógica, cualquier asociación futura que ya exista en las historias clínicas de las mascotas conserva su integridad referencial.
+- **Escenario de fallo (Registro no encontrado o ya eliminado):**
+  - Si el `idMedication` no existe o ya fue dado de baja previamente, el sistema devuelve `404 Not Found`.
 
 ---
 
@@ -36,40 +34,34 @@ titulo: Baja Lógica de Medicamento en Catálogo
 1. **TDD-0013 (Alta de Medicamento):** Campo `isDeleted` configurado por defecto en `False`.
 
 ### Estimación
-- **Estimación total:** **2 Story Points** (Escala Fibonacci).
+- **Estimación total:** **1 Story Point** (Escala Fibonacci).
 - **Desglose:**
-  - Acción `destroy()` soft-delete en ViewSet: *1 SP*
-  - Confirmación modal y actualización en interfaz: *1 SP*
+  - Acción `destroy()` soft-delete en ViewSet de `Medication`: *1 SP*
 
 ---
 
 ## Diseño Técnico (RFC)
 
-### Contrato de API (Django REST Framework ↔ Expo Mobile)
+### Contrato de API (Django REST Framework)
 
-- **Endpoint:** `DELETE /api/v1/medications/{id}/`
-- **Path Parameter:** `id`
+- **Endpoint:** `DELETE /api/v1/medications/{idMedication}/`
+- **Path Parameter:** `idMedication`
 
-#### Response Body (200 OK)
-
-```json
-{
-  "message": "El medicamento fue dado de baja correctamente del catálogo.",
-  "id": 10,
-  "isDeleted": true
-}
-```
+#### Response Body (204 No Content)
+- *Respuesta vacía al completarse el soft delete.*
 
 ---
 
 ## Arquitectura y Flujo (Cliente-Servidor)
 
-1. **Cliente (React Native + Expo Go):** El usuario presiona el botón de eliminar medicamento y confirma la acción en un modal emergente. La app móvil realiza una solicitud `DELETE /api/v1/medications/{id}/`.
+1. **Cliente (Admin App / Script / Postman):** 
+   - Ejecuta `DELETE /api/v1/medications/{idMedication}/`.
 2. **Servidor (Django REST Framework):**
-   - `MedicationViewSet` intercepta la acción de borrado en el método `destroy()` o `perform_destroy()`.
-   - Busca el medicamento en la base de datos verificando que exista y esté activo (`id=pk`, `isDeleted=False`). Si no existe o ya está borrado, devuelve `404 Not Found`.
-   - Si lo encuentra, no realiza un borrado físico; en su lugar, asigna `medication.isDeleted = True` y guarda la instancia.
-3. **Respuesta:** El servidor devuelve `200 OK` junto con el mensaje de éxito; el cliente actualiza el estado removiendo visualmente el medicamento del catálogo de opciones.
+   - `MedicationViewSet.destroy()`: Obtiene la instancia activa (`isDeleted == False`).
+   - Efectúa la baja lógica cambiando el flag de estado (`instance.isDeleted = True`) y guarda la entidad.
+   - El catálogo de consultas públicas filtrará automáticamente `isDeleted = False`, impidiendo que el medicamento sea elegido para nuevos registros, pero las claves foráneas históricas seguirán apuntando al ID original válido.
+3. **Respuesta:** 
+   - Devuelve HTTP `204 No Content`.
 
 ---
 
@@ -77,15 +69,13 @@ titulo: Baja Lógica de Medicamento en Catálogo
 
 | Escenario de Error | Validación / Regla de Negocio | Código HTTP |
 | --- | --- | --- |
-| **ID Inexistente** | Petición `DELETE` sobre un `id` que no existe en la base de datos. | `404 Not Found` |
+| **ID Inexistente** | Petición `DELETE` sobre un `idMedication` que no existe en DB. | `404 Not Found` |
 | **Medicamento ya eliminado** | Petición `DELETE` sobre un registro cuyo flag `isDeleted` ya es `true`. | `404 Not Found` |
-| **Falla de Persistencia** | Error interno de conexión con la base de datos PostgreSQL. | `500 Internal Server Error` |
+| **Falla de Persistencia** | Error interno de conexión con PostgreSQL. | `500 Internal Server Error` |
 
 ---
 
 ## Plan de Implementación
 
-1. **Etapa 1 - ViewSet (Backend):**
-   - Sobrescribir `perform_destroy()` o `destroy()` en `MedicationViewSet` para aplicar el Soft Delete (`isDeleted = True`).
-2. **Etapa 2 - Frontend (Expo Mobile):**
-   - Conectar el botón de eliminación con un diálogo de confirmación y refrescar la lista.
+1. **Etapa 1 - Sobrescribir Borrado en ViewSet:**
+   - Sobrescribir el método `destroy` o `perform_destroy` en `MedicationViewSet` para aplicar el Soft Delete (`isDeleted = True`).
