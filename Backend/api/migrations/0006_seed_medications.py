@@ -68,7 +68,7 @@ def unseed_medications(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0003_medication'), 
+        ('api', '0005_medication'), 
     ]
 
     operations = [
