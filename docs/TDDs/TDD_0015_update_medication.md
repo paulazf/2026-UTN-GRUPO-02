@@ -1,12 +1,12 @@
 ---
-id: 0014
+id: 0015
 estado: Por implementar
 autor: Matías Cortés
 fecha: 05-10-2026
 titulo: Actualización de Medicamento en Catálogo
 ---
 
-# TDD-0014: Actualización de Medicamento en Catálogo
+# TDD-0015: Actualización de Medicamento en Catálogo
 
 ## Contexto de Negocio (PRD)
 
@@ -33,7 +33,7 @@ titulo: Actualización de Medicamento en Catálogo
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **TDD-0013 (Alta de Medicamento):** Modelo `Medication` creado.
+1. **TDD-0014 (Alta de Medicamento):** Modelo `Medication` creado.
 
 ### Estimación
 - **Estimación total:** **2 Story Points** (Escala Fibonacci).
