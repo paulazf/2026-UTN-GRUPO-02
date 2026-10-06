@@ -1,11 +1,18 @@
-﻿from django.contrib import admin
-from .models import Breed, Pet, Medication
+from django.contrib import admin
+from .models import Breed, Disease, Pet, Medication
 
 
 @admin.register(Breed)
 class BreedAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "species")
     list_filter = ("species",)
+    search_fields = ("name",)
+
+
+@admin.register(Disease)
+class DiseaseAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "isDeleted")
+    list_filter = ("isDeleted",)
     search_fields = ("name",)
 
 
