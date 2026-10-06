@@ -1,12 +1,12 @@
 ---
-id: 0015
+id: 0016
 estado: Por implementar
 autor: Matías Cortés
 fecha: 05-10-2026
 titulo: Baja Lógica de Medicamento en Catálogo
 ---
 
-# TDD-0015: Baja Lógica de Medicamento en Catálogo
+# TDD-0016: Baja Lógica de Medicamento en Catálogo
 
 ## Contexto de Negocio (PRD)
 
@@ -31,7 +31,7 @@ titulo: Baja Lógica de Medicamento en Catálogo
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **TDD-0013 (Alta de Medicamento):** Campo `isDeleted` configurado por defecto en `False`.
+1. **TDD-0014 (Alta de Medicamento):** Campo `isDeleted` configurado por defecto en `False`.
 
 ### Estimación
 - **Estimación total:** **1 Story Point** (Escala Fibonacci).

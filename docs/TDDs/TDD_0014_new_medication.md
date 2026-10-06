@@ -1,12 +1,12 @@
 ---
-id: 0013
+id: 0014
 estado: Por implementar
 autor: Matías Cortés
 fecha: 05-10-2026
 titulo: Alta de Medicamento en Catálogo
 ---
 
-# TDD-0013: Alta de Medicamento en Catálogo
+# TDD-0014: Alta de Medicamento en Catálogo
 
 ## Contexto de Negocio (PRD)
 
