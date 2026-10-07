@@ -22,7 +22,7 @@ titulo: Consulta de Enfermedades de Mascota
 
 ### Criterios de Aceptación
 - **Escenario de éxito (Listado por mascota con estado calculado):**
-  - Al consultar `GET /api/v1/pet-diseases/?idPet={id}` con el ID de una mascota activa del usuario, el sistema devuelve la lista de enfermedades con `isDeleted = false`, ordenadas por `startDate` descendente, con código `200 OK`. Cada elemento incluye las fechas, el campo `notes` y el campo calculado `status` (`IN_PROGRESS` o `RESOLVED`). Si no posee enfermedades registradas, devuelve una lista vacía `[]`.
+  - Al consultar `GET /api/v1/pet-diseases/?idPet={id}` con el ID de una mascota activa del usuario, el sistema devuelve la lista de enfermedades con `isDeleted = false`, ordenadas por `startDate` descendente, con código `200 OK`. Cada elemento incluye las fechas, el campo `notes` y el badge calculado en tiempo de ejecución que muestra el estado de la enfermedad (`En seguimiento` o `Controlado`). Si no posee enfermedades registradas, devuelve una lista vacía `[]`.
 - **Escenario de éxito (Historial general de salud):**
   - Al consultar `GET /api/v1/pet-diseases/` sin especificar `idPet`, el sistema devuelve las enfermedades activas de **todas** las mascotas del usuario autenticado, incluyendo `petName`, `diseaseName` y `notes`.
 - **Escenario de éxito (Filtro por afecciones activas):**
@@ -116,8 +116,8 @@ titulo: Consulta de Enfermedades de Mascota
    - Cada tarjeta de la lista muestra:
      - **Título:** Nombre de la enfermedad (ej. "Otitis Externa").
      - **Badge de estado:**
-       - Si `endDate` es nulo: Badge con fondo rojo `"En curso"` o `"Crónica"`.
-       - Si `endDate` existe: Badge verde `"Finalizada"` con el período `"15/03/2024 - 02/04/2024"`.
+       - Si `endDate` es nulo: Badge con fondo rojo `"En seguimiento".
+       - Si `endDate` existe: Badge verde `"Controlado"` con el período `"15/03/2024 - 02/04/2024"`.
      - **Observaciones:** Texto del campo `notes` (con opción de expandir/contraer si es extenso).
      - Si la lista está vacía, muestra un estado visual amigable (*empty state*): *"No hay enfermedades registradas para esta mascota"*, acompañado por el botón para agregar una.
 2. **Servidor (Django REST Framework)**:
