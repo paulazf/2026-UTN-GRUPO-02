@@ -81,6 +81,9 @@ export async function createPet(payload: CreatePetPayload): Promise<Pet> {
     const errorData = await response.json().catch(() => null);
     const message =
       errorData?.detail ||
+      errorData?.birthDate?.[0] ||
+      errorData?.name?.[0] ||
+      errorData?.weight?.[0] ||
       errorData?.photo?.[0] ||
       errorData?.non_field_errors?.[0] ||
       `Error al crear mascota (${response.status})`;

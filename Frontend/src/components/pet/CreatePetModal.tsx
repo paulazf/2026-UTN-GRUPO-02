@@ -96,6 +96,10 @@ export default function CreatePetModal({
       return Alert.alert('Fecha inválida', 'Ingresá la fecha completa DD/MM/AAAA (ej: 15/03/2023).');
     }
     const isoDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    const today = new Date().toISOString().split('T')[0];
+    if (isoDate > today) {
+      return Alert.alert('Fecha inválida', 'La fecha de nacimiento no puede ser futura.');
+    }
 
     const weight = parseFloat(weightInput.replace(',', '.'));
     if (isNaN(weight) || weight <= 0 || weight > 150) {
