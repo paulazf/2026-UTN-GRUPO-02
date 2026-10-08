@@ -19,3 +19,12 @@ class OwnerSerializer(serializers.ModelSerializer):
             phone=validated_data.get('phone', '')
         )
         return user
+
+class OwnerUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Owner
+        fields = ['firstName', 'lastName', 'phone']
+
+class ChangePasswordSerializer(serializers.Serializer):
+    currentPassword = serializers.CharField(required=True)
+    newPassword = serializers.CharField(required=True)

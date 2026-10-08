@@ -2,7 +2,7 @@ from .breed import BreedSerializer
 from .disease import DiseaseSerializer, DuplicateDiseaseException
 from .pet import DuplicatePetException, PetSerializer
 from .medication import DuplicateMedicationException,MedicationSerializer
-from .owner import OwnerSerializer
+from .owner import OwnerSerializer, OwnerUpdateSerializer, ChangePasswordSerializer
 
 __all__ = [
     "BreedSerializer",
@@ -12,6 +12,8 @@ __all__ = [
     "PetSerializer",
     "DuplicateMedicationException",
     "MedicationSerializer",
-    "OwnerSerializer"
+    "OwnerSerializer",
+    "OwnerUpdateSerializer",
+    "ChangePasswordSerializer"
 ]
 
