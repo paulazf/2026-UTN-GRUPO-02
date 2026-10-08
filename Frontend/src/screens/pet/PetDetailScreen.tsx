@@ -3,11 +3,11 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
 import { fetchPetById } from '../../services/petService';
@@ -52,9 +52,9 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
   const speciesLabel = pet.breed.species === 'CAT' ? 'Gata' : 'Perro';
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FAF6F3]">
+    <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-16">
-        <View className="rounded-b-[40px] bg-[#FCECEF] px-5 pt-4 pb-6 shadow-sm">
+        <View className="rounded-b-[40px] bg-[#FCECEF] px-5 pt-12 pb-6 shadow-sm">
           <Pressable
             onPress={onBack}
             className="mb-4 h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm active:opacity-70"

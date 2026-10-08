@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export type NavTab = 'INICIO' | 'MASCOTAS' | 'CALENDARIO' | 'PERFIL';

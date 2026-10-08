@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, SafeAreaView, Text } from 'react-native';
+import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import './global.css';
 import DashboardScreen from './screens/DashboardScreen';
 import PetListScreen from './screens/pet/PetListScreen';

@@ -3,11 +3,11 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pet } from '../../types/pet';
 import { fetchPets } from '../../services/petService';
 import PetCard from '../../components/pet/PetCard';

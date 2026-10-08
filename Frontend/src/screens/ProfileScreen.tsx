@@ -1,12 +1,13 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-[#FAF6F3]">
+    <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-16">
         {/* Tapa Rosa Superior con Esquinas Redondeadas */}
-        <View className="rounded-b-[40px] bg-[#E87A8E] px-6 pt-6 pb-10 shadow-sm items-center">
+        <View className="rounded-b-[40px] bg-[#E87A8E] px-6 pt-12 pb-10 shadow-sm items-center">
           <View className="h-20 w-20 items-center justify-center rounded-full bg-white/25 shadow-sm">
             <Text className="text-4xl">👤</Text>
           </View>

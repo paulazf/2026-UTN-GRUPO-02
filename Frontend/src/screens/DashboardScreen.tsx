@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pet } from '../types/pet';
 import { fetchPets } from '../services/petService';
 import PetCarouselCard from '../components/pet/PetCarouselCard';
@@ -48,7 +48,7 @@ export default function DashboardScreen({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FAF6F3]">
+    <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-16"
