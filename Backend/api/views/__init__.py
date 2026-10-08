@@ -3,6 +3,7 @@ from .disease import DiseaseViewSet
 from .pet import PetViewSet
 from .medication import MedicationViewSet
 from .owner import OwnerRegisterView
+from .auth import LoginView, LogoutView
 
-__all__ = ["BreedViewSet", "DiseaseViewSet", "PetViewSet", "MedicationViewSet", "OwnerRegisterView"]
+__all__ = ["BreedViewSet", "DiseaseViewSet", "PetViewSet", "MedicationViewSet", "OwnerRegisterView", "LoginView", "LogoutView"]
 
