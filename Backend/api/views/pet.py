@@ -1,4 +1,5 @@
-﻿from rest_framework import status, viewsets
+from rest_framework import status, viewsets
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from api.models import Pet
@@ -15,6 +16,7 @@ class PetViewSet(viewsets.ModelViewSet):
     - Listado de mascotas activas (GET /api/v1/pets/)
     - Detalle de mascota activa (GET /api/v1/pets/{id}/)
     """
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     serializer_class = PetSerializer
 
     def get_queryset(self):
@@ -51,3 +53,4 @@ class PetViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
