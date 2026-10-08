@@ -6,7 +6,6 @@ class OwnerManager(BaseUserManager):
         if not email:
             raise ValueError('El email es obligatorio')
         
-        # El TDD y las buenas prácticas exigen que el email sea case-insensitive
         email = self.normalize_email(email).lower()
         user = self.model(email=email, **extra_fields)
         
@@ -44,7 +43,7 @@ class Owner(AbstractBaseUser, PermissionsMixin):
 
     # Definimos el campo principal de autenticación
     USERNAME_FIELD = 'email'
-    # Campos adicionales requeridos al crear por consola (createsuperuser)
+
     REQUIRED_FIELDS = ['firstName', 'lastName']
 
     class Meta:
