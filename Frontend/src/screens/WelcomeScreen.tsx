@@ -36,10 +36,7 @@ export default function WelcomeScreen() {
 
           <TouchableOpacity 
             className="bg-transparent border border-[#D8657B] rounded-full h-[52px] justify-center items-center mt-4"
-            onPress={() => {
-              // Navegará a Registro cuando esté implementado
-              // navigation.navigate('Register')
-            }}
+            onPress={() => navigation.navigate('Register')}
           >
             <Text className="text-[#D8657B] text-[16px] font-bold">Crear cuenta</Text>
           </TouchableOpacity>

@@ -151,7 +151,7 @@ export default function LoginScreen() {
         {/* FOOTER - CREAR CUENTA */}
         <View className="flex-row justify-center mt-auto mb-10">
           <Text className="text-[#718096] text-[15px]">¿No tenés cuenta? </Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
             <Text className="text-[#D8657B] text-[15px] font-bold">Crear cuenta</Text>
           </TouchableOpacity>
         </View>
