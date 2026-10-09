@@ -11,6 +11,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
 import { fetchPetById } from '../../services/petService';
+import MedicalTestList from '../../components/medicalTest/MedicalTestList';
+
+// Pestañas de la historia clínica (cada entidad reemplaza su placeholder cuando tenga front)
+type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
+
+const DETAIL_TABS: { key: PetDetailTab; label: string }[] = [
+  { key: 'VACUNAS', label: 'Vacunas' },
+  { key: 'MEDICACION', label: 'Medicación' },
+  { key: 'TURNOS', label: 'Turnos' },
+  { key: 'ESTUDIOS', label: 'Estudios' },
+  { key: 'ENFERMEDADES', label: 'Enfermedades' },
+];
 
 interface PetDetailScreenProps {
   petId: number;
@@ -20,6 +32,7 @@ interface PetDetailScreenProps {
 export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps) {
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentTab, setCurrentTab] = useState<PetDetailTab>('ESTUDIOS');
 
   useEffect(() => {
     async function loadDetail() {
@@ -120,6 +133,41 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
               <Text className="mt-0.5 text-xs text-[#8C7B77]">Nacimiento</Text>
             </View>
           </View>
+        </View>
+
+        {/* Pestañas de la historia clínica */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2 px-5 py-3"
+        >
+          {DETAIL_TABS.map((tab) => (
+            <Pressable
+              key={tab.key}
+              onPress={() => setCurrentTab(tab.key)}
+              className={`rounded-full px-4 py-1.5 active:opacity-80 ${
+                currentTab === tab.key ? 'bg-[#D9627A]' : 'border border-[#F0DDD5] bg-white'
+              }`}
+            >
+              <Text
+                className={`text-xs font-bold ${
+                  currentTab === tab.key ? 'text-white' : 'text-[#A07878]'
+                }`}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View className="px-5 pb-4 pt-1">
+          {currentTab === 'ESTUDIOS' ? (
+            <MedicalTestList petId={pet.id} />
+          ) : (
+            <View className="items-center py-10">
+              <Text className="text-sm text-[#8C7B77]">Próximamente disponible.</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
