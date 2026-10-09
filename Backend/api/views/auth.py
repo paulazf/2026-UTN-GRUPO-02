@@ -19,8 +19,8 @@ class LoginView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Autentica usando el email (case-insensitive si se pasa a minúsculas)
-        user = authenticate(request, email=email.lower(), password=password)
+        # Autentica usando el email como username
+        user = authenticate(request, username=email.lower(), password=password)
 
         if not user:
             return Response(
@@ -28,7 +28,13 @@ class LoginView(views.APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        if user.isDeleted:
+        if not hasattr(user, 'owner_profile'):
+            return Response(
+                {"error": "Este usuario no tiene un perfil de Dueño."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if user.owner_profile.isDeleted:
             return Response(
                 {"error": "Esta cuenta ha sido eliminada. Comuníquese con soporte."},
                 status=status.HTTP_403_FORBIDDEN
@@ -37,7 +43,7 @@ class LoginView(views.APIView):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "token": token.key,
-            "owner": OwnerSerializer(user).data
+            "owner": OwnerSerializer(user.owner_profile).data
         }, status=status.HTTP_200_OK)
 
 class LogoutView(views.APIView):

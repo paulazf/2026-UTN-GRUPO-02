@@ -1,31 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import User
 
-class OwnerManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError('El email es obligatorio')
-        
-        email = self.normalize_email(email).lower()
-        user = self.model(email=email, **extra_fields)
-        
-        # set_password encripta la contraseña automáticamente
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('El superusuario debe tener is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('El superusuario debe tener is_superuser=True.')
-
-        return self.create_user(email, password, **extra_fields)
-
-class Owner(AbstractBaseUser, PermissionsMixin):
+class Owner(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='owner_profile')
     idOwner = models.AutoField(primary_key=True)
     firstName = models.CharField(max_length=255)
     lastName = models.CharField(max_length=255)
@@ -36,16 +13,6 @@ class Owner(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Requerido por Django para usuarios administradores
-    is_staff = models.BooleanField(default=False)
-
-    objects = OwnerManager()
-
-    # Definimos el campo principal de autenticación
-    USERNAME_FIELD = 'email'
-
-    REQUIRED_FIELDS = ['firstName', 'lastName']
-
     class Meta:
         db_table = 'owner'
 
