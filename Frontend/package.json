@@ -10,12 +10,15 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "babel-preset-expo": "~57.0.0",
     "expo": "^57.0.25",
+    "expo-image-picker": "~57.0.20",
     "expo-status-bar": "~57.0.1",
     "nativewind": "^4.2.7",
     "react": "19.2.3",
-    "react-native": "0.86.3"
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.6",
