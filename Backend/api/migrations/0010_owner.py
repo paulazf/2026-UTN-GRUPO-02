@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0007_alter_medication_options'),
+        ('api', '0009_medical_test_file'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

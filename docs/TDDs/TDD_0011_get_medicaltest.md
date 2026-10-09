@@ -28,7 +28,7 @@ titulo: Consulta de Estudios Médicos
 - **Escenario de éxito (Filtro por estado):**
   - `GET /api/v1/medical-test/?idPet={id}&status=pending` devuelve solo los estudios pendientes (aviso "Resultado pendiente").
 - **Escenario de éxito (Detalle):**
-  - `GET /api/v1/medical-test/{idMedicalTest}/` devuelve el estudio completo, incluida la URL del archivo si tiene.
+  - `GET /api/v1/medical-test/{idMedicalTest}/` devuelve el estudio completo, incluida la lista de archivos (`files`) con su URL.
 - **Escenario de fallo (Mascota o estudio inexistente o ajeno):**
   - Si el `idPet` del filtro o el `idMedicalTest` no existen, están dados de baja o pertenecen a otro usuario, devuelve `404 Not Found`.
 - **Escenario de fallo (Parámetros inválidos):**
@@ -84,7 +84,7 @@ titulo: Consulta de Estudios Médicos
     "status": "pending",
     "resultSummary": "",
     "resultDetail": "",
-    "file": null,
+    "files": [],
     "isDeleted": false
   },
   {
@@ -98,7 +98,13 @@ titulo: Consulta de Estudios Médicos
     "status": "normal",
     "resultSummary": "Normal",
     "resultDetail": "Todos los parámetros dentro de valores de referencia. Hematocrito 38%, leucocitos 8.200/µL.",
-    "file": "http://192.168.0.13:8000/media/medical_tests/pet_1/hemograma.pdf",
+    "files": [
+      {
+        "idMedicalTestFile": 3,
+        "name": "hemograma.pdf",
+        "url": "http://192.168.0.13:8000/media/medical_tests/pet_1/hemograma.pdf"
+      }
+    ],
     "isDeleted": false
   }
 ]
@@ -119,7 +125,7 @@ titulo: Consulta de Estudios Médicos
 | Tarjeta: título, "12/08/2026 · Dra. Ríos" | `name`, `date`, `veterinarian` |
 | Badge "Normal" / "Alterado" | `status` |
 | Tarjeta expandida: "Resultado" | `resultDetail` |
-| "Ver PDF" / "Compartir" | `file` (URL). Se ocultan si `file` es `null`. |
+| "Ver PDF" / "Compartir" | Un renglón por cada elemento de `files` (`name`, `url`). No se muestra nada si `files` está vacío. |
 | Historial: "Estudio: Ecografía abdominal · Sin hallazgos · 12/08/2026 · Luna" | `name`, `resultSummary`, `date`, `petName` |
 
 ---
@@ -128,7 +134,7 @@ titulo: Consulta de Estudios Médicos
 
 1. **Cliente (App móvil React Native / Expo)**:
    - Al abrir la pestaña "Estudios" de una mascota pide `GET /api/v1/medical-test/?idPet={id}`, agrupa por `type`, cuenta los elementos y muestra arriba los que tienen `status = pending`.
-   - Al expandir una tarjeta muestra `resultDetail` y, si hay `file`:
+   - Al expandir una tarjeta muestra `resultDetail` y un renglón por cada archivo de `files`:
      - **Ver PDF:** abre la URL con `expo-web-browser` (o un visor de imagen si es JPG/PNG).
      - **Compartir:** descarga el archivo con `expo-file-system` y abre la hoja de compartir del sistema con `expo-sharing`.
    - En "Historial" pide `GET /api/v1/medical-test/` (o con `idPet` según el filtro) y mezcla los estudios con vacunas y turnos por fecha.
@@ -168,7 +174,7 @@ titulo: Consulta de Estudios Médicos
 | **Excluye mascotas dadas de baja** | Una de las mascotas tiene `isDeleted = true`. Sus estudios no aparecen en el historial general. | `200 OK` |
 | **Filtro pendientes** | `status=pending` devuelve solo los pendientes. | `200 OK` |
 | **Detalle propio** | `GET /{id}/` de un estudio activo propio. | `200 OK` |
-| **Estudio sin archivo** | El detalle devuelve `file: null`. | `200 OK` |
+| **Estudio sin archivos** | El detalle devuelve `files: []`. | `200 OK` |
 | **idPet de otro dueño** | `GET ?idPet=` de una mascota ajena. | `404 Not Found` |
 | **idPet inexistente o dado de baja** | `GET ?idPet=` de una mascota que no existe o con `isDeleted = true`. | `404 Not Found` |
 | **Detalle inexistente, eliminado o ajeno** | `GET /{id}/` en cualquiera de esos casos. | `404 Not Found` |
