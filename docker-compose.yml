@@ -36,9 +36,11 @@ services:
       dockerfile: Dockerfile
     container_name: agiles_mobile
     restart: unless-stopped
-    command: sh -c "npm install --no-audit --no-fund && npm run start -- --lan"
+    # EXPO_MODE=lan (por defecto) o tunnel. Lo setea scripts/dev.sh (--tunnel).
+    command: sh -c "npm install --no-audit --no-fund && npm run start -- --${EXPO_MODE:-lan}"
     environment:
       EXPO_NO_TELEMETRY: "1"
+      EXPO_TOKEN: ${EXPO_TOKEN:-}
     stdin_open: true
     tty: true
     volumes:
@@ -49,6 +51,17 @@ services:
       - "8081:8081"
       - "8082:8082"
       - "19000:19000"
+    depends_on:
+      - api
+
+  # Solo con ./scripts/dev.sh --tunnel: expone la API por internet (Cloudflare Quick Tunnel, sin cuenta)
+  # para que la app funcione aunque el celular no esté en la misma red (datos móviles, wifi con aislamiento, firewall).
+  api_tunnel:
+    image: cloudflare/cloudflared:2025.9.1
+    container_name: agiles_api_tunnel
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://api:8000
     depends_on:
       - api
 

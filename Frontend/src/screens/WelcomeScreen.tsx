@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,9 +13,12 @@ export default function WelcomeScreen() {
       <View className="flex-1 px-6 items-center justify-center pt-10">
         
         {/* ILUSTRACION CIRCULAR */}
-        <View className="w-[200px] h-[200px] bg-[#FDE8E8] rounded-full justify-center items-center mb-8 border-[6px] border-[#FFF5F3] shadow-sm">
-           <Text className="text-[60px]">🐶🐱</Text>
-        </View>
+        <Image
+          source={require('../../assets/images/auth/welcome.jpg')}
+          className="w-[260px] h-[260px] rounded-full mb-8"
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+        />
 
         {/* TEXTOS */}
         <Text className="text-[28px] font-extrabold text-[#1A202C] mb-4 text-center">

@@ -16,6 +16,42 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
+# --tunnel: el celular se conecta por internet (sirve con datos móviles, otra red o firewall).
+# Uso: ./scripts/dev.sh --tunnel
+TUNNEL=0
+if [ "${1:-}" = "--tunnel" ]; then
+  TUNNEL=1
+  shift
+fi
+
+if [ "$TUNNEL" = "1" ]; then
+  echo "Modo tunel: levantando base, API y tunel de la API..."
+  docker compose up -d --build db api
+  # --force-recreate para que el log tenga solo la URL nueva (cambia en cada arranque)
+  docker compose --profile tunnel up -d --force-recreate api_tunnel
+
+  API_URL=""
+  for _ in $(seq 1 30); do
+    API_URL=$(docker logs agiles_api_tunnel 2>&1 | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | head -n 1 || true)
+    [ -n "$API_URL" ] && break
+    sleep 2
+  done
+
+  if [ -z "$API_URL" ]; then
+    echo "Error: no se pudo obtener la URL del tunel de la API. Revisa: docker logs agiles_api_tunnel"
+    exit 1
+  fi
+
+  # Sin REACT_NATIVE_PACKAGER_HOSTNAME: en modo tunel Metro se anuncia con la URL de Expo (exp.direct)
+  printf 'EXPO_PUBLIC_API_URL=%s\n' "$API_URL" > Frontend/.env.local
+
+  echo "Expo Go usara la API: ${API_URL}"
+  echo "Abri Expo Go con el QR o el link exp://...exp.direct que aparece abajo (tarda unos segundos)."
+
+  EXPO_MODE=tunnel docker compose --profile tunnel up --build "$@"
+  exit $?
+fi
+
 detect_host_ip() {
   if command -v ipconfig.exe >/dev/null 2>&1; then
     if command -v powershell.exe >/dev/null 2>&1; then
