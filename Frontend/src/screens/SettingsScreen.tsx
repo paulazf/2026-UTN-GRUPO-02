@@ -30,7 +30,10 @@ export default function SettingsScreen() {
           Cuenta y Privacidad
         </Text>
 
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm border border-slate-50">
+        <TouchableOpacity 
+          className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm border border-slate-50"
+          onPress={() => navigation.navigate('EditProfile' as never)}
+        >
           <View className="w-10 h-10 bg-[#FCE8E8] rounded-full justify-center items-center mr-4">
             <Ionicons name="person-outline" size={20} color="#D8657B" />
           </View>
