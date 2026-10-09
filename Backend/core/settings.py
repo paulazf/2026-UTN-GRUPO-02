@@ -31,6 +31,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
+# Detrás del túnel (scripts/dev.sh --tunnel) la API se accede por https: con esto las URLs
+# absolutas de fotos y archivos salen con https en vez de http.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # Application definition
 

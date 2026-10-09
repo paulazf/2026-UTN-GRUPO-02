@@ -72,6 +72,19 @@ Abre una **nueva terminal** (manteniendo la del Backend corriendo) y sigue estos
 
 El frontend usa React Native + Expo Go. Metro es el empaquetador interno que Expo inicia automáticamente.
 
+#### Si Expo Go muestra "Something went wrong" o no conecta
+
+Pasa cuando el celular no llega a la computadora por la red local (datos móviles, otra red Wi-Fi, firewall o Wi-Fi con aislamiento de clientes). En ese caso, levantá todo en **modo túnel**:
+
+```bash
+./scripts/dev.sh --tunnel
+```
+
+- Metro se publica con un link de Expo (`exp://...exp.direct`) y la API con una URL pública de Cloudflare (`https://...trycloudflare.com`), así la app funciona con Wi-Fi o con datos.
+- Escaneá el QR o abrí el link `exp://...exp.direct` que aparece en la terminal (tarda unos segundos en mostrarse).
+- La URL de la API cambia cada vez que se levanta el túnel; el script la configura sola. Si reiniciás solo un contenedor, volvé a correr el script.
+- Para volver al modo normal: `docker compose --profile tunnel down` y después `./scripts/dev.sh`.
+
 ### 4. Detener Docker
 
 ```bash

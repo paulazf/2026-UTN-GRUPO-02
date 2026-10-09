@@ -4,6 +4,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 
 // Import Screens from main (manual routing components)
@@ -68,7 +69,9 @@ function MainTabs() {
           />
         ) : (
           <SafeAreaView className="flex-1 items-center justify-center p-6">
-            <Text className="text-4xl mb-2">📅</Text>
+            <View className="mb-3 h-16 w-16 items-center justify-center rounded-full bg-[#FCECEF]">
+              <Ionicons name="calendar-outline" size={30} color="#DE6B80" />
+            </View>
             <Text className="text-xl font-bold text-[#2B1D1D]">Calendario</Text>
             <Text className="text-sm text-[#8C7B77] mt-1 text-center">
               Próximamente disponible.

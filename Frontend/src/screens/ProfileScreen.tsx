@@ -30,7 +30,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           <View className="h-20 w-20 items-center justify-center rounded-full bg-white/25 shadow-sm">
-            <Text className="text-4xl">👤</Text>
+            <Ionicons name="person" size={36} color="#FFFFFF" />
           </View>
           
           <Text className="mt-3 text-2xl font-bold text-white">{userFullName}</Text>
