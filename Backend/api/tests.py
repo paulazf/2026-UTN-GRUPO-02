@@ -7,8 +7,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
-from .models import Breed, MedicalTest, MedicalTestFile, Pet
+from .models import Breed, MedicalTest, MedicalTestFile, Pet, Owner
 
 TEMP_MEDIA = tempfile.mkdtemp()
 URL = "/api/v1/medical-test/"
@@ -50,6 +52,12 @@ class MedicalTestBase(APITestCase):
         shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
 
     def setUp(self):
+        # Crear usuario y dueño para autenticar
+        self.user = User.objects.create_user(username="test@email.com", email="test@email.com", password="pwd")
+        self.owner = Owner.objects.create(user=self.user, email="test@email.com", firstName="T", lastName="T")
+        self.token, _ = Token.objects.get_or_create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
         self.luna = make_pet("Luna")
         self.beto = make_pet("Beto")
         self.deleted_pet = make_pet("Michi", isDeleted=True)
