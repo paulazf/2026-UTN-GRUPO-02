@@ -1,4 +1,5 @@
-﻿from rest_framework import status, viewsets
+from rest_framework import status, viewsets
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from api.models import Pet
@@ -15,14 +16,20 @@ class PetViewSet(viewsets.ModelViewSet):
     - Listado de mascotas activas (GET /api/v1/pets/)
     - Detalle de mascota activa (GET /api/v1/pets/{id}/)
     """
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     serializer_class = PetSerializer
 
     def get_queryset(self):
         queryset = Pet.objects.filter(isDeleted=False).select_related("breed")
-        owner_id = self.request.query_params.get("idOwner") or self.request.query_params.get("owner")
-        if owner_id:
-            queryset = queryset.filter(idOwner=owner_id)
+        if hasattr(self.request.user, 'owner_profile'):
+            queryset = queryset.filter(idOwner=self.request.user.owner_profile.idOwner)
         return queryset
+
+    def perform_create(self, serializer):
+        if hasattr(self.request.user, 'owner_profile'):
+            serializer.save(idOwner=self.request.user.owner_profile.idOwner)
+        else:
+            serializer.save()
 
     def destroy(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
@@ -51,3 +58,4 @@ class PetViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+

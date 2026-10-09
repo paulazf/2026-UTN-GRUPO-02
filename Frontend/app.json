@@ -7,7 +7,9 @@
     "userInterfaceStyle": "light",
     "scheme": "utngrupo02",
     "plugins": [
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-sharing"
     ]
   }
 }
