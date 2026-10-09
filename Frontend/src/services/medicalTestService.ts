@@ -1,6 +1,5 @@
-import { File } from 'expo-file-system';
 import { apiUrl } from './api';
-import { MedicalTest, MedicalTestPayload, MedicalTestStatus, PickedFile } from '../types/medicalTest';
+import { MedicalTest, MedicalTestPayload, MedicalTestStatus } from '../types/medicalTest';
 
 const BASE_URL = `${apiUrl}/api/v1/medical-test/`;
 
@@ -39,19 +38,39 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-// expo/fetch (el fetch global desde Expo SDK 57) no acepta el formato { uri, name, type }
-// de React Native en FormData: cada archivo tiene que exponer name, type y bytes().
-// El nombre va sin espacios ni acentos porque expo/fetch lo manda URL-encodeado.
-function toUploadPart(file: PickedFile) {
-  const safeName = file.name
+// Los envíos con archivos van por el XMLHttpRequest de React Native y no por fetch:
+// - expo/fetch (el fetch global desde Expo SDK 57) no acepta archivos { uri, name, type } en FormData.
+// - Leer el archivo desde JS con expo-file-system falla en Android con las rutas que devuelven
+//   los selectores ("Missing 'READ' permission"). Con XHR el archivo lo lee el código nativo.
+function sendForm<T>(method: 'POST' | 'PATCH', url: string, form: FormData): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.onload = () => {
+      let body: unknown = null;
+      try {
+        body = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+      } catch {
+        body = null;
+      }
+      if (xhr.status >= 200 && xhr.status < 300) resolve(body as T);
+      else reject(new ApiError(xhr.status, body));
+    };
+    xhr.onerror = () => {
+      console.warn('Error de red en', url);
+      reject(new ApiError(0, { detail: 'No hay conexión con el servidor.' }));
+    };
+    xhr.send(form);
+  });
+}
+
+// El nombre va sin espacios ni acentos porque React Native lo manda URL-encodeado
+function safeFileName(name: string): string {
+  return name
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^\w.-]+/g, '_');
-  return {
-    name: safeName,
-    type: file.mimeType,
-    bytes: () => new File(file.uri).bytes(),
-  };
 }
 
 // El back recibe multipart/form-data porque el estudio puede llevar archivos.
@@ -64,7 +83,12 @@ function toFormData(payload: MedicalTestPayload): FormData {
   }
   for (const id of removedFiles ?? []) form.append('removedFiles', String(id));
   for (const file of newFiles ?? []) {
-    form.append('newFiles', toUploadPart(file) as unknown as Blob);
+    // Formato de archivo de React Native: el XHR nativo lee el contenido desde la uri
+    form.append('newFiles', {
+      uri: file.uri,
+      name: safeFileName(file.name),
+      type: file.mimeType,
+    } as unknown as Blob);
   }
   return form;
 }
@@ -85,7 +109,7 @@ export async function fetchMedicalTestById(id: number): Promise<MedicalTest> {
 
 // TDD-0010
 export async function createMedicalTest(payload: MedicalTestPayload): Promise<MedicalTest> {
-  return request<MedicalTest>(BASE_URL, { method: 'POST', body: toFormData(payload) });
+  return sendForm<MedicalTest>('POST', BASE_URL, toFormData(payload));
 }
 
 // TDD-0012: solo se mandan los campos que cambiaron
@@ -93,7 +117,7 @@ export async function updateMedicalTest(
   id: number,
   changes: MedicalTestPayload,
 ): Promise<MedicalTest> {
-  return request<MedicalTest>(`${BASE_URL}${id}/`, { method: 'PATCH', body: toFormData(changes) });
+  return sendForm<MedicalTest>('PATCH', `${BASE_URL}${id}/`, toFormData(changes));
 }
 
 // TDD-0013: baja lógica
