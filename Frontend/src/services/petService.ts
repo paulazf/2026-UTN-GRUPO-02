@@ -1,4 +1,5 @@
 import axiosClient from '../api/axiosClient';
+import { apiUrl } from './api';
 import { Breed, CreatePetPayload, Pet, PetSpecies } from '../types/pet';
 
 const CURRENT_MOCK_OWNER_ID = 1; //Cambiar esto cuando exista owner
