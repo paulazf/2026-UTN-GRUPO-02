@@ -17,90 +17,86 @@ export default function ProfileScreen() {
   const userFullName = `${firstName} ${lastName}`.trim() || 'Cargando...';
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFF5F3]" edges={['top']}>
-      {/* Header section with solid background instead of gradient */}
-      <View 
-        className="bg-[#D8657B] rounded-b-[40px] pt-4 pb-8 px-6 relative items-center"
-      >
-        <TouchableOpacity 
-          className="absolute left-6 top-6 w-10 h-10 bg-white/20 rounded-full justify-center items-center"
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-        
-        {/* Avatar mock */}
-        <View className="w-20 h-20 bg-white/30 rounded-full items-center justify-center mt-2 mb-3">
-          <View className="w-[72px] h-[72px] bg-white rounded-full items-center justify-center">
-            <Ionicons name="person" size={40} color="#CBD5E0" />
+    <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-16">
+        {/* Tapa Rosa Superior con Esquinas Redondeadas (Estética de main) */}
+        <View className="relative items-center rounded-b-[40px] bg-[#E87A8E] px-6 pb-10 pt-12 shadow-sm">
+          {/* Botón de regreso usando lógica de feature */}
+          <TouchableOpacity 
+            className="absolute left-6 top-12 h-10 w-10 items-center justify-center rounded-full bg-white/20"
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <View className="h-20 w-20 items-center justify-center rounded-full bg-white/25 shadow-sm">
+            <Text className="text-4xl">👤</Text>
           </View>
+          
+          <Text className="mt-3 text-2xl font-bold text-white">{userFullName}</Text>
+          <Text className="mt-1 text-sm text-white/80">{email}</Text>
         </View>
-        
-        <Text className="text-white text-[22px] font-bold">{userFullName}</Text>
-        <Text className="text-white/80 text-[14px] mt-1">{email}</Text>
-      </View>
 
-      {/* Menu Options */}
-      <ScrollView className="flex-1 px-6 pt-6">
-        
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm">
-          <View className="w-12 h-12 bg-[#FFF5F3] rounded-full justify-center items-center mr-4">
-            <Ionicons name="paw-outline" size={24} color="#D8657B" />
-          </View>
-          <View className="flex-1 justify-center">
-            <Text className="text-[#2D3748] text-[16px] font-bold">Mis mascotas</Text>
-            <Text className="text-[#A0AEC0] text-[13px] mt-0.5">2 registradas</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
-        </TouchableOpacity>
+        {/* Opciones de Menú (Lógica de feature, estética adaptada a main) */}
+        <View className="px-5 mt-6">
+          <TouchableOpacity className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs">
+            <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
+              <Ionicons name="paw-outline" size={24} color="#E87A8E" />
+            </View>
+            <View className="flex-1 justify-center">
+              <Text className="text-base font-bold text-[#2B1D1D]">Mis mascotas</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">2 registradas</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
+          </TouchableOpacity>
 
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm">
-          <View className="w-12 h-12 bg-[#FFF5F3] rounded-full justify-center items-center mr-4">
-            <Ionicons name="notifications-outline" size={24} color="#D8657B" />
-          </View>
-          <View className="flex-1 justify-center">
-            <Text className="text-[#2D3748] text-[16px] font-bold">Notificaciones</Text>
-            <Text className="text-[#A0AEC0] text-[13px] mt-0.5">Recordatorios activados</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
-        </TouchableOpacity>
+          <TouchableOpacity className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs">
+            <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
+              <Ionicons name="notifications-outline" size={24} color="#E87A8E" />
+            </View>
+            <View className="flex-1 justify-center">
+              <Text className="text-base font-bold text-[#2B1D1D]">Notificaciones</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">Recordatorios activados</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
+          </TouchableOpacity>
 
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm">
-          <View className="w-12 h-12 bg-[#FFF5F3] rounded-full justify-center items-center mr-4">
-            <Ionicons name="medkit-outline" size={24} color="#D8657B" />
-          </View>
-          <View className="flex-1 justify-center">
-            <Text className="text-[#2D3748] text-[16px] font-bold">Mis veterinarios</Text>
-            <Text className="text-[#A0AEC0] text-[13px] mt-0.5">Dr. Acosta, Dra. Ríos</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
-        </TouchableOpacity>
+          <TouchableOpacity className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs">
+            <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
+              <Ionicons name="medkit-outline" size={24} color="#E87A8E" />
+            </View>
+            <View className="flex-1 justify-center">
+              <Text className="text-base font-bold text-[#2B1D1D]">Mis veterinarios</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">Dr. Acosta, Dra. Ríos</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
+          </TouchableOpacity>
 
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm">
-          <View className="w-12 h-12 bg-[#FFF5F3] rounded-full justify-center items-center mr-4">
-            <Ionicons name="document-text-outline" size={24} color="#D8657B" />
-          </View>
-          <View className="flex-1 justify-center">
-            <Text className="text-[#2D3748] text-[16px] font-bold">Historial completo</Text>
-            <Text className="text-[#A0AEC0] text-[13px] mt-0.5">Exportar PDF</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
-        </TouchableOpacity>
+          <TouchableOpacity className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs">
+            <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
+              <Ionicons name="document-text-outline" size={24} color="#E87A8E" />
+            </View>
+            <View className="flex-1 justify-center">
+              <Text className="text-base font-bold text-[#2B1D1D]">Historial completo</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">Exportar PDF</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          className="flex-row items-center bg-white p-4 rounded-3xl mb-8 shadow-sm"
-          onPress={() => navigation.navigate('Settings' as never)}
-        >
-          <View className="w-12 h-12 bg-[#FFF5F3] rounded-full justify-center items-center mr-4">
-            <Ionicons name="settings-outline" size={24} color="#D8657B" />
-          </View>
-          <View className="flex-1 justify-center">
-            <Text className="text-[#2D3748] text-[16px] font-bold">Configuración</Text>
-            <Text className="text-[#A0AEC0] text-[13px] mt-0.5">Cuenta y privacidad</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
-        </TouchableOpacity>
-
+          <TouchableOpacity 
+            className="mb-8 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs"
+            onPress={() => navigation.navigate('Settings' as never)}
+          >
+            <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
+              <Ionicons name="settings-outline" size={24} color="#E87A8E" />
+            </View>
+            <View className="flex-1 justify-center">
+              <Text className="text-base font-bold text-[#2B1D1D]">Configuración</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">Cuenta y privacidad</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
