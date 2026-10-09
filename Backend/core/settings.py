@@ -132,6 +132,16 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
+# Archivos subidos por los usuarios (estudios médicos, fotos, etc.)
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+MEDICAL_TEST_MAX_SIZE = 10 * 1024 * 1024  # 10 MB por archivo
+MEDICAL_TEST_MAX_FILES = 10  # archivos por estudio
+MEDICAL_TEST_ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
@@ -140,7 +150,3 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
-
-# Media files (User uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
