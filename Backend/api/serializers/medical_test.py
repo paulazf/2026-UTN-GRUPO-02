@@ -14,10 +14,11 @@ ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png"}
 def active_pets(request):
     """
     Mascotas sobre las que el usuario puede operar.
-    TODO (EP01): cuando haya autenticación, filtrar también por dueño:
-    .filter(idOwner=<id del dueño autenticado>)
     """
-    return Pet.objects.filter(isDeleted=False)
+    qs = Pet.objects.filter(isDeleted=False)
+    if request and hasattr(request.user, 'owner_profile'):
+        qs = qs.filter(idOwner=request.user.owner_profile.idOwner)
+    return qs
 
 
 def validate_upload(value):

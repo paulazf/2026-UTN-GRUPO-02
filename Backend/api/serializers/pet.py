@@ -74,12 +74,7 @@ class PetSerializer(serializers.ModelSerializer):
             "incorrect_type": "Identificador de raza inválido.",
         },
     )
-    idOwner = serializers.IntegerField(
-        error_messages={
-            "required": "El campo idOwner es requerido para crear una mascota.",
-            "invalid": "Identificador de dueño inválido.",
-        }
-    )
+    idOwner = serializers.IntegerField(read_only=True)
     age = serializers.IntegerField(read_only=True)
     photo = PhotoField(required=False, allow_null=True)
 
@@ -100,15 +95,8 @@ class PetSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "age", "isDeleted", "created_at", "updated_at"]
+        read_only_fields = ["id", "age", "idOwner", "isDeleted", "created_at", "updated_at"]
         validators = []  
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance is not None:
-            self.fields["idOwner"].required = False
-        else:
-            self.fields["idOwner"].required = True
 
     def validate_name(self, value):
         if not value or not value.strip():
@@ -131,7 +119,13 @@ class PetSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        target_owner = attrs.get("idOwner") or (self.instance.idOwner if self.instance else None)
+        request = self.context.get("request")
+        target_owner = None
+        if request and hasattr(request.user, 'owner_profile'):
+            target_owner = request.user.owner_profile.idOwner
+        elif self.instance:
+            target_owner = self.instance.idOwner
+
         target_name = attrs.get("name") or (self.instance.name if self.instance else None)
         target_breed = attrs.get("breed") or (self.instance.breed if self.instance else None)
         target_birth_date = attrs.get("birthDate") or (self.instance.birthDate if self.instance else None)

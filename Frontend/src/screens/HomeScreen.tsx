@@ -1,8 +1,15 @@
 import { StatusBar } from 'expo-status-bar'
-import { Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import React, { useContext } from 'react'
+import { useNavigation } from '@react-navigation/native'
 import ProjectStatusCard from '../components/ProjectStatusCard'
+import { AuthContext } from '../context/AuthContext'
 
 export default function HomeScreen() {
+  const authContext = useContext(AuthContext);
+  const navigation = useNavigation();
+
   return (
     <SafeAreaView className="flex-1 bg-[#f4f1ea]">
       <StatusBar style="dark" />
@@ -37,6 +44,13 @@ export default function HomeScreen() {
 
         <Pressable className="mt-8 rounded-2xl bg-[#d05b3f] px-5 py-4 active:opacity-80">
           <Text className="text-center text-base font-bold text-white">Comenzar recorrido</Text>
+        </Pressable>
+
+        <Pressable 
+          className="mt-4 rounded-2xl border border-[#173b3f] bg-transparent px-5 py-4 active:opacity-80"
+          onPress={() => navigation.navigate('Profile' as never)}
+        >
+          <Text className="text-center text-base font-bold text-[#173b3f]">Ir a Mi Perfil (Provisorio)</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

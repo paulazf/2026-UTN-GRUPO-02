@@ -32,14 +32,14 @@ def detail(pk):
     return f"{URL}{pk}/"
 
 
-def make_pet(name, isDeleted=False):
+def make_pet(name, isDeleted=False, idOwner=1):
     breed, _ = Breed.objects.get_or_create(name="Persa (test)", species="CAT")
     return Pet.objects.create(
         name=name,
         birthDate=date(2023, 3, 15),
         weight="4.20",
         breed=breed,
-        idOwner=1,
+        idOwner=idOwner,
         isDeleted=isDeleted,
     )
 
@@ -58,9 +58,9 @@ class MedicalTestBase(APITestCase):
         self.token, _ = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
-        self.luna = make_pet("Luna")
-        self.beto = make_pet("Beto")
-        self.deleted_pet = make_pet("Michi", isDeleted=True)
+        self.luna = make_pet("Luna", idOwner=self.owner.idOwner)
+        self.beto = make_pet("Beto", idOwner=self.owner.idOwner)
+        self.deleted_pet = make_pet("Michi", isDeleted=True, idOwner=self.owner.idOwner)
 
     def payload(self, **overrides):
         data = {
@@ -232,7 +232,7 @@ class ListMedicalTestTests(MedicalTestBase):
         self.assertEqual([x["name"] for x in r.data], ["Análisis de orina", "Nuevo", "Viejo"])
 
     def test_mascota_sin_estudios(self):
-        empty = make_pet("Nuevo")
+        empty = make_pet("Nuevo", idOwner=self.owner.idOwner)
         r = self.client.get(URL, {"idPet": empty.pk})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data, [])

@@ -21,10 +21,15 @@ class PetViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Pet.objects.filter(isDeleted=False).select_related("breed")
-        owner_id = self.request.query_params.get("idOwner") or self.request.query_params.get("owner")
-        if owner_id:
-            queryset = queryset.filter(idOwner=owner_id)
+        if hasattr(self.request.user, 'owner_profile'):
+            queryset = queryset.filter(idOwner=self.request.user.owner_profile.idOwner)
         return queryset
+
+    def perform_create(self, serializer):
+        if hasattr(self.request.user, 'owner_profile'):
+            serializer.save(idOwner=self.request.user.owner_profile.idOwner)
+        else:
+            serializer.save()
 
     def destroy(self, request, *args, **kwargs):
         pk = kwargs.get("pk")

@@ -1,7 +1,18 @@
 import { apiUrl } from './api';
 import { MedicalTest, MedicalTestPayload, MedicalTestStatus } from '../types/medicalTest';
+import * as SecureStore from 'expo-secure-store';
 
 const BASE_URL = `${apiUrl}/api/v1/medical-test/`;
+
+// Helper para obtener el header de autorización
+async function getAuthHeader() {
+  try {
+    const token = await SecureStore.getItemAsync('userToken');
+    return token ? `Token ${token}` : '';
+  } catch (err) {
+    return '';
+  }
+}
 
 // Error de la API con los mensajes por campo que devuelve DRF
 export class ApiError extends Error {
@@ -25,9 +36,15 @@ export class ApiError extends Error {
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const authHeader = await getAuthHeader();
+  const headers = new Headers(init?.headers);
+  if (authHeader) {
+    headers.set('Authorization', authHeader);
+  }
+
   let response: Response;
   try {
-    response = await fetch(url, init);
+    response = await fetch(url, { ...init, headers });
   } catch (err) {
     console.warn('Error de red en', url, err);
     throw new ApiError(0, { detail: 'No hay conexión con el servidor.' });
@@ -42,11 +59,15 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 // - expo/fetch (el fetch global desde Expo SDK 57) no acepta archivos { uri, name, type } en FormData.
 // - Leer el archivo desde JS con expo-file-system falla en Android con las rutas que devuelven
 //   los selectores ("Missing 'READ' permission"). Con XHR el archivo lo lee el código nativo.
-function sendForm<T>(method: 'POST' | 'PATCH', url: string, form: FormData): Promise<T> {
+async function sendForm<T>(method: 'POST' | 'PATCH', url: string, form: FormData): Promise<T> {
+  const authHeader = await getAuthHeader();
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open(method, url);
     xhr.setRequestHeader('Accept', 'application/json');
+    if (authHeader) {
+      xhr.setRequestHeader('Authorization', authHeader);
+    }
     xhr.onload = () => {
       let body: unknown = null;
       try {
