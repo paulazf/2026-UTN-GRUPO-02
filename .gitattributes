@@ -1,0 +1,3 @@
+# Los scripts de shell siempre con finales de línea LF (si no, fallan en Git Bash / Docker en Windows)
+*.sh text eol=lf
+Dockerfile text eol=lf
