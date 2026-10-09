@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MedicalTest, MedicalTestStatus, MedicalTestType, STATUS_LABELS } from '../../types/medicalTest';
+import {
+  MedicalTest,
+  MedicalTestFile,
+  MedicalTestStatus,
+  MedicalTestType,
+  STATUS_LABELS,
+} from '../../types/medicalTest';
 import { isoToDisplay } from '../../utils/dates';
 
 interface MedicalTestCardProps {
   test: MedicalTest;
-  onOpenFile: (test: MedicalTest) => void;
-  onShare: (test: MedicalTest) => void;
+  onOpenFile: (file: MedicalTestFile) => void;
+  onShare: (file: MedicalTestFile) => void;
   onEdit: (test: MedicalTest) => void;
   onDelete: (test: MedicalTest) => void;
 }
@@ -35,7 +41,6 @@ export default function MedicalTestCard({
   const badge = BADGE_CLASSES[test.status];
   const isAltered = test.status === 'altered';
   const subtitle = [isoToDisplay(test.date), test.veterinarian].filter(Boolean).join(' · ');
-  const isImage = test.file ? /\.(jpe?g|png)$/i.test(test.file) : false;
 
   return (
     <View
@@ -88,14 +93,17 @@ export default function MedicalTestCard({
             <Text className="text-xs font-semibold text-[#A07878]">Todavía no se cargó el resultado.</Text>
           )}
 
-          {test.file && (
-            <View className="flex-row gap-2 pt-2">
-              <ActionButton
-                icon={isImage ? 'image-outline' : 'document-outline'}
-                label={isImage ? 'Ver imagen' : 'Ver PDF'}
-                onPress={() => onOpenFile(test)}
-              />
-              <ActionButton icon="share-outline" label="Compartir" onPress={() => onShare(test)} />
+          {/* Archivos adjuntos: las imágenes con miniatura, los PDF con ícono */}
+          {test.files.length > 0 && (
+            <View className="gap-2 pt-2">
+              {test.files.map((file) => (
+                <FileRow
+                  key={file.idMedicalTestFile}
+                  file={file}
+                  onOpen={() => onOpenFile(file)}
+                  onShare={() => onShare(file)}
+                />
+              ))}
             </View>
           )}
 
@@ -132,5 +140,46 @@ function ActionButton({ icon, label, onPress, danger = false }: ActionButtonProp
       <Ionicons name={icon} size={14} color={danger ? '#B92020' : '#D9627A'} />
       <Text className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-[#D9627A]'}`}>{label}</Text>
     </Pressable>
+  );
+}
+
+function FileRow({
+  file,
+  onOpen,
+  onShare,
+}: {
+  file: MedicalTestFile;
+  onOpen: () => void;
+  onShare: () => void;
+}) {
+  const isImage = /\.(jpe?g|png)$/i.test(file.name);
+  return (
+    <View className="flex-row items-center gap-2 rounded-[20px] bg-[#FDF5F0] p-2">
+      <Pressable onPress={onOpen} className="flex-1 flex-row items-center gap-2 active:opacity-75">
+        {isImage ? (
+          <Image source={{ uri: file.url }} className="h-9 w-9 rounded-xl bg-[#F0DDD5]" />
+        ) : (
+          <View className="h-9 w-9 items-center justify-center rounded-xl bg-white">
+            <Ionicons name="document-text-outline" size={18} color="#D9627A" />
+          </View>
+        )}
+        <View className="flex-1">
+          <Text className="text-xs font-bold text-[#3D2020]" numberOfLines={1}>
+            {file.name}
+          </Text>
+          <Text className="text-[10px] font-semibold text-[#D9627A]">
+            {isImage ? 'Ver imagen' : 'Ver PDF'}
+          </Text>
+        </View>
+      </Pressable>
+      <Pressable
+        onPress={onShare}
+        hitSlop={8}
+        className="h-8 w-8 items-center justify-center rounded-full bg-white active:opacity-75"
+        accessibilityLabel={`Compartir ${file.name}`}
+      >
+        <Ionicons name="share-outline" size={16} color="#D9627A" />
+      </Pressable>
+    </View>
   );
 }

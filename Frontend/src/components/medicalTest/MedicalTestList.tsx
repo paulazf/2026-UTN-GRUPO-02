@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Linking, Pressable, Text, View } from 'react-
 import { Ionicons } from '@expo/vector-icons';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { MedicalTest, MedicalTestType, TYPE_SECTIONS } from '../../types/medicalTest';
+import { MedicalTest, MedicalTestFile, MedicalTestType, TYPE_SECTIONS } from '../../types/medicalTest';
 import { deleteMedicalTest, fetchMedicalTests } from '../../services/medicalTestService';
 import { isoToDisplay } from '../../utils/dates';
 import MedicalTestCard from './MedicalTestCard';
@@ -86,28 +86,26 @@ export default function MedicalTestList({ petId }: MedicalTestListProps) {
     ]);
   };
 
-  const handleOpenFile = async (test: MedicalTest) => {
-    if (!test.file) return;
+  const handleOpenFile = async (file: MedicalTestFile) => {
     try {
-      await Linking.openURL(test.file);
+      await Linking.openURL(file.url);
     } catch {
       Alert.alert('Error', 'No se pudo abrir el archivo.');
     }
   };
 
   // Para compartir hay que bajar el archivo al cache del celular primero
-  const handleShare = async (test: MedicalTest) => {
-    if (!test.file) return;
+  const handleShare = async (file: MedicalTestFile) => {
     try {
       if (!(await Sharing.isAvailableAsync())) {
         Alert.alert('Error', 'Compartir no está disponible en este dispositivo.');
         return;
       }
-      const folder = new Directory(Paths.cache, `medical-test-${test.idMedicalTest}`);
+      const folder = new Directory(Paths.cache, `medical-test-file-${file.idMedicalTestFile}`);
       if (folder.exists) folder.delete();
       folder.create();
-      const downloaded = await File.downloadFileAsync(test.file, folder);
-      await Sharing.shareAsync(downloaded.uri, { dialogTitle: test.name });
+      const downloaded = await File.downloadFileAsync(file.url, folder);
+      await Sharing.shareAsync(downloaded.uri, { dialogTitle: file.name });
     } catch {
       Alert.alert('Error', 'No se pudo compartir el archivo.');
     }

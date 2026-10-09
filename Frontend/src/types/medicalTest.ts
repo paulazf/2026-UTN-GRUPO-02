@@ -12,8 +12,15 @@ export interface MedicalTest {
   status: MedicalTestStatus;
   resultSummary: string;
   resultDetail: string;
-  file: string | null;
+  files: MedicalTestFile[];
   isDeleted: boolean;
+}
+
+// Archivo ya subido de un estudio (PDF o imagen)
+export interface MedicalTestFile {
+  idMedicalTestFile: number;
+  name: string;
+  url: string;
 }
 
 // Archivo elegido en el celular, todavía no subido
@@ -33,7 +40,8 @@ export interface MedicalTestPayload {
   status?: MedicalTestStatus;
   resultSummary?: string;
   resultDetail?: string;
-  file?: PickedFile;
+  newFiles?: PickedFile[]; // archivos a agregar
+  removedFiles?: number[]; // ids de archivos a quitar (solo en la edición)
 }
 
 export const TYPE_LABELS: Record<MedicalTestType, string> = {

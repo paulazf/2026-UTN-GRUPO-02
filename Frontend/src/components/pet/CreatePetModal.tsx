@@ -3,7 +3,9 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -134,7 +136,11 @@ export default function CreatePetModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/50">
+      {/* KeyboardAvoidingView sube el sheet para que el teclado no tape los inputs */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1 justify-end bg-black/50"
+      >
         <View className="max-h-[92%] rounded-t-[32px] bg-[#FFFDFC] p-6 pb-10">
           <View className="mb-4 h-1.5 w-12 self-center rounded-full bg-[#E8DDD9]" />
 
@@ -149,7 +155,11 @@ export default function CreatePetModal({
             </Pressable>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag" // el teclado numérico de iOS no tiene botón para cerrarlo
+          >
             {/* CARGA DE FOTO */}
             <View className="mb-5 items-center">
               <View className="relative mb-3 h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-[#DE6B80] bg-[#FAF5F2] shadow-sm">
@@ -339,7 +349,7 @@ export default function CreatePetModal({
             </Pressable>
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

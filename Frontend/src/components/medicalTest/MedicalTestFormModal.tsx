@@ -12,8 +12,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import {
   MedicalTest,
+  MedicalTestFile,
   MedicalTestPayload,
   MedicalTestStatus,
   MedicalTestType,
@@ -24,8 +26,21 @@ import {
 import { ApiError, createMedicalTest, updateMedicalTest } from '../../services/medicalTestService';
 import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB, igual que el back
+// Mismos límites que el back
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB por archivo
+const MAX_FILES = 10; // archivos por estudio
 const ALLOWED_MIME = ['application/pdf', 'image/jpeg', 'image/png'];
+const MIME_BY_EXTENSION: Record<string, string> = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+};
+const EXTENSION_BY_MIME: Record<string, string> = {
+  'application/pdf': 'pdf',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+};
 
 interface MedicalTestFormModalProps {
   visible: boolean;
@@ -43,10 +58,11 @@ interface FormState {
   status: MedicalTestStatus;
   resultSummary: string;
   resultDetail: string;
-  file: PickedFile | null;
+  keptFiles: MedicalTestFile[]; // archivos ya subidos que se conservan
+  newFiles: PickedFile[]; // archivos elegidos, todavía no subidos
 }
 
-type FormErrors = Partial<Record<keyof FormState | 'general', string>>;
+type FormErrors = Partial<Record<keyof FormState | 'files' | 'general', string>>;
 
 function initialState(test?: MedicalTest | null): FormState {
   return {
@@ -57,7 +73,8 @@ function initialState(test?: MedicalTest | null): FormState {
     status: test?.status ?? 'normal',
     resultSummary: test?.resultSummary ?? '',
     resultDetail: test?.resultDetail ?? '',
-    file: null,
+    keptFiles: test?.files ?? [],
+    newFiles: [],
   };
 }
 
@@ -71,6 +88,27 @@ function validate(form: FormState): FormErrors {
     errors.resultSummary = 'Si el estudio tiene resultado, completá el resumen.';
   }
   return errors;
+}
+
+// Arma el archivo a subir o devuelve el motivo por el que no se puede.
+// Las fotos de iOS pueden venir como HEIC con mimeType vacío: se deduce por la extensión de la uri.
+function toPickedFile(
+  uri: string,
+  originalName: string | null | undefined,
+  mimeType: string | null | undefined,
+  size: number | null | undefined,
+): PickedFile | string {
+  const uriExtension = uri.split('?')[0].split('.').pop()?.toLowerCase() ?? '';
+  const mime = mimeType && ALLOWED_MIME.includes(mimeType) ? mimeType : MIME_BY_EXTENSION[uriExtension];
+  const baseName = (originalName || uri.split('/').pop() || 'archivo').replace(/\.[^.]+$/, '');
+  if (!mime) return `${originalName ?? baseName}: solo se aceptan PDF, JPG o PNG.`;
+  if (size && size > MAX_FILE_SIZE) return `${originalName ?? baseName}: supera los 10 MB.`;
+  return {
+    uri,
+    name: `${baseName}.${EXTENSION_BY_MIME[mime]}`,
+    mimeType: mime,
+    size: size ?? undefined,
+  };
 }
 
 export default function MedicalTestFormModal({
@@ -96,24 +134,59 @@ export default function MedicalTestFormModal({
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  const handlePickFile = async () => {
+  const remainingSlots = MAX_FILES - form.keptFiles.length - form.newFiles.length;
+
+  const addPickedFiles = (results: (PickedFile | string)[]) => {
+    const valid = results.filter((r): r is PickedFile => typeof r !== 'string');
+    const rejected = results.filter((r): r is string => typeof r === 'string');
+    const accepted = valid.slice(0, Math.max(remainingSlots, 0));
+    if (valid.length > accepted.length) {
+      rejected.push(`Se pueden adjuntar hasta ${MAX_FILES} archivos por estudio.`);
+    }
+    setForm((prev) => ({ ...prev, newFiles: [...prev.newFiles, ...accepted] }));
+    setErrors((prev) => ({ ...prev, files: rejected.length ? rejected.join('\n') : undefined }));
+  };
+
+  const handlePickDocuments = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: ALLOWED_MIME,
+      multiple: true,
       copyToCacheDirectory: true,
     });
     if (result.canceled) return;
+    addPickedFiles(result.assets.map((a) => toPickedFile(a.uri, a.name, a.mimeType, a.size)));
+  };
 
-    const asset = result.assets[0];
-    const mimeType = asset.mimeType ?? '';
-    if (!ALLOWED_MIME.includes(mimeType)) {
-      setErrors((prev) => ({ ...prev, file: 'Solo se aceptan PDF, JPG o PNG.' }));
+  const handlePickImages = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) {
+      setErrors((prev) => ({ ...prev, files: 'Se necesita permiso para acceder a las fotos.' }));
       return;
     }
-    if (asset.size !== undefined && asset.size > MAX_FILE_SIZE) {
-      setErrors((prev) => ({ ...prev, file: 'El archivo supera los 10 MB.' }));
-      return;
-    }
-    setField('file', { uri: asset.uri, name: asset.name, mimeType, size: asset.size });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: Math.max(remainingSlots, 1),
+      quality: 0.8, // con quality < 1 iOS convierte las fotos HEIC a JPG
+    });
+    if (result.canceled) return;
+    addPickedFiles(
+      result.assets.map((a) => toPickedFile(a.uri, a.fileName, a.mimeType, a.fileSize)),
+    );
+  };
+
+  const removeKeptFile = (id: number) => {
+    setField(
+      'keptFiles',
+      form.keptFiles.filter((f) => f.idMedicalTestFile !== id),
+    );
+  };
+
+  const removeNewFile = (index: number) => {
+    setField(
+      'newFiles',
+      form.newFiles.filter((_, i) => i !== index),
+    );
   };
 
   const handleSubmit = async () => {
@@ -131,7 +204,6 @@ export default function MedicalTestFormModal({
       status: form.status,
       resultSummary: form.resultSummary.trim(),
       resultDetail: form.resultDetail.trim(),
-      file: form.file ?? undefined,
     };
 
     try {
@@ -141,17 +213,22 @@ export default function MedicalTestFormModal({
         // PATCH solo con lo que cambió
         const changes: MedicalTestPayload = {};
         for (const key of Object.keys(values) as (keyof MedicalTestPayload)[]) {
-          if (key === 'file') continue;
           if (values[key] !== editing[key as keyof MedicalTest]) {
             (changes as Record<string, unknown>)[key] = values[key];
           }
         }
-        if (values.file) changes.file = values.file;
+        const keptIds = new Set(form.keptFiles.map((f) => f.idMedicalTestFile));
+        const removed = editing.files
+          .filter((f) => !keptIds.has(f.idMedicalTestFile))
+          .map((f) => f.idMedicalTestFile);
+        if (removed.length) changes.removedFiles = removed;
+        if (form.newFiles.length) changes.newFiles = form.newFiles;
+
         saved = Object.keys(changes).length
           ? await updateMedicalTest(editing.idMedicalTest, changes)
           : editing;
       } else {
-        saved = await createMedicalTest({ ...values, idPet: petId });
+        saved = await createMedicalTest({ ...values, idPet: petId, newFiles: form.newFiles });
       }
       onSaved(saved);
     } catch (err) {
@@ -159,7 +236,8 @@ export default function MedicalTestFormModal({
         // Los errores por campo del back se muestran debajo de cada input
         const fieldErrors: FormErrors = { general: err.message };
         for (const [field, messages] of Object.entries(err.fields)) {
-          if (field in form) fieldErrors[field as keyof FormState] = messages[0];
+          if (field === 'newFiles' || field === 'removedFiles') fieldErrors.files = messages[0];
+          else if (field in form) fieldErrors[field as keyof FormState] = messages[0];
         }
         setErrors(fieldErrors);
       } else {
@@ -169,10 +247,6 @@ export default function MedicalTestFormModal({
       setSubmitting(false);
     }
   };
-
-  const currentFileName =
-    form.file?.name ??
-    (editing?.file ? decodeURIComponent(editing.file.split('/').pop() ?? '') : null);
 
   const title = editing
     ? editing.status === 'pending'
@@ -209,6 +283,7 @@ export default function MedicalTestFormModal({
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag" // el teclado numérico de iOS no tiene botón para cerrarlo
             contentContainerClassName="gap-4 px-5 pb-10 pt-4"
           >
             <Field label="Nombre del estudio" error={errors.name}>
@@ -289,23 +364,33 @@ export default function MedicalTestFormModal({
               />
             </Field>
 
-            {/* El archivo no está en el mockup, pero lo pide el TDD-0010 */}
-            <Field label="Archivo (opcional)" error={errors.file}>
-              <Pressable
-                onPress={handlePickFile}
-                className="flex-row items-center gap-2 rounded-[20px] border-[1.5px] border-dashed border-[#D9627A] bg-[#FDF5F0] px-3.5 py-2.5 active:opacity-75"
-              >
-                <Ionicons name="attach-outline" size={18} color="#D9627A" />
-                <Text
-                  className={`flex-1 text-sm font-semibold ${
-                    currentFileName ? 'text-[#3D2020]' : 'text-[#C09898]'
-                  }`}
-                  numberOfLines={1}
-                >
-                  {currentFileName ?? 'PDF, JPG o PNG (máx. 10 MB)'}
-                </Text>
-                {currentFileName && <Text className="text-xs font-bold text-[#D9627A]">Cambiar</Text>}
-              </Pressable>
+            {/* Los archivos no están en el mockup, pero los pide el TDD-0010 */}
+            <Field label={`Archivos (opcional · hasta ${MAX_FILES})`} error={errors.files}>
+              {form.keptFiles.map((file) => (
+                <AttachmentRow
+                  key={`kept-${file.idMedicalTestFile}`}
+                  name={file.name}
+                  onRemove={() => removeKeptFile(file.idMedicalTestFile)}
+                />
+              ))}
+              {form.newFiles.map((file, index) => (
+                <AttachmentRow
+                  key={`new-${index}-${file.uri}`}
+                  name={file.name}
+                  isNew
+                  onRemove={() => removeNewFile(index)}
+                />
+              ))}
+
+              {remainingSlots > 0 && (
+                <View className="flex-row gap-2">
+                  <PickButton icon="document-outline" label="Archivos" onPress={handlePickDocuments} />
+                  <PickButton icon="images-outline" label="Galería" onPress={handlePickImages} />
+                </View>
+              )}
+              <Text className="text-[10px] font-semibold text-[#C09898]">
+                PDF, JPG o PNG · máx. 10 MB cada uno
+              </Text>
             </Field>
 
             {errors.general && (
@@ -388,5 +473,49 @@ function Segmented<T extends string>({
         );
       })}
     </View>
+  );
+}
+
+function AttachmentRow({
+  name,
+  isNew = false,
+  onRemove,
+}: {
+  name: string;
+  isNew?: boolean;
+  onRemove: () => void;
+}) {
+  const isPdf = name.toLowerCase().endsWith('.pdf');
+  return (
+    <View className="flex-row items-center gap-2 rounded-[20px] border-[1.5px] border-[#F0DDD5] bg-[#FDF5F0] px-3.5 py-2.5">
+      <Ionicons name={isPdf ? 'document-text-outline' : 'image-outline'} size={18} color="#D9627A" />
+      <Text className="flex-1 text-sm font-semibold text-[#3D2020]" numberOfLines={1}>
+        {name}
+      </Text>
+      {isNew && <Text className="text-[10px] font-bold text-[#A07878]">Nuevo</Text>}
+      <Pressable onPress={onRemove} hitSlop={8} accessibilityLabel={`Quitar ${name}`}>
+        <Ionicons name="close-circle" size={20} color="#C09898" />
+      </Pressable>
+    </View>
+  );
+}
+
+function PickButton({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[20px] border-[1.5px] border-dashed border-[#D9627A] bg-[#FDF5F0] p-2.5 active:opacity-75"
+    >
+      <Ionicons name={icon} size={16} color="#D9627A" />
+      <Text className="text-xs font-bold text-[#D9627A]">{label}</Text>
+    </Pressable>
   );
 }

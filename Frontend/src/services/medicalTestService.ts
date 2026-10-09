@@ -37,19 +37,21 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-// El back recibe multipart/form-data porque el estudio puede llevar archivo
+// El back recibe multipart/form-data porque el estudio puede llevar archivos.
+// Las listas se mandan repitiendo la clave (newFiles, newFiles, ...)
 function toFormData(payload: MedicalTestPayload): FormData {
   const form = new FormData();
-  for (const [key, value] of Object.entries(payload)) {
-    if (value === undefined || key === 'file') continue;
-    form.append(key, String(value));
+  const { newFiles, removedFiles, ...fields } = payload;
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined) form.append(key, String(value));
   }
-  if (payload.file) {
+  for (const id of removedFiles ?? []) form.append('removedFiles', String(id));
+  for (const file of newFiles ?? []) {
     // React Native acepta { uri, name, type } como archivo en FormData
-    form.append('file', {
-      uri: payload.file.uri,
-      name: payload.file.name,
-      type: payload.file.mimeType,
+    form.append('newFiles', {
+      uri: file.uri,
+      name: file.name,
+      type: file.mimeType,
     } as unknown as Blob);
   }
   return form;
