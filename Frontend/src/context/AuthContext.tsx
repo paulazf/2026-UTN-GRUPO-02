@@ -15,6 +15,7 @@ interface AuthContextProps {
   login: (token: string, owner: OwnerData) => Promise<void>;
   logout: () => Promise<void>;
   updateUserData: (newData: Partial<OwnerData>) => void;
+  updateToken: (newToken: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -82,8 +83,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const updateToken = async (newToken: string) => {
+    try {
+      await SecureStore.setItemAsync('userToken', newToken);
+      setUserToken(newToken);
+    } catch (e) {
+      console.error('Error actualizando token', e);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoading, userToken, userData, login, logout, updateUserData }}>
+    <AuthContext.Provider value={{ isLoading, userToken, userData, login, logout, updateUserData, updateToken }}>
       {children}
     </AuthContext.Provider>
   );

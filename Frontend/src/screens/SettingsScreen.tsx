@@ -41,7 +41,10 @@ export default function SettingsScreen() {
           <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
         </TouchableOpacity>
 
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm border border-slate-50">
+        <TouchableOpacity 
+          className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm border border-slate-50"
+          onPress={() => navigation.navigate('ChangePassword' as never)}
+        >
           <View className="w-10 h-10 bg-[#E2E8F0] rounded-full justify-center items-center mr-4">
             <Ionicons name="lock-closed-outline" size={20} color="#4A5568" />
           </View>
