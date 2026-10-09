@@ -1,5 +1,6 @@
+import { File } from 'expo-file-system';
 import { apiUrl } from './api';
-import { MedicalTest, MedicalTestPayload, MedicalTestStatus } from '../types/medicalTest';
+import { MedicalTest, MedicalTestPayload, MedicalTestStatus, PickedFile } from '../types/medicalTest';
 
 const BASE_URL = `${apiUrl}/api/v1/medical-test/`;
 
@@ -28,13 +29,29 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
     response = await fetch(url, init);
-  } catch {
+  } catch (err) {
+    console.warn('Error de red en', url, err);
     throw new ApiError(0, { detail: 'No hay conexión con el servidor.' });
   }
   if (response.status === 204) return undefined as T;
   const body = await response.json().catch(() => null);
   if (!response.ok) throw new ApiError(response.status, body);
   return body as T;
+}
+
+// expo/fetch (el fetch global desde Expo SDK 57) no acepta el formato { uri, name, type }
+// de React Native en FormData: cada archivo tiene que exponer name, type y bytes().
+// El nombre va sin espacios ni acentos porque expo/fetch lo manda URL-encodeado.
+function toUploadPart(file: PickedFile) {
+  const safeName = file.name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w.-]+/g, '_');
+  return {
+    name: safeName,
+    type: file.mimeType,
+    bytes: () => new File(file.uri).bytes(),
+  };
 }
 
 // El back recibe multipart/form-data porque el estudio puede llevar archivos.
@@ -47,12 +64,7 @@ function toFormData(payload: MedicalTestPayload): FormData {
   }
   for (const id of removedFiles ?? []) form.append('removedFiles', String(id));
   for (const file of newFiles ?? []) {
-    // React Native acepta { uri, name, type } como archivo en FormData
-    form.append('newFiles', {
-      uri: file.uri,
-      name: file.name,
-      type: file.mimeType,
-    } as unknown as Blob);
+    form.append('newFiles', toUploadPart(file) as unknown as Blob);
   }
   return form;
 }

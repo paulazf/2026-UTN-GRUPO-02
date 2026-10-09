@@ -12,7 +12,7 @@ import { isoToDisplay } from '../../utils/dates';
 
 interface MedicalTestCardProps {
   test: MedicalTest;
-  onOpenFile: (file: MedicalTestFile) => void;
+  onOpenFile: (test: MedicalTest, file: MedicalTestFile) => void;
   onShare: (file: MedicalTestFile) => void;
   onEdit: (test: MedicalTest) => void;
   onDelete: (test: MedicalTest) => void;
@@ -100,7 +100,7 @@ export default function MedicalTestCard({
                 <FileRow
                   key={file.idMedicalTestFile}
                   file={file}
-                  onOpen={() => onOpenFile(file)}
+                  onOpen={() => onOpenFile(test, file)}
                   onShare={() => onShare(file)}
                 />
               ))}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -8,8 +8,12 @@ import { deleteMedicalTest, fetchMedicalTests } from '../../services/medicalTest
 import { isoToDisplay } from '../../utils/dates';
 import MedicalTestCard from './MedicalTestCard';
 import MedicalTestFormModal from './MedicalTestFormModal';
+import ImagePreviewModal from './ImagePreviewModal';
+import PdfPreviewModal from './PdfPreviewModal';
 
 const SECTION_ORDER: MedicalTestType[] = ['laboratory', 'imaging', 'other'];
+
+const isImageFile = (file: MedicalTestFile) => /\.(jpe?g|png)$/i.test(file.name);
 
 interface MedicalTestListProps {
   petId: number;
@@ -22,6 +26,8 @@ export default function MedicalTestList({ petId }: MedicalTestListProps) {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<MedicalTest | null>(null);
+  const [preview, setPreview] = useState<{ images: MedicalTestFile[]; index: number } | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<MedicalTestFile | null>(null);
 
   const loadTests = useCallback(async () => {
     try {
@@ -86,11 +92,13 @@ export default function MedicalTestList({ petId }: MedicalTestListProps) {
     ]);
   };
 
-  const handleOpenFile = async (file: MedicalTestFile) => {
-    try {
-      await Linking.openURL(file.url);
-    } catch {
-      Alert.alert('Error', 'No se pudo abrir el archivo.');
+  // Las imágenes y los PDF se ven dentro de la app, igual en iOS y Android
+  const handleOpenFile = (test: MedicalTest, file: MedicalTestFile) => {
+    if (isImageFile(file)) {
+      const images = test.files.filter(isImageFile);
+      setPreview({ images, index: images.findIndex((f) => f.idMedicalTestFile === file.idMedicalTestFile) });
+    } else {
+      setPdfPreview(file);
     }
   };
 
@@ -188,6 +196,16 @@ export default function MedicalTestList({ petId }: MedicalTestListProps) {
           ))}
         </>
       )}
+
+      <ImagePreviewModal
+        visible={preview !== null}
+        images={preview?.images ?? []}
+        initialIndex={preview?.index ?? 0}
+        onClose={() => setPreview(null)}
+        onShare={handleShare}
+      />
+
+      <PdfPreviewModal file={pdfPreview} onClose={() => setPdfPreview(null)} onShare={handleShare} />
 
       <MedicalTestFormModal
         visible={isModalOpen}
