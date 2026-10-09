@@ -8,7 +8,7 @@ from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import Breed, MedicalTest, Pet
+from .models import Breed, MedicalTest, MedicalTestFile, Pet
 
 TEMP_MEDIA = tempfile.mkdtemp()
 URL = "/api/v1/medical-test/"
@@ -20,6 +20,10 @@ def pdf(name="estudio.pdf", size=1024):
 
 def png(name="foto.png"):
     return SimpleUploadedFile(name, b"\x89PNG\r\n\x1a\n" + b"0" * 100, content_type="image/png")
+
+
+def first_path(test):
+    return Path(test.files.first().file.path)
 
 
 def detail(pk):
@@ -83,22 +87,44 @@ class MedicalTestBase(APITestCase):
 # ---------------------------------------------------------------- TDD-0010 Alta
 class CreateMedicalTestTests(MedicalTestBase):
     def test_alta_completa_con_pdf(self):
-        r = self.post(self.payload(file=pdf()))
+        r = self.post(self.payload(newFiles=[pdf()]))
         self.assertEqual(r.status_code, status.HTTP_201_CREATED, r.data)
         obj = MedicalTest.objects.get(pk=r.data["idMedicalTest"])
         self.assertFalse(obj.isDeleted)
-        self.assertTrue(Path(obj.file.path).exists())
+        self.assertTrue(first_path(obj).exists())
         self.assertEqual(r.data["petName"], "Luna")
-        self.assertTrue(r.data["file"].startswith("http://"))
+        self.assertEqual(len(r.data["files"]), 1)
+        self.assertEqual(r.data["files"][0]["name"], "estudio.pdf")
+        self.assertTrue(r.data["files"][0]["url"].startswith("http://"))
+
+    def test_alta_con_varios_archivos(self):
+        files = [pdf("informe.pdf"), png("placa1.png"), png("placa2.png")]
+        r = self.post(self.payload(newFiles=files))
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertEqual([f["name"] for f in r.data["files"]], ["informe.pdf", "placa1.png", "placa2.png"])
+
+    @override_settings(MEDICAL_TEST_MAX_FILES=2)
+    def test_demasiados_archivos(self):
+        r = self.post(self.payload(newFiles=[pdf("a.pdf"), pdf("b.pdf"), pdf("c.pdf")]))
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("newFiles", r.data)
+        self.assertEqual(MedicalTest.objects.count(), 0)
+
+    def test_un_archivo_invalido_rechaza_todo(self):
+        bad = SimpleUploadedFile("x.zip", b"PK", content_type="application/zip")
+        r = self.post(self.payload(newFiles=[pdf(), bad]))
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(MedicalTest.objects.count(), 0)
+        self.assertEqual(MedicalTestFile.objects.count(), 0)
 
     def test_alta_con_imagen(self):
-        r = self.post(self.payload(file=png()))
+        r = self.post(self.payload(newFiles=[png()]))
         self.assertEqual(r.status_code, 201, r.data)
 
     def test_alta_sin_archivo(self):
         r = self.post(self.payload())
         self.assertEqual(r.status_code, 201, r.data)
-        self.assertIsNone(r.data["file"])
+        self.assertEqual(r.data["files"], [])
 
     def test_alta_pendiente_sin_resultado_ni_archivo(self):
         r = self.post(self.payload(status="pending", resultSummary=None, resultDetail=None))
@@ -144,22 +170,22 @@ class CreateMedicalTestTests(MedicalTestBase):
             b"PK...",
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
-        r = self.post(self.payload(file=docx))
+        r = self.post(self.payload(newFiles=[docx]))
         self.assertEqual(r.status_code, 400)
-        self.assertIn("file", r.data)
+        self.assertIn("newFiles", r.data)
 
     def test_extension_falsa(self):
         fake = SimpleUploadedFile("virus.exe", b"MZ...", content_type="application/pdf")
-        self.assertEqual(self.post(self.payload(file=fake)).status_code, 400)
+        self.assertEqual(self.post(self.payload(newFiles=[fake])).status_code, 400)
 
     @override_settings(MEDICAL_TEST_MAX_SIZE=1024)
     def test_archivo_demasiado_grande(self):
-        r = self.post(self.payload(file=pdf(size=2048)))
+        r = self.post(self.payload(newFiles=[pdf(size=2048)]))
         self.assertEqual(r.status_code, 400)
 
     def test_archivo_vacio(self):
         empty = SimpleUploadedFile("vacio.pdf", b"", content_type="application/pdf")
-        self.assertEqual(self.post(self.payload(file=empty)).status_code, 400)
+        self.assertEqual(self.post(self.payload(newFiles=[empty])).status_code, 400)
 
     def test_mascota_inexistente(self):
         self.assertEqual(self.post(self.payload(idPet=9999)).status_code, 404)
@@ -225,7 +251,7 @@ class ListMedicalTestTests(MedicalTestBase):
         r = self.client.get(detail(self.new.pk))
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data["name"], "Nuevo")
-        self.assertIsNone(r.data["file"])
+        self.assertEqual(r.data["files"], [])
 
     def test_idpet_inexistente_o_dado_de_baja(self):
         self.assertEqual(self.client.get(URL, {"idPet": 9999}).status_code, 404)
@@ -249,12 +275,12 @@ class UpdateMedicalTestTests(MedicalTestBase):
     def test_completar_pendiente(self):
         test = self.make(status="pending", resultSummary="")
         r = self.patch(
-            test.pk, {"status": "normal", "resultSummary": "Sin alteraciones", "file": pdf()}
+            test.pk, {"status": "normal", "resultSummary": "Sin alteraciones", "newFiles": [pdf()]}
         )
         self.assertEqual(r.status_code, 200, r.data)
         test.refresh_from_db()
         self.assertEqual(test.status, "normal")
-        self.assertTrue(test.file)
+        self.assertEqual(test.files.count(), 1)
 
     def test_completar_pendiente_sin_resultado(self):
         test = self.make(status="pending", resultSummary="")
@@ -280,27 +306,55 @@ class UpdateMedicalTestTests(MedicalTestBase):
         test = self.make()
         self.assertEqual(self.patch(test.pk, {"name": test.name}).status_code, 200)
 
-    def test_reemplazo_de_archivo_borra_el_anterior(self):
-        r = self.post(self.payload(file=pdf("viejo.pdf")))
+    def test_agregar_archivos_conserva_los_anteriores(self):
+        r = self.post(self.payload(newFiles=[pdf("informe.pdf")]))
         test = MedicalTest.objects.get(pk=r.data["idMedicalTest"])
-        old_path = Path(test.file.path)
+        r = self.patch(test.pk, {"newFiles": [png("placa1.png"), png("placa2.png")]})
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual([f["name"] for f in r.data["files"]], ["informe.pdf", "placa1.png", "placa2.png"])
+
+    def test_quitar_archivo_lo_borra_del_disco(self):
+        r = self.post(self.payload(newFiles=[pdf("viejo.pdf"), png("placa.png")]))
+        test = MedicalTest.objects.get(pk=r.data["idMedicalTest"])
+        old = test.files.get(name="viejo.pdf")
+        old_path = Path(old.file.path)
         self.assertTrue(old_path.exists())
 
         with self.captureOnCommitCallbacks(execute=True):
-            r = self.patch(test.pk, {"file": pdf("nuevo.pdf")})
+            r = self.patch(test.pk, {"removedFiles": [old.pk], "newFiles": [pdf("nuevo.pdf")]})
         self.assertEqual(r.status_code, 200, r.data)
-        test.refresh_from_db()
-        self.assertTrue(Path(test.file.path).exists())
+        self.assertEqual([f["name"] for f in r.data["files"]], ["placa.png", "nuevo.pdf"])
         self.assertFalse(old_path.exists())
 
-    def test_archivo_invalido_conserva_el_anterior(self):
-        r = self.post(self.payload(file=pdf("bueno.pdf")))
+    def test_quitar_archivo_de_otro_estudio(self):
+        r = self.post(self.payload(newFiles=[pdf()]))
+        other_file = MedicalTestFile.objects.get(medicalTest_id=r.data["idMedicalTest"])
+        test = self.make()
+        r = self.patch(test.pk, {"removedFiles": [other_file.pk]})
+        self.assertEqual(r.status_code, 400)
+        self.assertTrue(MedicalTestFile.objects.filter(pk=other_file.pk).exists())
+
+    @override_settings(MEDICAL_TEST_MAX_FILES=2)
+    def test_superar_el_maximo_al_editar(self):
+        r = self.post(self.payload(newFiles=[pdf("a.pdf"), pdf("b.pdf")]))
+        test_id = r.data["idMedicalTest"]
+        self.assertEqual(self.patch(test_id, {"newFiles": [pdf("c.pdf")]}).status_code, 400)
+        # Quitando uno, el nuevo entra.
+        first = MedicalTestFile.objects.filter(medicalTest_id=test_id).first()
+        r = self.patch(test_id, {"removedFiles": [first.pk], "newFiles": [pdf("c.pdf")]})
+        self.assertEqual(r.status_code, 200, r.data)
+
+    def test_archivo_invalido_conserva_los_anteriores(self):
+        r = self.post(self.payload(newFiles=[pdf("bueno.pdf")]))
         test = MedicalTest.objects.get(pk=r.data["idMedicalTest"])
-        old_path = Path(test.file.path)
+        old = test.files.get()
+        old_path = Path(old.file.path)
         bad = SimpleUploadedFile("x.zip", b"PK", content_type="application/zip")
         with self.captureOnCommitCallbacks(execute=True):
-            self.assertEqual(self.patch(test.pk, {"file": bad}).status_code, 400)
+            r = self.patch(test.pk, {"removedFiles": [old.pk], "newFiles": [bad]})
+        self.assertEqual(r.status_code, 400)
         self.assertTrue(old_path.exists())
+        self.assertTrue(MedicalTestFile.objects.filter(pk=old.pk).exists())
 
     def test_id_inexistente_eliminado_o_de_mascota_borrada(self):
         removed = self.make(isDeleted=True)
@@ -338,13 +392,13 @@ class UpdateMedicalTestTests(MedicalTestBase):
 # ---------------------------------------------------------- TDD-0013 Baja lógica
 class DeleteMedicalTestTests(MedicalTestBase):
     def test_baja_correcta_conserva_registro_y_archivo(self):
-        r = self.post(self.payload(file=pdf()))
+        r = self.post(self.payload(newFiles=[pdf()]))
         test = MedicalTest.objects.get(pk=r.data["idMedicalTest"])
         r = self.client.delete(detail(test.pk))
         self.assertEqual(r.status_code, 204)
         test.refresh_from_db()
         self.assertTrue(test.isDeleted)
-        self.assertTrue(Path(test.file.path).exists())
+        self.assertTrue(first_path(test).exists())
 
     def test_baja_de_pendiente(self):
         test = self.make(status="pending", resultSummary="")

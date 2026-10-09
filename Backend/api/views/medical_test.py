@@ -21,7 +21,7 @@ class MedicalTestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         pets = active_pets(self.request)
-        queryset = MedicalTest.objects.select_related("pet").filter(
+        queryset = MedicalTest.objects.select_related("pet").prefetch_related("files").filter(
             isDeleted=False, pet__in=pets
         )
 

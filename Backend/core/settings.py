@@ -137,7 +137,8 @@ STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-MEDICAL_TEST_MAX_SIZE = 10 * 1024 * 1024  # 10 MB
+MEDICAL_TEST_MAX_SIZE = 10 * 1024 * 1024  # 10 MB por archivo
+MEDICAL_TEST_MAX_FILES = 10  # archivos por estudio
 MEDICAL_TEST_ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
 
 

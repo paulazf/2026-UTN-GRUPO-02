@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Breed, Disease, MedicalTest, Medication, Pet
+from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet
 
 
 @admin.register(Breed)
@@ -29,8 +29,14 @@ class MedicationAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
+class MedicalTestFileInline(admin.TabularInline):
+    model = MedicalTestFile
+    extra = 0
+
+
 @admin.register(MedicalTest)
 class MedicalTestAdmin(admin.ModelAdmin):
+    inlines = [MedicalTestFileInline]
     list_display = ("idMedicalTest", "name", "pet", "type", "date", "status", "isDeleted")
     list_filter = ("type", "status", "isDeleted")
     search_fields = ("name", "pet__name", "veterinarian")
