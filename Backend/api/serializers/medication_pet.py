@@ -17,6 +17,7 @@ class MedicationPetSerializer(serializers.ModelSerializer):
     petName = serializers.CharField(source="pet.name", read_only=True)
     idMedication = serializers.IntegerField(source="medication_id")
     medicationName = serializers.CharField(source="medication.name", read_only=True)
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = MedicationPet
@@ -29,13 +30,19 @@ class MedicationPetSerializer(serializers.ModelSerializer):
             "frequencyHours",
             "quantityDose",
             "startDate",
+            "endDate",
+            "status",
             "notes",
             "isDeleted",
         ]
-        read_only_fields = ["id", "petName", "medicationName", "isDeleted"]
+        read_only_fields = ["id", "petName", "medicationName", "status", "isDeleted"]
+
+    def get_status(self, obj):
+        return "En tratamiento" if obj.endDate is None else "Finalizado"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["endDate"].required = False
         if self.instance is not None:
             self.fields["idPet"].required = False
             self.fields["idMedication"].required = False
@@ -86,18 +93,40 @@ class MedicationPetSerializer(serializers.ModelSerializer):
 
         target_pet = attrs.get("pet_id") or (self.instance.pet_id if self.instance else None)
         target_medication = attrs.get("medication_id") or (self.instance.medication_id if self.instance else None)
+        start_date = attrs.get("startDate", getattr(self.instance, "startDate", None))
+        end_date = attrs.get("endDate", getattr(self.instance, "endDate", None))
+
+        if end_date and start_date and end_date < start_date:
+            raise serializers.ValidationError({"endDate": "La fecha de fin no puede ser anterior a la fecha de inicio."})
 
         if target_pet and target_medication:
-            duplicate_qs = MedicationPet.objects.filter(
-                pet_id=target_pet,
-                medication_id=target_medication,
-                isDeleted=False,
-            )
-            if self.instance:
-                duplicate_qs = duplicate_qs.exclude(pk=self.instance.pk)
+            if end_date is None:
+                active_dup = MedicationPet.objects.filter(
+                    pet_id=target_pet,
+                    medication_id=target_medication,
+                    endDate__isnull=True,
+                    isDeleted=False,
+                )
+                if self.instance:
+                    active_dup = active_dup.exclude(pk=self.instance.pk)
 
-            if duplicate_qs.exists():
-                raise DuplicateMedicationPetException()
+                if active_dup.exists():
+                    raise DuplicateMedicationPetException()
+
+            if start_date:
+                start_dup = MedicationPet.objects.filter(
+                    pet_id=target_pet,
+                    medication_id=target_medication,
+                    startDate=start_date,
+                    isDeleted=False,
+                )
+                if self.instance:
+                    start_dup = start_dup.exclude(pk=self.instance.pk)
+
+                if start_dup.exists():
+                    raise serializers.ValidationError(
+                        {"startDate": "Ya existe un tratamiento de este medicamento registrado con la misma fecha de inicio."}
+                    )
 
         return attrs
 

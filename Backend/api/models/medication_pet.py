@@ -22,6 +22,7 @@ class MedicationPet(models.Model):
     frequencyHours = models.IntegerField(db_column="frequencyHours")
     quantityDose = models.IntegerField(db_column="quantityDose")
     startDate = models.DateField(db_column="startDate")
+    endDate = models.DateField(null=True, blank=True, db_column="endDate")
     notes = models.TextField(null=True, blank=True)
     isDeleted = models.BooleanField(default=False, db_column="isDeleted")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -33,14 +34,21 @@ class MedicationPet(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["pet", "medication"],
-                condition=models.Q(isDeleted=False),
+                condition=models.Q(isDeleted=False, endDate__isnull=True),
                 name="unique_active_medication_per_pet",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["pet", "medication", "startDate"],
+                condition=models.Q(isDeleted=False),
+                name="unique_pet_medication_start_date",
+            ),
         ]
 
     def clean(self):
         if self.startDate and self.startDate > date.today():
             raise ValidationError({"startDate": "La fecha de inicio no puede ser futura."})
+        if self.endDate and self.startDate and self.endDate < self.startDate:
+            raise ValidationError({"endDate": "La fecha de fin no puede ser anterior a la fecha de inicio."})
         if self.frequencyHours is not None and self.frequencyHours <= 0:
             raise ValidationError({"frequencyHours": "La frecuencia en horas debe ser mayor a cero."})
         if self.quantityDose is not None and self.quantityDose <= 0:
