@@ -1,6 +1,6 @@
 ---
 id: 0021
-estado: Por implementar
+estado: Implementado
 autor: Matias Yael Cortes
 fecha: 08-10-2026
 titulo: Alta de Medicamento en Mascota
