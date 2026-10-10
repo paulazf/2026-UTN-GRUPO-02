@@ -1,6 +1,6 @@
 ---
 id: 0024
-estado: Por implementar
+estado: Implementado
 autor: Matias Yael Cortes
 fecha: 08-10-2026
 titulo: Baja Lógica de Medicamento en Mascota
