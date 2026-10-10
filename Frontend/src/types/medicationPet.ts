@@ -15,6 +15,8 @@ export interface MedicationPet {
   frequencyHours: number;
   quantityDose: number;
   startDate: string; // YYYY-MM-DD
+  endDate: string | null; // YYYY-MM-DD | null
+  status?: string;
   notes: string | null;
   isDeleted: boolean;
 }
@@ -25,6 +27,7 @@ export interface CreateMedicationPetPayload {
   frequencyHours: number;
   quantityDose: number;
   startDate: string; // YYYY-MM-DD
+  endDate?: string | null; // YYYY-MM-DD | null
   notes?: string | null;
 }
 

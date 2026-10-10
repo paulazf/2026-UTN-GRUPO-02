@@ -28,6 +28,7 @@ export async function createMedicationPet(payload: CreateMedicationPetPayload): 
       errorData?.frequencyHours?.[0] ||
       errorData?.quantityDose?.[0] ||
       errorData?.startDate?.[0] ||
+      errorData?.endDate?.[0] ||
       errorData?.idMedication?.[0] ||
       errorData?.idPet?.[0] ||
       errorData?.notes?.[0] ||

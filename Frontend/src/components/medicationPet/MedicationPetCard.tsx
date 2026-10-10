@@ -7,9 +7,15 @@ interface MedicationPetCardProps {
 }
 
 export default function MedicationPetCard({ medication }: MedicationPetCardProps) {
+  const isEnTratamiento = !medication.endDate;
   const formattedStartDate = isoToDisplay(medication.startDate);
+  const formattedEndDate = medication.endDate ? isoToDisplay(medication.endDate) : null;
+  const formattedDates = isEnTratamiento
+    ? `Desde el ${formattedStartDate}`
+    : `${formattedStartDate} - ${formattedEndDate}`;
+
   const doseLabel = `${medication.quantityDose} ${
-    medication.quantityDose === 1 ? 'unidad' : 'unidades'
+    medication.quantityDose === 1 ? 'toma' : 'tomas'
   }`;
 
   return (
@@ -23,7 +29,7 @@ export default function MedicationPetCard({ medication }: MedicationPetCardProps
         elevation: 2,
       }}
     >
-      {/* Fila superior: Título y Frecuencia */}
+      {/* Fila superior: Título y Badge de Estado */}
       <View className="flex-row items-start justify-between gap-3">
         <Text
           className="flex-1 text-base font-bold text-[#2B1D1D]"
@@ -32,16 +38,38 @@ export default function MedicationPetCard({ medication }: MedicationPetCardProps
           {medication.medicationName}
         </Text>
 
-        <View className="rounded-full bg-[#FCECEF] px-3 py-1">
-          <Text className="text-xs font-bold text-[#B8324E]">
-            Cada {medication.frequencyHours} hs
+        <View
+          className={`rounded-full px-3 py-1 ${
+            isEnTratamiento ? 'bg-[#FCECEF]' : 'bg-[#E6F7EC]'
+          }`}
+        >
+          <Text
+            className={`text-xs font-bold ${
+              isEnTratamiento ? 'text-[#B8324E]' : 'text-[#2E7D32]'
+            }`}
+          >
+            {isEnTratamiento ? 'En tratamiento' : 'Finalizado'}
           </Text>
         </View>
       </View>
 
-      {/* Dosis y Fecha de Inicio */}
-      <Text className="mt-1.5 text-xs font-medium text-[#8C7B77]">
-        {doseLabel} · Desde el {formattedStartDate}
+      {/* Frecuencia y Dosis */}
+      <View className="mt-2 flex-row flex-wrap items-center gap-2">
+        <View className="rounded-full bg-[#FAF5F2] px-2.5 py-0.5 border border-[#F0E4DF]">
+          <Text className="text-[11px] font-semibold text-[#8C7B77]">
+            Cada {medication.frequencyHours} hs
+          </Text>
+        </View>
+        <View className="rounded-full bg-[#FAF5F2] px-2.5 py-0.5 border border-[#F0E4DF]">
+          <Text className="text-[11px] font-semibold text-[#8C7B77]">
+            {doseLabel}
+          </Text>
+        </View>
+      </View>
+
+      {/* Fechas */}
+      <Text className="mt-2 text-xs font-medium text-[#8C7B77]">
+        {formattedDates}
       </Text>
 
       {/* Bloque de Notas u Observaciones */}

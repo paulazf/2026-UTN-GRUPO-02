@@ -29,6 +29,7 @@ interface FormState {
   frequencyHours: string;
   quantityDose: string;
   startDate: string; // DD/MM/AAAA
+  endDate: string; // DD/MM/AAAA
   notes: string;
 }
 
@@ -43,6 +44,7 @@ export default function CreateMedicationPetModal({
     frequencyHours: '',
     quantityDose: '1',
     startDate: '',
+    endDate: '',
     notes: '',
   });
 
@@ -54,6 +56,7 @@ export default function CreateMedicationPetModal({
       frequencyHours: '',
       quantityDose: '1',
       startDate: '',
+      endDate: '',
       notes: '',
     });
     setSubmitting(false);
@@ -104,6 +107,18 @@ export default function CreateMedicationPetModal({
       return false;
     }
 
+    if (form.endDate.trim()) {
+      const endIso = displayToIso(form.endDate);
+      if (!endIso) {
+        Alert.alert('Fecha inválida', 'La fecha de fin debe tener el formato dd/mm/aaaa.');
+        return false;
+      }
+      if (endIso < startIso) {
+        Alert.alert('Fecha inválida', 'La fecha de fin no puede ser anterior a la de inicio.');
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -113,6 +128,7 @@ export default function CreateMedicationPetModal({
     try {
       setSubmitting(true);
       const startIso = displayToIso(form.startDate)!;
+      const endIso = form.endDate.trim() ? displayToIso(form.endDate) : null;
 
       const created = await createMedicationPet({
         idPet: petId,
@@ -120,6 +136,7 @@ export default function CreateMedicationPetModal({
         frequencyHours: parseInt(form.frequencyHours, 10),
         quantityDose: parseInt(form.quantityDose, 10),
         startDate: startIso,
+        endDate: endIso,
         notes: form.notes.trim() || null,
       });
 
@@ -226,24 +243,48 @@ export default function CreateMedicationPetModal({
               </View>
             </View>
 
-            {/* Campo 4: Fecha de inicio */}
-            <View className="mb-4">
-              <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
-                FECHA DE INICIO
-              </Text>
-              <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
-                <TextInput
-                  value={form.startDate}
-                  onChangeText={(val) => {
-                    setForm((prev) => ({ ...prev, startDate: maskDate(val) }));
-                  }}
-                  placeholder="dd/mm/aaaa"
-                  placeholderTextColor="#B5A7A3"
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  className="flex-1 text-base font-medium text-[#2B1D1D]"
-                />
-                <Ionicons name="calendar-outline" size={18} color="#8C7B77" />
+            {/* Fila Fechas: Desde y Hasta (opcional) */}
+            <View className="mb-4 flex-row gap-3">
+              {/* Fecha Desde */}
+              <View className="flex-1">
+                <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
+                  DESDE
+                </Text>
+                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                  <TextInput
+                    value={form.startDate}
+                    onChangeText={(val) => {
+                      setForm((prev) => ({ ...prev, startDate: maskDate(val) }));
+                    }}
+                    placeholder="dd/mm/aaaa"
+                    placeholderTextColor="#B5A7A3"
+                    keyboardType="number-pad"
+                    maxLength={10}
+                    className="flex-1 text-base font-medium text-[#2B1D1D]"
+                  />
+                  <Ionicons name="calendar-outline" size={18} color="#8C7B77" />
+                </View>
+              </View>
+
+              {/* Fecha Hasta */}
+              <View className="flex-1">
+                <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
+                  HASTA (OPCIONAL)
+                </Text>
+                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                  <TextInput
+                    value={form.endDate}
+                    onChangeText={(val) => {
+                      setForm((prev) => ({ ...prev, endDate: maskDate(val) }));
+                    }}
+                    placeholder="dd/mm/aaaa"
+                    placeholderTextColor="#B5A7A3"
+                    keyboardType="number-pad"
+                    maxLength={10}
+                    className="flex-1 text-base font-medium text-[#2B1D1D]"
+                  />
+                  <Ionicons name="calendar-outline" size={18} color="#8C7B77" />
+                </View>
               </View>
             </View>
 
