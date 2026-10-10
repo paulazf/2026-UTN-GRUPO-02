@@ -21,12 +21,9 @@ class PetDiseaseViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"idPet": "El parámetro idPet debe ser un número entero válido."})
             queryset = queryset.filter(pet_id=id_pet)
 
-        # Filtro idOwner
-        id_owner = self.request.query_params.get('idOwner') or self.request.query_params.get('owner')
-        if id_owner is not None:
-            if not id_owner.isdigit():
-                raise ValidationError({"idOwner": "El parámetro idOwner debe ser un número entero válido."})
-            queryset = queryset.filter(pet__idOwner=id_owner)
+        # Filtrar automáticamente por el dueño autenticado (a través de la mascota)
+        if hasattr(self.request.user, 'owner_profile'):
+            queryset = queryset.filter(pet__idOwner=self.request.user.owner_profile.idOwner)
 
         # Filtro /?active=true
         active = self.request.query_params.get('active')

@@ -69,7 +69,7 @@ titulo: Baja Lógica de Enfermedad en Mascota
    - Al confirmar, el cliente ejecuta `DELETE /api/v1/pet-diseases/{id}/`.
 2. **Servidor (Django REST Framework)**:
    - `PetDiseaseViewSet.destroy()`:
-     - Busca el objeto validando que `pet__owner = request.user` e `isDeleted == False`.
+     - Obtiene el objeto dentro del queryset filtrado por el dueño autenticado (`pet__idOwner = request.user.owner_profile.idOwner`) e `isDeleted == False`.
      - Si no existe o ya está eliminado, retorna `404 Not Found`.
      - Ejecuta la baja lógica:
        ```python

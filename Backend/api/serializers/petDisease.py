@@ -22,7 +22,6 @@ class PetDiseaseSerializer(serializers.ModelSerializer):
             "incorrect_type": "Identificador de enfermedad inválido.",
         }
     )
-    idOwner = serializers.IntegerField(source='pet.idOwner', read_only=True)
     petName = serializers.CharField(source='pet.name', read_only=True)
     diseaseName = serializers.CharField(source='disease.name', read_only=True)
     status = serializers.SerializerMethodField()
@@ -33,7 +32,6 @@ class PetDiseaseSerializer(serializers.ModelSerializer):
             'id',
             'idPet',
             'petName',
-            'idOwner',
             'idDisease',
             'diseaseName',
             'startDate',
@@ -42,16 +40,22 @@ class PetDiseaseSerializer(serializers.ModelSerializer):
             'notes',
             'isDeleted',
         ]
-        read_only_fields = ['id', 'isDeleted', 'petName', 'diseaseName', 'idOwner', 'status']
+        read_only_fields = ['id', 'isDeleted', 'petName', 'diseaseName', 'status']
 
     def get_status(self, obj):
         return "En seguimiento" if obj.endDate is None else "Controlado"
 
     def validate(self, attrs):
+        request = self.context.get('request')
         start_date = attrs.get('startDate', getattr(self.instance, 'startDate', None))
         end_date = attrs.get('endDate', getattr(self.instance, 'endDate', None))
         pet = attrs.get('pet', getattr(self.instance, 'pet', None))
         disease = attrs.get('disease', getattr(self.instance, 'disease', None))
+
+        # 0. Validar que la mascota pertenezca al usuario autenticado (si tiene perfil de Owner)
+        if pet and request and hasattr(request.user, 'owner_profile'):
+            if pet.idOwner != request.user.owner_profile.idOwner:
+                raise serializers.ValidationError({"idPet": "La mascota especificada no existe o no pertenece al usuario autenticado."})
 
         # 1. Validar que startDate o endDate no sean futuras
         if start_date and start_date > date.today():
