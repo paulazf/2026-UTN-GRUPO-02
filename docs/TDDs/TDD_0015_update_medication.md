@@ -1,6 +1,6 @@
 ---
 id: 0015
-estado: Implementado
+estado: Por implementar
 autor: Matías Cortés
 fecha: 05-10-2026
 titulo: Actualización de Medicamento en Catálogo

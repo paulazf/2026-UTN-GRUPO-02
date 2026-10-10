@@ -1,6 +1,6 @@
 ---
 id: 0014
-estado: Implementado
+estado: Por implementar
 autor: Matías Cortés
 fecha: 05-10-2026
 titulo: Alta de Medicamento en Catálogo

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet, PetDisease, MedicationPet
+from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet, PetDisease
 
 
 @admin.register(Breed)
@@ -27,13 +27,6 @@ class MedicationAdmin(admin.ModelAdmin):
     list_display = ("idMedication", "name", "dose", "description", "isDeleted")
     list_filter = ("isDeleted",)
     search_fields = ("name",)
-
-
-@admin.register(MedicationPet)
-class MedicationPetAdmin(admin.ModelAdmin):
-    list_display = ("id", "pet", "medication", "frequencyHours", "quantityDose", "startDate", "isDeleted")
-    list_filter = ("isDeleted", "startDate")
-    search_fields = ("pet__name", "medication__name")
 
 
 class MedicalTestFileInline(admin.TabularInline):
