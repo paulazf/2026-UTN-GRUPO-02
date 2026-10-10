@@ -1,6 +1,6 @@
 ---
 id: 0016
-estado: Por implementar
+estado: Implementado
 autor: Matías Cortés
 fecha: 05-10-2026
 titulo: Baja Lógica de Medicamento en Catálogo
