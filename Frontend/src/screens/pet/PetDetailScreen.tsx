@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
 import { fetchPetById } from '../../services/petService';
 import MedicalTestList from '../../components/medicalTest/MedicalTestList';
+import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 
 // Pestañas de la historia clínica (cada entidad reemplaza su placeholder cuando tenga front)
 type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
@@ -163,6 +164,8 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
         <View className="px-5 pb-4 pt-1">
           {currentTab === 'ESTUDIOS' ? (
             <MedicalTestList petId={pet.id} />
+          ) : currentTab === 'ENFERMEDADES' ? (
+            <PetDiseaseList petId={pet.id} />
           ) : (
             <View className="items-center py-10">
               <Text className="text-sm text-[#8C7B77]">Próximamente disponible.</Text>
