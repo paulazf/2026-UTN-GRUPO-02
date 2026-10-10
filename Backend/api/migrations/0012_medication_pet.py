@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0010_owner'),
+        ('api', '0011_petdisease'),
     ]
 
     operations = [
