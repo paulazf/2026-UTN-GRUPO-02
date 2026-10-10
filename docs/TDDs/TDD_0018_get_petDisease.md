@@ -121,8 +121,8 @@ titulo: Consulta de Enfermedades de Mascota
      - **Observaciones:** Texto del campo `notes` (con opción de expandir/contraer si es extenso).
      - Si la lista está vacía, muestra un estado visual amigable (*empty state*): *"No hay enfermedades registradas para esta mascota"*, acompañado por el botón para agregar una.
 2. **Servidor (Django REST Framework)**:
-   - Filtra el queryset garantizando que `pet__owner = request.user` y `isDeleted = False`.
-   - Aplica los filtros de `idPet` y `active` si están presentes en los query parameters.
+   - Filtra automáticamente el queryset para que solo devuelva enfermedades de mascotas del usuario autenticado (`pet__idOwner = request.user.owner_profile.idOwner`), asegurando además `pet__isDeleted = False` e `isDeleted = False`.
+   - Aplica los filtros opcionales de `idPet` y `active` si están presentes en los query parameters.
    - Serializa con `select_related('pet', 'disease')` para optimizar consultas.
 3. **Respuesta**:
    - Devuelve `200 OK` con el listado JSON.

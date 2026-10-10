@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.views import BreedViewSet, DiseaseViewSet, PetViewSet, MedicationViewSet, MedicalTestViewSet, MedicationPetViewSet
+from api.views import BreedViewSet, DiseaseViewSet, PetViewSet, MedicationViewSet, PetDiseaseViewSet, MedicalTestViewSet, MedicationPetViewSet
 from api.views.owner import OwnerRegisterView, OwnerProfileView, OwnerPasswordView
 from api.views.auth import LoginView, LogoutView
 
@@ -11,7 +11,7 @@ router.register(r'diseases', DiseaseViewSet, basename='disease')
 router.register(r'pets', PetViewSet, basename='pet')
 router.register(r'medical-test', MedicalTestViewSet, basename='medical-test')
 router.register(r'medications', MedicationViewSet, basename='medication')
-router.register(r'medication-pets', MedicationPetViewSet, basename='medication-pet')
+router.register(r'pet-diseases', PetDiseaseViewSet, basename='pet-disease')
 
 urlpatterns = [
     path('owner/', OwnerRegisterView.as_view(), name='owner_register'),
