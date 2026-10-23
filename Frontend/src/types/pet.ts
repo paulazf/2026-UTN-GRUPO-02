@@ -39,3 +39,12 @@ export interface CreatePetPayload {
   photoFile?: PetPhotoFile | null;
 }
 
+export interface UpdatePetPayload {
+  name: string;
+  birthDate: string; // YYYY-MM-DD
+  neutered: boolean;
+  weight: number;
+  idBreed: number;
+  photo?: string | null;
+  photoFile?: PetPhotoFile | null;
+}
