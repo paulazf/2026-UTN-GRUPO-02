@@ -6,5 +6,6 @@ from .medication import Medication
 from .medication_pet import MedicationPet
 from .owner import Owner
 from .petDisease import PetDisease
+from .vaccine import Vaccine, VaccineType
 
-__all__ = ["Breed", "PetSpecies", "Disease", "Pet", "Medication", "PetDisease", "MedicalTest", "MedicalTestFile", "Owner", "MedicationPet"]
+__all__ = ["Breed", "PetSpecies", "Disease", "Pet", "Medication", "PetDisease", "MedicalTest", "MedicalTestFile", "Owner", "MedicationPet", "Vaccine", "VaccineType"]
