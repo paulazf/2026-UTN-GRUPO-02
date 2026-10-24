@@ -14,6 +14,7 @@ import { fetchPetById } from '../../services/petService';
 import MedicalTestList from '../../components/medicalTest/MedicalTestList';
 import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
+import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 
 // Pestañas de la historia clínica (cada entidad reemplaza su placeholder cuando tenga front)
 type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
@@ -163,7 +164,9 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
         </ScrollView>
 
         <View className="px-5 pb-4 pt-1">
-          {currentTab === 'ESTUDIOS' ? (
+          {currentTab === 'VACUNAS' ? (
+            <VaccinePetList petId={pet.id} species={pet.breed.species} />
+          ) : currentTab === 'ESTUDIOS' ? (
             <MedicalTestList petId={pet.id} />
           ) : currentTab === 'ENFERMEDADES' ? (
             <PetDiseaseList petId={pet.id} />
