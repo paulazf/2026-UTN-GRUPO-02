@@ -14,6 +14,7 @@ import { fetchPetById } from '../../services/petService';
 import MedicalTestList from '../../components/medicalTest/MedicalTestList';
 import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
+import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 
 // Pestañas de la historia clínica (cada entidad reemplaza su placeholder cuando tenga front)
 type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
@@ -74,7 +75,7 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
             onPress={onBack}
             className="mb-4 h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm active:opacity-70"
           >
-            <Text className="text-lg font-bold text-[#2B1D1D]">←</Text>
+            <Ionicons name="arrow-back" size={20} color="#2B1D1D" />
           </Pressable>
 
           <View className="flex-row items-center gap-4">
@@ -163,7 +164,9 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
         </ScrollView>
 
         <View className="px-5 pb-4 pt-1">
-          {currentTab === 'ESTUDIOS' ? (
+          {currentTab === 'VACUNAS' ? (
+            <VaccinePetList petId={pet.id} species={pet.breed.species} />
+          ) : currentTab === 'ESTUDIOS' ? (
             <MedicalTestList petId={pet.id} />
           ) : currentTab === 'ENFERMEDADES' ? (
             <PetDiseaseList petId={pet.id} />
