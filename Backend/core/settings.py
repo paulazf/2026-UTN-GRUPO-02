@@ -151,6 +151,9 @@ MEDICAL_TEST_MAX_SIZE = 10 * 1024 * 1024  # 10 MB por archivo
 MEDICAL_TEST_MAX_FILES = 10  # archivos por estudio
 MEDICAL_TEST_ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
 
+# Vacunas: días antes del vencimiento en que una aplicación pasa a "Por vencer" (TDD-0029)
+VACCINE_EXPIRING_DAYS = 30
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
