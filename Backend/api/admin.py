@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet, PetDisease, MedicationPet
+from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet, PetDisease, MedicationPet, Vaccine
 
 
 @admin.register(Breed)
@@ -59,3 +59,10 @@ class PetDiseaseAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description='Activa')
     def is_active(self, obj):
         return obj.endDate is None
+
+
+@admin.register(Vaccine)
+class VaccineAdmin(admin.ModelAdmin):
+    list_display = ("idVaccine", "name", "laboratory", "type", "species", "validityDays", "isDeleted")
+    list_filter = ("type", "species", "isDeleted")
+    search_fields = ("name", "laboratory")
