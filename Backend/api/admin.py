@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet, PetDisease, MedicationPet, Vaccine
+from .models import Breed, Disease, MedicalTest, MedicalTestFile, Medication, Pet, PetDisease, MedicationPet, Vaccine, VaccinePet
 
 
 @admin.register(Breed)
@@ -66,3 +66,11 @@ class VaccineAdmin(admin.ModelAdmin):
     list_display = ("idVaccine", "name", "laboratory", "type", "species", "validityDays", "isDeleted")
     list_filter = ("type", "species", "isDeleted")
     search_fields = ("name", "laboratory")
+
+
+@admin.register(VaccinePet)
+class VaccinePetAdmin(admin.ModelAdmin):
+    list_display = ("idVaccinePet", "pet", "vaccine", "doseNumber", "applicationDate", "expirationDate", "isDeleted")
+    list_filter = ("isDeleted", "vaccine__type", "applicationDate")
+    search_fields = ("pet__name", "vaccine__name")
+    raw_id_fields = ("pet", "vaccine")
