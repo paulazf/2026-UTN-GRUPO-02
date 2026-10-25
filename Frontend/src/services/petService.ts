@@ -1,8 +1,7 @@
 import axiosClient from '../api/axiosClient';
-import { apiUrl } from './api';
-import { Breed, CreatePetPayload, Pet, PetSpecies } from '../types/pet';
+import { Breed, CreatePetPayload, Pet, PetSpecies, UpdatePetPayload } from '../types/pet';
 
-const CURRENT_MOCK_OWNER_ID = 1; //Cambiar esto cuando exista owner
+const CURRENT_MOCK_OWNER_ID = 1; // Cambiar esto cuando exista owner
 
 export async function fetchPets(ownerId: number = CURRENT_MOCK_OWNER_ID): Promise<Pet[]> {
   const url = `/pets/?idOwner=${ownerId}`;
@@ -53,6 +52,60 @@ export async function createPet(payload: CreatePetPayload): Promise<Pet> {
       errorData?.photo?.[0] ||
       errorData?.non_field_errors?.[0] ||
       `Error al crear mascota (${error.response?.status})`;
+    throw new Error(message);
+  }
+}
+
+export async function updatePet(id: number, payload: UpdatePetPayload): Promise<Pet> {
+  const url = `/pets/${id}/`;
+
+  let photoData: string | null | undefined = undefined;
+  if (payload.photoFile?.base64) {
+    photoData = `data:${payload.photoFile.type || 'image/jpeg'};base64,${payload.photoFile.base64}`;
+  } else if (payload.photo !== undefined) {
+    photoData = payload.photo;
+  }
+
+  const bodyData: Record<string, any> = {
+    name: payload.name,
+    birthDate: payload.birthDate,
+    neutered: payload.neutered,
+    weight: payload.weight,
+    idBreed: payload.idBreed,
+  };
+
+  if (photoData !== undefined) {
+    bodyData.photo = photoData;
+  }
+
+  try {
+    const response = await axiosClient.put(url, bodyData);
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    const message =
+      errorData?.detail ||
+      errorData?.birthDate?.[0] ||
+      errorData?.name?.[0] ||
+      errorData?.weight?.[0] ||
+      errorData?.photo?.[0] ||
+      errorData?.non_field_errors?.[0] ||
+      `Error al actualizar mascota (${error.response?.status})`;
+    throw new Error(message);
+  }
+}
+
+export async function deletePet(id: number): Promise<{ message: string; id: number; isDeleted: boolean }> {
+  const url = `/pets/${id}/`;
+  try {
+    const response = await axiosClient.delete(url);
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    const message =
+      errorData?.detail ||
+      errorData?.non_field_errors?.[0] ||
+      `Error al dar de baja la mascota (${error.response?.status})`;
     throw new Error(message);
   }
 }

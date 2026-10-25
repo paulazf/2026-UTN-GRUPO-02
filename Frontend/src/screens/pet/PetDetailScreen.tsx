@@ -14,9 +14,9 @@ import { fetchPetById } from '../../services/petService';
 import MedicalTestList from '../../components/medicalTest/MedicalTestList';
 import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
+import EditPetModal from '../../components/pet/EditPetModal';
 import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 
-// Pestañas de la historia clínica (cada entidad reemplaza su placeholder cuando tenga front)
 type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
 
 const DETAIL_TABS: { key: PetDetailTab; label: string }[] = [
@@ -30,27 +30,39 @@ const DETAIL_TABS: { key: PetDetailTab; label: string }[] = [
 interface PetDetailScreenProps {
   petId: number;
   onBack: () => void;
+  onPetUpdated?: (pet: Pet) => void;
 }
 
-export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps) {
+export default function PetDetailScreen({
+  petId,
+  onBack,
+  onPetUpdated,
+}: PetDetailScreenProps) {
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState<PetDetailTab>('ESTUDIOS');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const loadDetail = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchPetById(petId);
+      setPet(data);
+    } catch (err) {
+      console.warn('Error loading pet details:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadDetail() {
-      try {
-        setLoading(true);
-        const data = await fetchPetById(petId);
-        setPet(data);
-      } catch (err) {
-        console.warn('Error loading pet details:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadDetail();
   }, [petId]);
+
+  const handlePetUpdated = (updated: Pet) => {
+    setPet(updated);
+    if (onPetUpdated) onPetUpdated(updated);
+  };
 
   if (loading || !pet) {
     return (
@@ -71,12 +83,22 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
     <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-16">
         <View className="rounded-b-[40px] bg-[#FCECEF] px-5 pt-12 pb-6 shadow-sm">
-          <Pressable
-            onPress={onBack}
-            className="mb-4 h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm active:opacity-70"
-          >
-            <Ionicons name="arrow-back" size={20} color="#2B1D1D" />
-          </Pressable>
+          <View className="mb-4 flex-row items-center justify-between">
+            <Pressable
+              onPress={onBack}
+              className="h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm active:opacity-70"
+            >
+              <Ionicons name="arrow-back" size={20} color="#2B1D1D" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => setIsEditModalOpen(true)}
+              className="flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2 shadow-xs active:opacity-80"
+            >
+              <Ionicons name="create-outline" size={16} color="#DE6B80" />
+              <Text className="text-xs font-bold text-[#DE6B80]">Modificar</Text>
+            </Pressable>
+          </View>
 
           <View className="flex-row items-center gap-4">
             {pet.photo ? (
@@ -179,6 +201,13 @@ export default function PetDetailScreen({ petId, onBack }: PetDetailScreenProps)
           )}
         </View>
       </ScrollView>
+
+      <EditPetModal
+        visible={isEditModalOpen}
+        pet={pet}
+        onClose={() => setIsEditModalOpen(false)}
+        onPetUpdated={handlePetUpdated}
+      />
     </SafeAreaView>
   );
 }

@@ -38,6 +38,7 @@ function MainTabs() {
   const handleSelectPet = (petId: number) => setSelectedPetId(petId);
   const handleBack = () => setSelectedPetId(null);
   const handlePetCreated = () => setRefreshTrigger((prev) => prev + 1);
+  const handlePetUpdated = () => setRefreshTrigger((prev) => prev + 1);
 
   const handleSelectTab = (tab: NavTab) => {
     setSelectedPetId(null);
@@ -53,7 +54,11 @@ function MainTabs() {
     <View className="flex-1 bg-[#FAF6F3]">
       <View className="flex-1">
         {selectedPetId ? (
-          <PetDetailScreen petId={selectedPetId} onBack={handleBack} />
+          <PetDetailScreen
+            petId={selectedPetId}
+            onBack={handleBack}
+            onPetUpdated={handlePetUpdated}
+          />
         ) : currentTab === 'INICIO' ? (
           <DashboardScreen
             onSelectPet={handleSelectPet}

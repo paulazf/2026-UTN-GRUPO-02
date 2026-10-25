@@ -116,7 +116,6 @@ export default function CreatePetModal({
         neutered,
         weight,
         idBreed: selectedBreedId,
-        idOwner: 1,
         photo: null,
         photoFile,
       };
