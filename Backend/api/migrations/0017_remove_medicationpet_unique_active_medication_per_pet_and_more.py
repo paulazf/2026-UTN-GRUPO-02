@@ -10,8 +10,7 @@ def populate_end_date(apps, schema_editor):
     for item in MedicationPet.objects.filter(endDate__isnull=True):
         if item.startDate and item.frequencyHours and item.quantityDose:
             total_hours = item.frequencyHours * item.quantityDose
-            calendar_days = math.ceil(total_hours / 24)
-            days_to_add = max(0, calendar_days - 1)
+            days_to_add = math.ceil(total_hours / 24) if total_hours >= 24 else 0
             item.endDate = item.startDate + timedelta(days=days_to_add)
             item.save(update_fields=['endDate'])
 
