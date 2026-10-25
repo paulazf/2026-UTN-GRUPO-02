@@ -1,4 +1,5 @@
 from datetime import date
+from django.db import models
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException, NotFound
 
@@ -39,6 +40,13 @@ class MedicationPetSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "petName", "medicationName", "endDate", "status", "isDeleted"]
 
     def get_status(self, obj):
+        # Si endDate es None (registro preexistente en BD antes de correr migrate)
+        if not obj.endDate:
+            if obj.startDate and obj.frequencyHours and obj.quantityDose:
+                computed = calculate_medication_end_date(obj.startDate, obj.frequencyHours, obj.quantityDose)
+                if computed:
+                    return "En tratamiento" if computed >= date.today() else "Finalizado"
+            return "En tratamiento"
         return "En tratamiento" if obj.endDate >= date.today() else "Finalizado"
 
     def __init__(self, *args, **kwargs):
@@ -107,12 +115,13 @@ class MedicationPetSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"endDate": "La fecha de fin no puede ser anterior a la fecha de inicio."})
 
         if target_pet and target_medication:
-            # Un tratamiento se considera activo si su fecha de fin es igual o posterior a la fecha actual (hoy)
             active_dup = MedicationPet.objects.filter(
                 pet_id=target_pet,
                 medication_id=target_medication,
-                endDate__gte=date.today(),
                 isDeleted=False,
+            )
+            active_dup = active_dup.filter(
+                models.Q(endDate__gte=date.today()) | models.Q(endDate__isnull=True)
             )
             if self.instance:
                 active_dup = active_dup.exclude(pk=self.instance.pk)
