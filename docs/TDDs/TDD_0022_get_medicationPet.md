@@ -11,36 +11,39 @@ titulo: Consulta de Medicamentos de Mascota
 ## Contexto de Negocio (PRD)
 
 ### Objetivo
-- **Problema que resuelve:** El tutor necesita visualizar el listado de tratamientos farmacológicos vigentes de la mascota para cumplir correctamente con las pautas horarias de administración, verificar dosis y revisar observaciones clínicas previas.
-- **Resultado esperado:** Proveer endpoints para consultar los medicamentos asociados a una mascota (`MedicationPet`) con sus respectivas frecuencias, dosis, fecha de inicio y notas, permitiendo poblar el listado en la pestaña correspondiente del perfil de la mascota.
+- **Problema que resuelve:** El tutor necesita visualizar el listado de tratamientos farmacológicos de la mascota para cumplir con las pautas horarias de administración, conocer cuándo finaliza cada medicación (`endDate`), verificar dosis y revisar observaciones clínicas previas.
+- **Resultado esperado:** Proveer endpoints para consultar los medicamentos asociados a una mascota (`MedicationPet`) con sus respectivas frecuencias, dosis, fecha de inicio, fecha de fin calculada y estado clínico (`En tratamiento` o `Finalizado`), permitiendo poblar el listado en la pestaña correspondiente del perfil de la mascota y futuros componentes de calendario.
 
 ### User Persona
-- **Dueño de mascota (Owner):** Usuario que consulta los medicamentos activos de su mascota para recordar pautas de administración o preparar una visita veterinaria.
+- **Dueño de mascota (Owner):** Usuario que consulta los medicamentos de su mascota para recordar pautas de administración o controlar la duración de los tratamientos.
 
 ### User Story
-**Como** dueño de una mascota, **quiero** consultar la lista de medicamentos recetados a mi mascota con sus frecuencias, dosis y notas, **para que** pueda hacer un seguimiento preciso de las tomas diarias y tratamientos en curso.
+**Como** dueño de una mascota, **quiero** consultar la lista de medicamentos recetados a mi mascota con sus frecuencias, dosis, fecha de inicio, fecha de finalización calculada y estado, **para que** pueda hacer un seguimiento preciso de las tomas y de los tratamientos vigentes o concluidos.
 
 ### Criterios de Aceptación
 - **Escenario de éxito (Listado por mascota):**
-  - Al consultar `GET /api/v1/medication-pets/?idPet={id}` con el ID de una mascota activa del usuario, el sistema devuelve la lista de tratamientos activos (`isDeleted = false`), ordenados por `startDate` descendente, con código `200 OK`. Cada elemento incluye la frecuencia, dosis, fecha de inicio y notas. Si no posee tratamientos, devuelve `[]`.
+  - Al consultar `GET /api/v1/medication-pets/?idPet={id}` con el ID de una mascota activa del usuario, el sistema devuelve la lista de tratamientos (`isDeleted = false`), ordenados por `startDate` descendente, con código `200 OK`. Cada elemento incluye la frecuencia, dosis, fecha de inicio, `endDate` calculada, notas y `status`. Si no posee tratamientos, devuelve `[]`.
 - **Escenario de éxito (Detalle de tratamiento):**
   - Al consultar `GET /api/v1/medication-pets/{id}/`, devuelve la información completa del registro clínico.
 - **Escenario de fallo (Mascota inexistente o ajena):**
   - Si el `idPet` del filtro no existe, está eliminado o pertenece a otro usuario, el sistema devuelve `404 Not Found`.
 - **Escenario de fallo (Parámetros inválidos):**
-  - Si `idPet` no es un número entero válido, devuelve `400 Bad Request`.
+  - Si `idPet` no es un número entero válido o falta en la query string de listado, devuelve `400 Bad Request`.
 
 ### Reglas de Negocio
 - Nunca se retornan registros marcados como eliminados (`isDeleted = true`).
 - Un usuario solo tiene acceso a los tratamientos de sus propias mascotas activas.
 - El orden por defecto es cronológico inverso (`startDate` más reciente primero).
+- El campo `status` se calcula dinámicamente:
+  - `"En tratamiento"` si `endDate >= today`.
+  - `"Finalizado"` si `endDate < today`.
 
 ---
 
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **Entidad `MedicationPet` (TDD-0021):** Modelo y relaciones base en la base de datos.
+1. **Entidad `MedicationPet` (TDD-0021):** Modelo y cálculo automático de `endDate`.
 2. **Autenticación (TDD-0001):** Para filtrar los registros por el dueño autenticado.
 
 ### Estimación
@@ -74,9 +77,11 @@ titulo: Consulta de Medicamentos de Mascota
     "petName": "Milo",
     "idMedication": 4,
     "medicationName": "Cefalexina",
-    "frequencyHours": 12,
-    "quantityDose": 1,
-    "startDate": "2026-10-05",
+    "frequencyHours": 8,
+    "quantityDose": 8,
+    "startDate": "2026-10-25",
+    "endDate": "2026-10-27",
+    "status": "En tratamiento",
     "notes": "Administrar con alimento para evitar molestias gástricas.",
     "isDeleted": false
   }
@@ -97,6 +102,7 @@ titulo: Consulta de Medicamentos de Mascota
    - La pantalla ejecuta `GET /api/v1/medication-pets/?idPet={id}` para poblar el listado.
 2. **Servidor (Django REST Framework):**
    - Filtra el queryset garantizando que `pet__owner = request.user` y `isDeleted = False`.
+   - Serializa cada registro computando `status` según la fecha actual.
 3. **Respuesta:**
    - Devuelve `200 OK` con el listado JSON.
 
@@ -106,16 +112,15 @@ titulo: Consulta de Medicamentos de Mascota
 
 | Escenario de Prueba | Validación / Regla de Negocio | Código HTTP |
 | --- | --- | --- |
-| **Listado con registros** | `idPet` válido con tratamientos activos. | `200 OK` |
-| **Listado sin registros** | Mascota sin medicamentos activos. Devuelve `[]`. | `200 OK` |
+| **Listado con registros** | `idPet` válido con tratamientos. Retorna `endDate` y `status`. | `200 OK` |
+| **Listado sin registros** | Mascota sin medicamentos. Devuelve `[]`. | `200 OK` |
 | **Mascota de otro dueño** | `idPet` ajeno al usuario autenticado. | `404 Not Found` |
-| **Parámetro idPet inválido** | `idPet` con formato no numérico. | `400 Bad Request` |
+| **Parámetro idPet inválido o faltante** | `idPet` ausente o no numérico. | `400 Bad Request` |
 | **Detalle inexistente / eliminado** | ID que no existe o con `isDeleted = true`. | `404 Not Found` |
-| **Falla de Persistencia** | Error interno de conexión con la base de datos PostgreSQL. | `500 Internal Server Error` |
 
 ---
 
 ## Plan de Implementación
 
-1. **Etapa 1 - Lógica en ViewSet (Backend):** Implementar acciones `list` y `retrieve` con filtros por mascota.
-2. **Etapa 2 - Integración en Frontend Móvil:** Crear servicio `getMedicationPets` y renderizar tarjetas en la app.
+1. **Etapa 1 - Lógica en ViewSet (Backend):** Implementar acciones `list` y `retrieve` con filtros por mascota y serializador con `status`.
+2. **Etapa 2 - Integración en Frontend Móvil:** Crear servicio `getMedicationPets` y renderizar tarjetas en la app mostrando fecha de inicio, fin y estado.

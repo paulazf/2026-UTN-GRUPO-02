@@ -12,17 +12,17 @@ titulo: Alta de Medicamento en Mascota
 
 ### Objetivo
 - **Problema que resuelve:** Los tutores necesitan registrar qué medicamentos se le están administrando a una mascota, especificando la pauta de tratamiento (frecuencia en horas y cantidad de tomas), la fecha de inicio y notas u observaciones clínicas relevantes para un seguimiento seguro.
-- **Resultado esperado:** Permitir al usuario registrar la asociación de un medicamento (`Medication`) a una de sus mascotas (`Pet`), definiendo la frecuencia de administración, la cantidad de ingestas, la fecha de inicio y notas opcionales.
+- **Resultado esperado:** Permitir al usuario registrar la asociación de un medicamento (`Medication`) a una de sus mascotas (`Pet`), definiendo la frecuencia de administración, la cantidad de ingestas, la fecha de inicio y notas opcionales. El sistema calcula de forma automática la fecha de finalización (`endDate`) y el estado del tratamiento en base a la pauta de dosis y frecuencia horaria.
 
 ### User Persona
-- **Dueño de mascota (Owner):** Usuario registrado que desea asentar un tratamiento farmacológico activo en el perfil de su mascota.
+- **Dueño de mascota (Owner):** Usuario registrado que desea asentar un tratamiento farmacológico en el perfil de su mascota.
 
 ### User Story
-**Como** dueño de una mascota, **quiero** registrar un medicamento prescripto a mi mascota indicando su frecuencia, cantidad de dosis, fecha de inicio y observaciones, **para que** quede asentado su plan de medicación y pueda consultarlo o controlarlo fácilmente.
+**Como** dueño de una mascota, **quiero** registrar un medicamento prescripto a mi mascota indicando su frecuencia, cantidad de dosis, fecha de inicio y observaciones, **para que** quede asentado su plan de medicación, calculando de manera automática la fecha de finalización del evento para control clínico y visualización en calendario.
 
 ### Criterios de Aceptación
 - **Escenario de éxito (Asignación con éxito):**
-  - Si se proporciona un `idPet` perteneciente a una mascota activa del usuario, un `idMedication` válido del catálogo (`isDeleted = false`), una `startDate` válida (no futura), un `frequencyHours` > 0, un `quantityDose` > 0, y opcionalmente notas, el sistema crea el registro con `isDeleted = false` y devuelve `201 Created`.
+  - Si se proporciona un `idPet` perteneciente a una mascota activa del usuario, un `idMedication` válido del catálogo (`isDeleted = false`), una `startDate` válida (no futura), un `frequencyHours` > 0, un `quantityDose` > 0, y opcionalmente notas, el sistema calcula automáticamente `endDate = startDate + max(0, ceil((frequencyHours * quantityDose) / 24) - 1)` (no nulleable), persiste el registro con `isDeleted = false` y devuelve `201 Created` con `status` ("En tratamiento" si `endDate >= today`, caso contrario "Finalizado").
 - **Escenario de fallo (Datos obligatorios faltantes o inválidos):**
   - Si se omiten campos obligatorios o se envían valores menores o iguales a cero en frecuencia o dosis, el sistema devuelve `400 Bad Request`.
 - **Escenario de fallo (Fecha futura):**
@@ -30,7 +30,7 @@ titulo: Alta de Medicamento en Mascota
 - **Escenario de fallo (Mascota o medicamento inexistente o ajeno):**
   - Si el `idPet` o `idMedication` no existen, están dados de baja o la mascota pertenece a otro usuario, devuelve `404 Not Found`.
 - **Escenario de fallo (Tratamiento activo duplicado):**
-  - Si la mascota ya tiene un registro activo (`isDeleted = false`) del mismo medicamento, el sistema impide la duplicación y devuelve `409 Conflict`.
+  - Si la mascota ya posee un tratamiento activo (`endDate >= today` e `isDeleted = false`) para el mismo medicamento, el sistema impide la duplicación y devuelve `409 Conflict`.
 
 ---
 
@@ -44,8 +44,8 @@ titulo: Alta de Medicamento en Mascota
 ### Estimación
 - **Estimación total:** **3 Story Points** (Escala Fibonacci).
 - **Desglose:**
-  - Modelo `MedicationPet` y migración de base de datos: *1 SP*
-  - Serializer, validaciones de duplicados activos y endpoint `POST /api/v1/medication-pets/`: *1 SP*
+  - Modelo `MedicationPet` y migración de base de datos con cálculo de `endDate`: *1 SP*
+  - Serializer, validaciones de tratamientos activos concurrentes y endpoint `POST /api/v1/medication-pets/`: *1 SP*
   - Integración en frontend móvil (Pestaña "Tratamientos / Medicamentos" con modal de alta): *1 SP*
 
 ---
@@ -55,11 +55,22 @@ titulo: Alta de Medicamento en Mascota
 ### Modelo de Datos (Django ORM - PostgreSQL)
 
 ```python
-from django.db import models
+import math
+from datetime import date, timedelta
 from django.core.exceptions import ValidationError
-from datetime import date
-from .pet import Pet
+from django.db import models
 from .medication import Medication
+from .pet import Pet
+
+
+def calculate_medication_end_date(start_date: date, frequency_hours: int, quantity_dose: int) -> date:
+    if not (start_date and frequency_hours and quantity_dose):
+        return None
+    total_hours = frequency_hours * quantity_dose
+    calendar_days = math.ceil(total_hours / 24)
+    days_to_add = max(0, calendar_days - 1)
+    return start_date + timedelta(days=days_to_add)
+
 
 class MedicationPet(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.PROTECT, related_name="medications", db_column="idPet")
@@ -67,30 +78,38 @@ class MedicationPet(models.Model):
     frequencyHours = models.IntegerField(db_column="frequencyHours")
     quantityDose = models.IntegerField(db_column="quantityDose")
     startDate = models.DateField(db_column="startDate")
+    endDate = models.DateField(db_column="endDate")
     notes = models.TextField(null=True, blank=True)
     isDeleted = models.BooleanField(default=False, db_column="isDeleted")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "medication_pet"
         ordering = ["-startDate", "-id"]
         constraints = [
             models.UniqueConstraint(
-                fields=["pet", "medication"],
+                fields=["pet", "medication", "startDate"],
                 condition=models.Q(isDeleted=False),
-                name="unique_active_medication_per_pet",
-            )
+                name="unique_pet_medication_start_date",
+            ),
         ]
 
     def clean(self):
         if self.startDate and self.startDate > date.today():
             raise ValidationError({"startDate": "La fecha de inicio no puede ser futura."})
-        if self.frequencyHours and self.frequencyHours <= 0:
+        if self.frequencyHours is not None and self.frequencyHours <= 0:
             raise ValidationError({"frequencyHours": "La frecuencia en horas debe ser mayor a cero."})
-        if self.quantityDose and self.quantityDose <= 0:
+        if self.quantityDose is not None and self.quantityDose <= 0:
             raise ValidationError({"quantityDose": "La cantidad por dosis debe ser mayor a cero."})
 
-    def __str__(self):
-        return f"{self.pet.name} - {self.medication.name} (Cada {self.frequencyHours}hs)"
+        if self.startDate and self.frequencyHours and self.quantityDose:
+            self.endDate = calculate_medication_end_date(self.startDate, self.frequencyHours, self.quantityDose)
+
+    def save(self, *args, **kwargs):
+        if self.startDate and self.frequencyHours and self.quantityDose:
+            self.endDate = calculate_medication_end_date(self.startDate, self.frequencyHours, self.quantityDose)
+        super().save(*args, **kwargs)
 ```
 
 ### Contrato de API (Django REST Framework)
@@ -100,13 +119,16 @@ class MedicationPet(models.Model):
 
 #### Request Body (JSON)
 
+> [!NOTE]
+> El campo `endDate` es calculado en el backend a partir de `startDate`, `frequencyHours` y `quantityDose`, por lo que es de solo lectura y no se envía en el cuerpo de la solicitud.
+
 ```json
 {
   "idPet": 1,
   "idMedication": 4,
-  "frequencyHours": 12,
-  "quantityDose": 1,
-  "startDate": "2026-10-05",
+  "frequencyHours": 8,
+  "quantityDose": 8,
+  "startDate": "2026-10-25",
   "notes": "Administrar con alimento para evitar molestias gástricas."
 }
 ```
@@ -120,9 +142,11 @@ class MedicationPet(models.Model):
   "petName": "Milo",
   "idMedication": 4,
   "medicationName": "Cefalexina",
-  "frequencyHours": 12,
-  "quantityDose": 1,
-  "startDate": "2026-10-05",
+  "frequencyHours": 8,
+  "quantityDose": 8,
+  "startDate": "2026-10-25",
+  "endDate": "2026-10-27",
+  "status": "En tratamiento",
   "notes": "Administrar con alimento para evitar molestias gástricas.",
   "isDeleted": false
 }
@@ -132,25 +156,25 @@ class MedicationPet(models.Model):
 
 1. **Cliente (React Native + Expo Go + NativeWind)**:
    - Al entrar al **perfil de la mascota**, el usuario navega a la pestaña **"Medicación"**.
-   - En esta pestaña se visualiza el **listado de tratamientos farmacológicos activos** asociados al animal.
-   - La interfaz incluye un botón destacado **"+ Agregar Medicación"** (o botón flotante de acción).
-   - Al tocar el botón, se despliega un **modal / bottom sheet** de alta que contiene:
-     - **Selector de medicamento:** un dropdown o componente de búsqueda alimentado por el catálogo global (`GET /api/v1/medicaments/`).
+   - En esta pestaña se visualiza el **listado de tratamientos farmacológicos** asociados al animal.
+   - La interfaz incluye un botón destacado **"+ Agregar Medicación"**.
+   - Al tocar el botón, se despliega un **modal** de alta que contiene:
+     - **Selector de medicamento:** desplegable o buscador alimentado por el catálogo global.
      - **Frecuencia en horas (`frequencyHours`):** campo numérico entero para indicar cada cuántas horas se administra.
-     - **Cantidad por dosis (`quantityDose`):** campo numérico entero para definir las unidades/pastillas por toma.
-     - **Fecha de inicio (`startDate`):** selector de fecha nativo (validado para no permitir fechas futuras).
-     - **Notas u observaciones (`notes`):** campo de texto multilínea opcional para aclaraciones clínicas (ej. "con alimento").
-   - Al pulsar "Guardar", la aplicación valida localmente los campos obligatorios y la consistencia de los números enteros positivos, y despacha la petición `POST /api/v1/medication-pets/`.
+     - **Cantidad de dosis (`quantityDose`):** campo numérico entero con el total de tomas del tratamiento.
+     - **Fecha de inicio (`startDate`):** selector de fecha (no futura).
+     - **Notas u observaciones (`notes`):** campo de texto multilínea opcional.
+   - Al pulsar "Guardar", se despacha la petición `POST /api/v1/medication-pets/`.
 2. **Servidor (Django REST Framework)**:
    - `MedicationPetSerializer`:
-     - Valida la existencia de `idPet` y comprueba rigurosamente que la mascota pertenezca al usuario autenticado (`pet__owner = request.user`).
+     - Valida la existencia y pertenencia de `idPet` al usuario autenticado.
      - Valida la existencia de `idMedication` en el catálogo activo (`isDeleted = False`).
-     - Valida las restricciones lógicas y de rango (`startDate <= today`, `frequencyHours > 0` y `quantityDose > 0`).
-     - Verifica mediante restricciones a nivel de base de datos que no exista un tratamiento activo duplicado (`isDeleted = False`) para esa misma mascota y medicamento, arrojando un `409 Conflict` en caso de colisión.
-   - Persiste el registro en la tabla relacional `medication_pet`.
+     - Valida las restricciones de rango (`startDate <= today`, `frequencyHours > 0` y `quantityDose > 0`).
+     - Calcula `endDate = startDate + max(0, ceil((frequencyHours * quantityDose) / 24) - 1)`.
+     - Verifica que no exista un tratamiento activo concurrente (`endDate >= today` e `isDeleted = False`) para la misma mascota y medicamento (`409 Conflict`).
+   - Persiste el registro en la tabla `medication_pet`.
 3. **Respuesta**:
-   - Devuelve `201 Created` con el objeto JSON serializado. 
-   - La aplicación móvil cierra el modal, muestra un mensaje de éxito e inserta de forma dinámica el nuevo tratamiento en el listado de la pestaña correspondiente.
+   - Devuelve `201 Created` con el objeto serializado (incluyendo `endDate` calculado y `status`). 
 
 ---
 
@@ -158,16 +182,17 @@ class MedicationPet(models.Model):
 
 | Escenario de Prueba | Validación / Regla de Negocio | Código HTTP |
 | --- | --- | --- |
-| **Alta exitosa con notas** | Datos válidos, frecuencia y dosis > 0, sin duplicado activo. | `201 Created` |
+| **Alta exitosa con cálculo de endDate** | Datos válidos, `frequencyHours = 8`, `quantityDose = 8` calcula `endDate = startDate + 2 días`. | `201 Created` |
 | **Frecuencia o dosis <= 0** | Valores inválidos en pauta de administración. | `400 Bad Request` |
 | **Fecha de inicio futura** | `startDate` posterior a la fecha actual (`today`). | `400 Bad Request` |
 | **Mascota ajena/inexistente** | `idPet` no existe o no pertenece al usuario. | `404 Not Found` |
-| **Duplicado activo** | La mascota ya tiene un registro activo del mismo medicamento. | `409 Conflict` |
+| **Medicamento inexistente/eliminado** | `idMedication` no existe o tiene `isDeleted = true`. | `404 Not Found` |
+| **Tratamiento activo duplicado** | La mascota ya tiene un registro activo (`endDate >= today`) del mismo medicamento. | `409 Conflict` |
 
 ---
 
 ## Plan de Implementación
 
-1. **Etapa 1 - Modelo y Migraciones (Backend):** Crear modelo y migraciones en la base de datos.
-2. **Etapa 2 - Serializador y ViewSet (Backend):** Implementar validaciones y el endpoint de alta.
-3. **Etapa 3 - UI Móvil (Frontend Expo):** Integrar servicio y componentes visuales en la app.
+1. **Etapa 1 - Modelo y Migraciones (Backend):** Modelo con `endDate` no nullable y cálculo automático en `save()` y migración de datos.
+2. **Etapa 2 - Serializador y ViewSet (Backend):** Validación de activos (`endDate >= today`) y cálculo de `endDate`.
+3. **Etapa 3 - UI Móvil (Frontend Expo):** Integrar servicio y visualización del rango calculado y estado del tratamiento.
