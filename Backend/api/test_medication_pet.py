@@ -78,15 +78,24 @@ class MedicationPetBase(APITestCase):
 # ---------------------------------------------------------------- TDD-0021 Alta
 class CreateMedicationPetTests(MedicationPetBase):
     def test_alta_exitosa_calcula_end_date(self):
-        # 8 horas cada toma x 8 tomas = 64 hs -> ceil(64/24) = 3 días -> TODAY + 2 días
         r = self.post()
         self.assertEqual(r.status_code, 201, r.data)
         self.assertEqual(r.data["petName"], "Luna")
         self.assertEqual(r.data["medicationName"], "Amoxicilina 500mg")
-        expected_end = days(2).isoformat()
+        expected_end = days(3).isoformat()
         self.assertEqual(r.data["endDate"], expected_end)
         self.assertEqual(r.data["status"], "En tratamiento")
         self.assertFalse(r.data["isDeleted"])
+
+    def test_alta_exacta_24hs_toma_dos_fechas(self):
+        r = self.post(frequencyHours=8, quantityDose=3)
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data["endDate"], days(1).isoformat())
+
+    def test_alta_menos_de_24hs_mismo_dia(self):
+        r = self.post(frequencyHours=8, quantityDose=1)
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data["endDate"], TODAY.isoformat())
 
     def test_alta_fecha_futura_error(self):
         r = self.post(startDate=days(1).isoformat())
@@ -144,10 +153,10 @@ class UpdateMedicationPetTests(MedicationPetBase):
         res = self.post()
         mp_id = res.data["id"]
 
-        # Cambiamos quantityDose a 4 -> 8x4 = 32 hs -> ceil(32/24) = 2 días -> TODAY + 1 día
+        # Cambiamos quantityDose a 4 -> 8x4 = 32 hs -> ceil(32/24) = 2 días -> TODAY + 2 días
         patch_res = self.client.patch(detail(mp_id), {"quantityDose": 4}, format="json")
         self.assertEqual(patch_res.status_code, 200)
-        self.assertEqual(patch_res.data["endDate"], days(1).isoformat())
+        self.assertEqual(patch_res.data["endDate"], days(2).isoformat())
 
     def test_no_permitir_cambiar_mascota(self):
         res = self.post()
@@ -167,4 +176,3 @@ class DeleteMedicationPetTests(MedicationPetBase):
 
         mp = MedicationPet.objects.get(pk=mp_id)
         self.assertTrue(mp.isDeleted)
-
