@@ -9,12 +9,27 @@ from .auth import LoginView, LogoutView
 from .petDisease import PetDiseaseViewSet
 from .vaccine import VaccineViewSet
 from .vaccine_pet import VaccinePetViewSet
+from .geo import ProvinceViewSet, CityViewSet
+from .address import AddressViewSet
+from .appointment import AppointmentViewSet
 
 __all__ = [
-    "BreedViewSet", "DiseaseViewSet", "PetViewSet", "MedicationViewSet", "PetDiseaseViewSet", "MedicalTestViewSet",
+    "BreedViewSet",
+    "DiseaseViewSet",
+    "PetViewSet",
+    "MedicationViewSet",
+    "PetDiseaseViewSet",
+    "MedicalTestViewSet",
     "MedicationPetViewSet",
-    "OwnerRegisterView", "OwnerProfileView", "OwnerPasswordView", 
-    "LoginView", "LogoutView",
+    "OwnerRegisterView",
+    "OwnerProfileView",
+    "OwnerPasswordView",
+    "LoginView",
+    "LogoutView",
     "VaccineViewSet",
     "VaccinePetViewSet",
+    "ProvinceViewSet",
+    "CityViewSet",
+    "AddressViewSet",
+    "AppointmentViewSet",
 ]
