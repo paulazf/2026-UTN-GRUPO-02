@@ -8,6 +8,7 @@ from .owner import OwnerSerializer, OwnerUpdateSerializer, ChangePasswordSeriali
 from .petDisease import PetDiseaseSerializer
 from .vaccine import DuplicateVaccineException, VaccineSerializer
 from .vaccine_pet import DuplicateVaccinePetException, VaccinePetSerializer
+from .feeding import DuplicateFeedingException, FeedingSerializer
 
 
 __all__ = [
@@ -29,4 +30,6 @@ __all__ = [
     "VaccineSerializer",
     "DuplicateVaccinePetException",
     "VaccinePetSerializer",
+    "DuplicateFeedingException",
+    "FeedingSerializer",
 ]
