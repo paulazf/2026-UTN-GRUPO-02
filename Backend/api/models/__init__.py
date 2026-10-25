@@ -8,5 +8,27 @@ from .owner import Owner
 from .petDisease import PetDisease
 from .vaccine import Vaccine, VaccineType
 from .vaccine_pet import VaccinePet
+from .province import Province
+from .city import City
+from .address import Address
+from .appointment import Appointment
 
-__all__ = ["Breed", "PetSpecies", "Disease", "Pet", "Medication", "PetDisease", "MedicalTest", "MedicalTestFile", "Owner", "MedicationPet", "Vaccine", "VaccineType", "VaccinePet"]
+__all__ = [
+    "Breed",
+    "PetSpecies",
+    "Disease",
+    "Pet",
+    "Medication",
+    "PetDisease",
+    "MedicalTest",
+    "MedicalTestFile",
+    "Owner",
+    "MedicationPet",
+    "Vaccine",
+    "VaccineType",
+    "VaccinePet",
+    "Province",
+    "City",
+    "Address",
+    "Appointment",
+]
