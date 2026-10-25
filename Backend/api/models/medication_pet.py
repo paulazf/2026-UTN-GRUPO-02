@@ -8,11 +8,16 @@ from .pet import Pet
 
 
 def calculate_medication_end_date(start_date: date, frequency_hours: int, quantity_dose: int) -> date:
+    """Calcula la fecha de fin a partir de la fecha de inicio, la frecuencia horaria y la cantidad de dosis.
+
+    Total de horas de tratamiento = frequency_hours * quantity_dose.
+    - Si el total es menor a 24 horas, finaliza el mismo día (startDate).
+    - Si es de 24 horas o más, abarca al menos 2 fechas calendario (suma ceil(total_horas / 24) días).
+    """
     if not (start_date and frequency_hours and quantity_dose):
         return None
     total_hours = frequency_hours * quantity_dose
-    calendar_days = math.ceil(total_hours / 24)
-    days_to_add = max(0, calendar_days - 1)
+    days_to_add = math.ceil(total_hours / 24) if total_hours >= 24 else 0
     return start_date + timedelta(days=days_to_add)
 
 
