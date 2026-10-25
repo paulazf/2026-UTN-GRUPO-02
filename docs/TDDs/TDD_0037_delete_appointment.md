@@ -1,12 +1,12 @@
 ---
-id: 0030
+id: 0037
 estado: Por implementar
 autor: Matias Yael Cortes
 fecha: 24-10-2026
 titulo: Baja Lógica de Turno Veterinario
 ---
 
-# TDD-0030: Baja Lógica de Turno Veterinario
+# TDD-0037: Baja Lógica de Turno Veterinario
 
 ## Contexto de Negocio (PRD)
 
@@ -37,7 +37,7 @@ titulo: Baja Lógica de Turno Veterinario
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **Entidad `Appointment` (TDD-0027):** Existencia del registro y del campo `isDeleted`.
+1. **Entidad `Appointment` (TDD-0034):** Existencia del registro y del campo `isDeleted`.
 2. **Autenticación (TDD-0001):** Validación de permisos de propiedad.
 
 ### Estimación

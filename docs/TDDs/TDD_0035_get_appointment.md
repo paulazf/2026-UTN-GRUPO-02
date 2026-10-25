@@ -1,12 +1,12 @@
 ---
-id: 0028
+id: 0035
 estado: Por implementar
 autor: Matias Yael Cortes
 fecha: 24-10-2026
 titulo: Consulta de Turnos de Mascota
 ---
 
-# TDD-0028: Consulta de Turnos de Mascota
+# TDD-0035: Consulta de Turnos de Mascota
 
 ## Contexto de Negocio (PRD)
 
@@ -35,7 +35,7 @@ titulo: Consulta de Turnos de Mascota
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **Entidad `Appointment` (TDD-0027):** Registros existentes en base de datos.
+1. **Entidad `Appointment` (TDD-0034):** Registros existentes en base de datos.
 2. **Autenticación (TDD-0001):** Validación de pertenencia.
 
 ### Estimación

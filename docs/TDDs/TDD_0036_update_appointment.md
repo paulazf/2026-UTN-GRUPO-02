@@ -1,12 +1,12 @@
 ---
-id: 0029
+id: 0036
 estado: Por implementar
 autor: Matias Yael Cortes
 fecha: 24-10-2026
 titulo: Modificación de Turno Veterinario
 ---
 
-# TDD-0029: Modificación de Turno Veterinario
+# TDD-0036: Modificación de Turno Veterinario
 
 ## Contexto de Negocio (PRD)
 
@@ -35,8 +35,8 @@ titulo: Modificación de Turno Veterinario
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **Entidad `Appointment` (TDD-0027):** Existencia del registro previo.
-2. **Entidad `Address` (TDD-0026):** Posibilidad de reasignar otro domicilio del usuario.
+1. **Entidad `Appointment` (TDD-0034):** Existencia del registro previo.
+2. **Entidad `Address` (TDD-0033):** Posibilidad de reasignar otro domicilio del usuario.
 
 ### Estimación
 - **Estimación total:** **2 Story Points** (Escala Fibonacci).

@@ -1,12 +1,12 @@
 ---
-id: 0027
+id: 0034
 estado: Por implementar
 autor: Matias Yael Cortes
 fecha: 24-10-2026
 titulo: Alta de Turno Veterinario con Selector y Creación de Domicilio
 ---
 
-# TDD-0027: Alta de Turno Veterinario con Selector y Creación de Domicilio
+# TDD-0034: Alta de Turno Veterinario con Selector y Creación de Domicilio
 
 ## Contexto de Negocio (PRD)
 
@@ -40,8 +40,8 @@ titulo: Alta de Turno Veterinario con Selector y Creación de Domicilio
 
 ### Dependencias Identificadas y Resueltas
 1. **Entidad `Pet` (TDD-0004):** Mascota del usuario.
-2. **Entidad `Address` (TDD-0026):** Domicilios guardados y validación de propiedad.
-3. **Catálogo `City` y `Province` (TDD-0025):** Para la creación en caliente de domicilios.
+2. **Entidad `Address` (TDD-0033):** Domicilios guardados y validación de propiedad.
+3. **Catálogo `City` y `Province` (TDD-0032):** Para la creación en caliente de domicilios.
 
 ### Estimación
 - **Estimación total:** **3 Story Points** (Escala Fibonacci).

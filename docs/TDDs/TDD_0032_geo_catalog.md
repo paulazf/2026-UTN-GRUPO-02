@@ -1,12 +1,12 @@
 ---
-id: 0025
+id: 0032
 estado: Por implementar
 autor: Matias Yael Cortes
 fecha: 24-10-2026
 titulo: Catálogo Geográfico de Provincias y Ciudades de Argentina
 ---
 
-# TDD-0025: Catálogo Geográfico de Provincias y Ciudades de Argentina
+# TDD-0032: Catálogo Geográfico de Provincias y Ciudades de Argentina
 
 ## Contexto de Negocio (PRD)
 

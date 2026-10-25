@@ -1,12 +1,12 @@
 ---
-id: 0026
+id: 0033
 estado: Por implementar
 autor: Matias Yael Cortes
 fecha: 24-10-2026
 titulo: Alta y Consulta de Domicilios con Alias de Referencia
 ---
 
-# TDD-0026: Alta y Consulta de Domicilios con Alias de Referencia
+# TDD-0033: Alta y Consulta de Domicilios con Alias de Referencia
 
 ## Contexto de Negocio (PRD)
 
@@ -35,7 +35,7 @@ titulo: Alta y Consulta de Domicilios con Alias de Referencia
 ## Dependencias y Estimación
 
 ### Dependencias Identificadas y Resueltas
-1. **Catálogo de Ciudades (TDD-0025):** Clave foránea `idCity`.
+1. **Catálogo de Ciudades (TDD-0032):** Clave foránea `idCity`.
 2. **Autenticación (TDD-0001):** Asignación automática de `idOwner` a través de `request.user`.
 
 ### Estimación
@@ -69,7 +69,7 @@ class Address(models.Model):
         related_name="addresses",
         db_column="idCity",
     )
-    referenceName = models.CharField(max_length=120, db_column="referenceName")
+    referenceName = models.CharField(max_length=120, db_column="referenceName") # Ej: "Veterinaria San Roque"
     street = models.CharField(max_length=150, db_column="street")
     number = models.CharField(max_length=20, db_column="number")
     floor = models.IntegerField(null=True, blank=True, db_column="floor")
