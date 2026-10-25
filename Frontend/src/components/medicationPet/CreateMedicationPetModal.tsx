@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,15 +13,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Medication, MedicationPet } from '../../types/medicationPet';
-import { createMedicationPet } from '../../services/medicationPetService';
-import { displayToIso, maskDate, todayIso } from '../../utils/dates';
+import { createMedicationPet, updateMedicationPet } from '../../services/medicationPetService';
+import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
 import MedicationPicker from './MedicationPicker';
 
 interface CreateMedicationPetModalProps {
   visible: boolean;
   petId: number;
+  medicationToEdit?: MedicationPet | null;
   onClose: () => void;
-  onCreated: (newMedication: MedicationPet) => void;
+  onSaved: (medication: MedicationPet) => void;
+  onCreated?: (newMedication: MedicationPet) => void;
 }
 
 interface FormState {
@@ -36,9 +38,13 @@ interface FormState {
 export default function CreateMedicationPetModal({
   visible,
   petId,
+  medicationToEdit,
   onClose,
+  onSaved,
   onCreated,
 }: CreateMedicationPetModalProps) {
+  const isEditing = !!medicationToEdit;
+
   const [form, setForm] = useState<FormState>({
     medicationId: null,
     frequencyHours: '',
@@ -49,6 +55,23 @@ export default function CreateMedicationPetModal({
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      if (medicationToEdit) {
+        setForm({
+          medicationId: medicationToEdit.idMedication,
+          frequencyHours: String(medicationToEdit.frequencyHours),
+          quantityDose: String(medicationToEdit.quantityDose),
+          startDate: isoToDisplay(medicationToEdit.startDate),
+          endDate: medicationToEdit.endDate ? isoToDisplay(medicationToEdit.endDate) : '',
+          notes: medicationToEdit.notes || '',
+        });
+      } else {
+        resetForm();
+      }
+    }
+  }, [visible, medicationToEdit]);
 
   const resetForm = () => {
     setForm({
@@ -130,22 +153,34 @@ export default function CreateMedicationPetModal({
       const startIso = displayToIso(form.startDate)!;
       const endIso = form.endDate.trim() ? displayToIso(form.endDate) : null;
 
-      const created = await createMedicationPet({
-        idPet: petId,
-        idMedication: form.medicationId!,
-        frequencyHours: parseInt(form.frequencyHours, 10),
-        quantityDose: parseInt(form.quantityDose, 10),
-        startDate: startIso,
-        endDate: endIso,
-        notes: form.notes.trim() || null,
-      });
+      let result: MedicationPet;
+      if (isEditing && medicationToEdit) {
+        result = await updateMedicationPet(medicationToEdit.id, {
+          frequencyHours: parseInt(form.frequencyHours, 10),
+          quantityDose: parseInt(form.quantityDose, 10),
+          startDate: startIso,
+          endDate: endIso,
+          notes: form.notes.trim() || null,
+        });
+      } else {
+        result = await createMedicationPet({
+          idPet: petId,
+          idMedication: form.medicationId!,
+          frequencyHours: parseInt(form.frequencyHours, 10),
+          quantityDose: parseInt(form.quantityDose, 10),
+          startDate: startIso,
+          endDate: endIso,
+          notes: form.notes.trim() || null,
+        });
+      }
 
-      onCreated(created);
+      onSaved(result);
+      if (onCreated) onCreated(result);
       handleClose();
     } catch (err: any) {
       Alert.alert(
         'Error',
-        err.message || 'No se pudo registrar la medicación. Verificá los datos ingresados.'
+        err.message || 'No se pudo guardar la medicación. Verificá los datos ingresados.'
       );
     } finally {
       setSubmitting(false);
@@ -172,7 +207,7 @@ export default function CreateMedicationPetModal({
           {/* Encabezado: Título y botón cerrar */}
           <View className="flex-row items-center justify-between border-b border-[#F0E4DF]/60 px-6 pb-4">
             <Text className="text-xl font-bold tracking-tight text-[#2B1D1D]">
-              Agregar medicación
+              {isEditing ? 'Editar medicación' : 'Agregar medicación'}
             </Text>
             <Pressable
               onPress={handleClose}
@@ -188,13 +223,34 @@ export default function CreateMedicationPetModal({
             keyboardShouldPersistTaps="handled"
             contentContainerClassName="px-6 pt-5 pb-6"
           >
-            {/* Campo 1: Medicamento (Picker) */}
-            <MedicationPicker
-              selectedMedicationId={form.medicationId}
-              onSelectMedication={(medication: Medication) => {
-                setForm((prev) => ({ ...prev, medicationId: medication.idMedication }));
-              }}
-            />
+            {/* Campo 1: Medicamento (Picker o Fijo si es edición) */}
+            {isEditing && medicationToEdit ? (
+              <View className="mb-4">
+                <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
+                  MEDICAMENTO
+                </Text>
+                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] bg-[#FAF5F2] px-4 py-3.5">
+                  <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#FCECEF]">
+                    <Ionicons name="medkit" size={18} color="#DE6B80" />
+                  </View>
+                  <View className="ml-3 flex-1">
+                    <Text className="text-sm font-bold text-[#2B1D1D]">
+                      {medicationToEdit.medicationName}
+                    </Text>
+                    <Text className="text-[11px] font-medium text-[#8C7B77]">
+                      Fármaco asignado al tratamiento
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <MedicationPicker
+                selectedMedicationId={form.medicationId}
+                onSelectMedication={(medication: Medication) => {
+                  setForm((prev) => ({ ...prev, medicationId: medication.idMedication }));
+                }}
+              />
+            )}
 
             {/* Fila Frecuencia y Cantidad */}
             <View className="mb-4 flex-row gap-3">
@@ -317,7 +373,7 @@ export default function CreateMedicationPetModal({
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Text className="text-base font-bold text-white">
-                  Guardar medicación
+                  {isEditing ? 'Guardar cambios' : 'Guardar medicación'}
                 </Text>
               )}
             </Pressable>

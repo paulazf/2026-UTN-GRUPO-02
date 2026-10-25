@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   Text,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MedicationPet } from '../../types/medicationPet';
-import { fetchMedicationPets } from '../../services/medicationPetService';
+import { deleteMedicationPet, fetchMedicationPets } from '../../services/medicationPetService';
 import MedicationPetCard from './MedicationPetCard';
 import CreateMedicationPetModal from './CreateMedicationPetModal';
 
@@ -20,6 +21,7 @@ export default function MedicationPetList({ petId }: MedicationPetListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMedication, setEditingMedication] = useState<MedicationPet | null>(null);
 
   const loadMedications = useCallback(async () => {
     try {
@@ -38,9 +40,49 @@ export default function MedicationPetList({ petId }: MedicationPetListProps) {
     loadMedications();
   }, [loadMedications]);
 
-  const handleCreated = (newMedication: MedicationPet) => {
-    // Inserta al principio de la lista
-    setMedications((prev) => [newMedication, ...prev]);
+  const handleOpenCreate = () => {
+    setEditingMedication(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (medication: MedicationPet) => {
+    setEditingMedication(medication);
+    setIsModalOpen(true);
+  };
+
+  const handleSaved = (saved: MedicationPet) => {
+    setMedications((prev) => {
+      const exists = prev.some((item) => item.id === saved.id);
+      if (exists) {
+        return prev.map((item) => (item.id === saved.id ? saved : item));
+      }
+      return [saved, ...prev];
+    });
+  };
+
+  const handleDelete = (medication: MedicationPet) => {
+    Alert.alert(
+      'Eliminar tratamiento',
+      `¿Eliminar el tratamiento de "${medication.medicationName}" de la historia clínica?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteMedicationPet(medication.id);
+              setMedications((prev) => prev.filter((item) => item.id !== medication.id));
+            } catch (err: any) {
+              Alert.alert(
+                'Error al eliminar',
+                err?.message || 'No se pudo eliminar el tratamiento. Intenta nuevamente.'
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const countText = `${medications.length} ${
@@ -56,7 +98,7 @@ export default function MedicationPetList({ petId }: MedicationPetListProps) {
         </Text>
 
         <Pressable
-          onPress={() => setIsModalOpen(true)}
+          onPress={handleOpenCreate}
           className="rounded-full bg-[#D9627A] px-4 py-2 shadow-xs active:opacity-85"
         >
           <Text className="text-xs font-bold text-white">+ Agregar</Text>
@@ -85,7 +127,7 @@ export default function MedicationPetList({ petId }: MedicationPetListProps) {
         </View>
       ) : medications.length === 0 ? (
         <Pressable
-          onPress={() => setIsModalOpen(true)}
+          onPress={handleOpenCreate}
           className="items-center rounded-3xl border-2 border-dashed border-[#D9627A] bg-[#FDF0F3] p-8 active:opacity-75"
         >
           <Ionicons name="medkit-outline" size={28} color="#D9627A" />
@@ -98,16 +140,25 @@ export default function MedicationPetList({ petId }: MedicationPetListProps) {
         </Pressable>
       ) : (
         medications.map((item) => (
-          <MedicationPetCard key={item.id} medication={item} />
+          <MedicationPetCard
+            key={item.id}
+            medication={item}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+          />
         ))
       )}
 
-      {/* Modal para agregar medicación */}
+      {/* Modal para agregar o editar medicación */}
       <CreateMedicationPetModal
         visible={isModalOpen}
         petId={petId}
-        onClose={() => setIsModalOpen(false)}
-        onCreated={handleCreated}
+        medicationToEdit={editingMedication}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingMedication(null);
+        }}
+        onSaved={handleSaved}
       />
     </View>
   );

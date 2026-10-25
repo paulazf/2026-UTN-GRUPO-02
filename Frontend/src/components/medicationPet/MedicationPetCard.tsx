@@ -1,12 +1,15 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { MedicationPet } from '../../types/medicationPet';
 import { isoToDisplay } from '../../utils/dates';
 
 interface MedicationPetCardProps {
   medication: MedicationPet;
+  onEdit?: (medication: MedicationPet) => void;
+  onDelete?: (medication: MedicationPet) => void;
 }
 
-export default function MedicationPetCard({ medication }: MedicationPetCardProps) {
+export default function MedicationPetCard({ medication, onEdit, onDelete }: MedicationPetCardProps) {
   const isEnTratamiento = !medication.endDate;
   const formattedStartDate = isoToDisplay(medication.startDate);
   const formattedEndDate = medication.endDate ? isoToDisplay(medication.endDate) : null;
@@ -78,6 +81,35 @@ export default function MedicationPetCard({ medication }: MedicationPetCardProps
           <Text className="text-xs font-normal leading-5 text-[#4A3B37]">
             {medication.notes}
           </Text>
+        </View>
+      )}
+
+      {/* Botones de acción: Editar y Eliminar */}
+      {(onEdit || onDelete) && (
+        <View className="mt-3 flex-row items-center justify-end gap-2 border-t border-[#F0E4DF]/60 pt-3">
+          {onEdit && (
+            <Pressable
+              onPress={() => onEdit(medication)}
+              hitSlop={8}
+              className="flex-row items-center gap-1.5 rounded-full bg-[#FAF5F2] px-3.5 py-1.5 active:opacity-75 border border-[#F0E4DF]"
+              accessibilityLabel="Editar tratamiento"
+            >
+              <Ionicons name="create-outline" size={13} color="#8C7B77" />
+              <Text className="text-xs font-semibold text-[#8C7B77]">Editar</Text>
+            </Pressable>
+          )}
+
+          {onDelete && (
+            <Pressable
+              onPress={() => onDelete(medication)}
+              hitSlop={8}
+              className="flex-row items-center gap-1.5 rounded-full bg-[#FCECEF] px-3.5 py-1.5 active:opacity-75"
+              accessibilityLabel="Eliminar tratamiento"
+            >
+              <Ionicons name="trash-outline" size={13} color="#DE6B80" />
+              <Text className="text-xs font-semibold text-[#DE6B80]">Eliminar</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </View>
