@@ -150,7 +150,7 @@ export default function CreatePetModal({
               onPress={onClose}
               className="h-8 w-8 items-center justify-center rounded-full bg-[#FCECEF] active:opacity-70"
             >
-              <Text className="font-bold text-[#DE6B80]">✕</Text>
+              <Ionicons name="close" size={18} color="#DE6B80" />
             </Pressable>
           </View>
 

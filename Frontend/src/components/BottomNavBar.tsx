@@ -24,7 +24,7 @@ export default function BottomNavBar({
   };
 
   return (
-    <SafeAreaView className="border-t border-[#F5ECE8] bg-white">
+    <SafeAreaView edges={['bottom']} className="border-t border-[#F5ECE8] bg-white">
       <View className="flex-row items-center justify-around pt-2 pb-1.5">
         {/* 1. Inicio */}
         <Pressable

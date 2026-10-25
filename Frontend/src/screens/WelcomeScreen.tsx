@@ -14,7 +14,7 @@ export default function WelcomeScreen() {
         
         {/* ILUSTRACION CIRCULAR */}
         <View className="w-[200px] h-[200px] bg-[#FDE8E8] rounded-full justify-center items-center mb-8 border-[6px] border-[#FFF5F3] shadow-sm">
-           <Text className="text-[60px]">🐶🐱</Text>
+           <Ionicons name="paw" size={72} color="#DE6B80" />
         </View>
 
         {/* TEXTOS */}

@@ -1,5 +1,10 @@
 import axiosClient from '../api/axiosClient';
-import { CreateMedicationPetPayload, Medication, MedicationPet } from '../types/medicationPet';
+import {
+  CreateMedicationPetPayload,
+  Medication,
+  MedicationPet,
+  UpdateMedicationPetPayload,
+} from '../types/medicationPet';
 
 /**
  * Obtiene el listado de tratamientos/medicamentos registrados para una mascota específica.
@@ -43,5 +48,47 @@ export async function createMedicationPet(payload: CreateMedicationPetPayload): 
 export async function fetchMedications(): Promise<Medication[]> {
   const response = await axiosClient.get<Medication[]>('/medications/');
   return response.data;
+}
+
+/**
+ * Elimina (baja lógica) un tratamiento de medicación de una mascota.
+ */
+export async function deleteMedicationPet(id: number): Promise<void> {
+  try {
+    await axiosClient.delete(`/medication-pets/${id}/`);
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    const message = errorData?.detail || 'No se pudo eliminar el tratamiento. Intenta nuevamente.';
+    throw new Error(message);
+  }
+}
+
+/**
+ * Modifica (parcialmente) un tratamiento de medicación existente.
+ */
+export async function updateMedicationPet(
+  id: number,
+  payload: UpdateMedicationPetPayload,
+): Promise<MedicationPet> {
+  try {
+    const response = await axiosClient.patch<MedicationPet>(`/medication-pets/${id}/`, payload);
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    const nonFieldError = Array.isArray(errorData?.non_field_errors)
+      ? errorData.non_field_errors[0]
+      : errorData?.non_field_errors;
+
+    const message =
+      errorData?.detail ||
+      nonFieldError ||
+      errorData?.frequencyHours?.[0] ||
+      errorData?.quantityDose?.[0] ||
+      errorData?.startDate?.[0] ||
+      errorData?.endDate?.[0] ||
+      errorData?.notes?.[0] ||
+      'No se pudo modificar la medicación. Intenta nuevamente.';
+    throw new Error(message);
+  }
 }
 

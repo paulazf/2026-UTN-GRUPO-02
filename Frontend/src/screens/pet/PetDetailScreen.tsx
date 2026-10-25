@@ -15,6 +15,7 @@ import MedicalTestList from '../../components/medicalTest/MedicalTestList';
 import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
 import EditPetModal from '../../components/pet/EditPetModal';
+import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 
 type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
 
@@ -185,7 +186,9 @@ export default function PetDetailScreen({
         </ScrollView>
 
         <View className="px-5 pb-4 pt-1">
-          {currentTab === 'ESTUDIOS' ? (
+          {currentTab === 'VACUNAS' ? (
+            <VaccinePetList petId={pet.id} species={pet.breed.species} />
+          ) : currentTab === 'ESTUDIOS' ? (
             <MedicalTestList petId={pet.id} />
           ) : currentTab === 'ENFERMEDADES' ? (
             <PetDiseaseList petId={pet.id} />

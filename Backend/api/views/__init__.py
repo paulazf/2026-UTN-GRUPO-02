@@ -7,10 +7,14 @@ from .medication_pet import MedicationPetViewSet
 from .owner import OwnerRegisterView, OwnerProfileView, OwnerPasswordView
 from .auth import LoginView, LogoutView
 from .petDisease import PetDiseaseViewSet
+from .vaccine import VaccineViewSet
+from .vaccine_pet import VaccinePetViewSet
 
 __all__ = [
     "BreedViewSet", "DiseaseViewSet", "PetViewSet", "MedicationViewSet", "PetDiseaseViewSet", "MedicalTestViewSet",
     "MedicationPetViewSet",
     "OwnerRegisterView", "OwnerProfileView", "OwnerPasswordView", 
-    "LoginView", "LogoutView"
+    "LoginView", "LogoutView",
+    "VaccineViewSet",
+    "VaccinePetViewSet",
 ]
