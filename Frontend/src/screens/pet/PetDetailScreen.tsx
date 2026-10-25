@@ -88,7 +88,7 @@ export default function PetDetailScreen({
               onPress={onBack}
               className="h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm active:opacity-70"
             >
-              <Text className="text-lg font-bold text-[#2B1D1D]">←</Text>
+              <Ionicons name="arrow-back" size={20} color="#2B1D1D" />
             </Pressable>
 
             <Pressable
