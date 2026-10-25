@@ -3,6 +3,7 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import APIException, NotFound
 
 from api.models import Medication, MedicationPet
+from api.models.medication_pet import calculate_medication_end_date
 from api.serializers.medical_test import active_pets
 
 
@@ -35,14 +36,13 @@ class MedicationPetSerializer(serializers.ModelSerializer):
             "notes",
             "isDeleted",
         ]
-        read_only_fields = ["id", "petName", "medicationName", "status", "isDeleted"]
+        read_only_fields = ["id", "petName", "medicationName", "endDate", "status", "isDeleted"]
 
     def get_status(self, obj):
-        return "En tratamiento" if obj.endDate is None else "Finalizado"
+        return "En tratamiento" if obj.endDate >= date.today() else "Finalizado"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["endDate"].required = False
         if self.instance is not None:
             self.fields["idPet"].required = False
             self.fields["idMedication"].required = False
@@ -94,24 +94,31 @@ class MedicationPetSerializer(serializers.ModelSerializer):
         target_pet = attrs.get("pet_id") or (self.instance.pet_id if self.instance else None)
         target_medication = attrs.get("medication_id") or (self.instance.medication_id if self.instance else None)
         start_date = attrs.get("startDate", getattr(self.instance, "startDate", None))
+        frequency_hours = attrs.get("frequencyHours", getattr(self.instance, "frequencyHours", None))
+        quantity_dose = attrs.get("quantityDose", getattr(self.instance, "quantityDose", None))
+
+        if start_date and frequency_hours and quantity_dose:
+            calculated_end = calculate_medication_end_date(start_date, frequency_hours, quantity_dose)
+            attrs["endDate"] = calculated_end
+
         end_date = attrs.get("endDate", getattr(self.instance, "endDate", None))
 
         if end_date and start_date and end_date < start_date:
             raise serializers.ValidationError({"endDate": "La fecha de fin no puede ser anterior a la fecha de inicio."})
 
         if target_pet and target_medication:
-            if end_date is None:
-                active_dup = MedicationPet.objects.filter(
-                    pet_id=target_pet,
-                    medication_id=target_medication,
-                    endDate__isnull=True,
-                    isDeleted=False,
-                )
-                if self.instance:
-                    active_dup = active_dup.exclude(pk=self.instance.pk)
+            # Un tratamiento se considera activo si su fecha de fin es igual o posterior a la fecha actual (hoy)
+            active_dup = MedicationPet.objects.filter(
+                pet_id=target_pet,
+                medication_id=target_medication,
+                endDate__gte=date.today(),
+                isDeleted=False,
+            )
+            if self.instance:
+                active_dup = active_dup.exclude(pk=self.instance.pk)
 
-                if active_dup.exists():
-                    raise DuplicateMedicationPetException()
+            if active_dup.exists():
+                raise DuplicateMedicationPetException()
 
             if start_date:
                 start_dup = MedicationPet.objects.filter(
@@ -129,4 +136,3 @@ class MedicationPetSerializer(serializers.ModelSerializer):
                     )
 
         return attrs
-
