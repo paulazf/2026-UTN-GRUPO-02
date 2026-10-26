@@ -12,6 +12,7 @@ from .vaccine_pet import VaccinePetViewSet
 from .geo import ProvinceViewSet, CityViewSet
 from .address import AddressViewSet
 from .appointment import AppointmentViewSet
+from .feeding import FeedingViewSet
 
 __all__ = [
     "BreedViewSet",
@@ -32,4 +33,5 @@ __all__ = [
     "CityViewSet",
     "AddressViewSet",
     "AppointmentViewSet",
+    "FeedingViewSet",
 ]
