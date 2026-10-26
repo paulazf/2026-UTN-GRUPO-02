@@ -18,7 +18,7 @@ def populate_end_date(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0016_vaccine_pet'),
+        ('api', '0018_seed_argentina_geo'),
     ]
 
     operations = [
