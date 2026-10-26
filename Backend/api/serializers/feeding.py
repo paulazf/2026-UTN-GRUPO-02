@@ -16,6 +16,32 @@ class FeedingSerializer(serializers.ModelSerializer):
     idPet = serializers.IntegerField(source="pet_id")
     petName = serializers.CharField(source="pet.name", read_only=True)
     typeDisplay = serializers.CharField(source="get_type_display", read_only=True)
+    food = serializers.CharField(
+        error_messages={
+            "required": "El alimento es obligatorio.",
+            "blank": "El alimento no puede estar vacío.",
+            "invalid": "El alimento debe ser texto.",
+            "null": "El alimento no puede estar vacío.",
+        }
+    )
+    type = serializers.ChoiceField(
+        choices=FeedingType.choices,
+        error_messages={
+            "required": "El tipo de alimento es obligatorio.",
+            "null": "El tipo de alimento es obligatorio.",
+            "invalid_choice": (
+                f"Tipo de alimento no válido. Opciones permitidas: "
+                f"{', '.join(FeedingType.values)}."
+            ),
+        },
+    )
+    sinceDate = serializers.DateField(
+        error_messages={
+            "required": "La fecha de inicio es obligatoria.",
+            "invalid": "La fecha de inicio debe tener un formato válido (YYYY-MM-DD).",
+            "null": "La fecha de inicio es obligatoria.",
+        }
+    )
 
     class Meta:
         model = Feeding
@@ -71,22 +97,6 @@ class FeedingSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def validate_portion(self, value):
-        val = (value or "").strip()
-        if not val:
-            raise serializers.ValidationError("La porción no puede estar vacía.")
-        if len(val) > 100:
-            raise serializers.ValidationError("La porción no puede superar los 100 caracteres.")
-        return val
-
-    def validate_frequency(self, value):
-        val = (value or "").strip()
-        if not val:
-            raise serializers.ValidationError("La frecuencia no puede estar vacía.")
-        if len(val) > 100:
-            raise serializers.ValidationError("La frecuencia no puede superar los 100 caracteres.")
-        return val
-
     def validate_sinceDate(self, value):
         if value > date.today():
             raise serializers.ValidationError("La fecha de inicio no puede ser futura.")
@@ -114,4 +124,3 @@ class FeedingSerializer(serializers.ModelSerializer):
                 raise DuplicateFeedingException()
 
         return attrs
-
