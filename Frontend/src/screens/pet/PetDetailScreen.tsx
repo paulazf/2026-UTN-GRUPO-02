@@ -16,8 +16,15 @@ import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
 import EditPetModal from '../../components/pet/EditPetModal';
 import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
+import FeedingList from '../../components/feeding/FeedingList';
 
-type PetDetailTab = 'VACUNAS' | 'MEDICACION' | 'TURNOS' | 'ESTUDIOS' | 'ENFERMEDADES';
+type PetDetailTab =
+  | 'VACUNAS'
+  | 'MEDICACION'
+  | 'TURNOS'
+  | 'ESTUDIOS'
+  | 'ENFERMEDADES'
+  | 'ALIMENTACION';
 
 const DETAIL_TABS: { key: PetDetailTab; label: string }[] = [
   { key: 'VACUNAS', label: 'Vacunas' },
@@ -25,6 +32,7 @@ const DETAIL_TABS: { key: PetDetailTab; label: string }[] = [
   { key: 'TURNOS', label: 'Turnos' },
   { key: 'ESTUDIOS', label: 'Estudios' },
   { key: 'ENFERMEDADES', label: 'Enfermedades' },
+  { key: 'ALIMENTACION', label: 'Alimentación' },
 ];
 
 interface PetDetailScreenProps {
@@ -160,7 +168,7 @@ export default function PetDetailScreen({
           </View>
         </View>
 
-        {/* Pestañas de la historia clínica */}
+        {/* Pestañas de la historia clínica: vacunas, alimentación, estudios, medicación, etc. */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -194,6 +202,8 @@ export default function PetDetailScreen({
             <PetDiseaseList petId={pet.id} />
           ) : currentTab === 'MEDICACION' ? (
             <MedicationPetList petId={pet.id} />
+          ) : currentTab === 'ALIMENTACION' ? (
+            <FeedingList petId={pet.id} />
           ) : (
             <View className="items-center py-10">
               <Text className="text-sm text-[#8C7B77]">Próximamente disponible.</Text>
