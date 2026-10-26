@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MedicationPet } from '../../types/medicationPet';
-import { isoToDisplay } from '../../utils/dates';
+import { isoToDisplay, todayIso } from '../../utils/dates';
 
 interface MedicationPetCardProps {
   medication: MedicationPet;
@@ -12,7 +12,12 @@ interface MedicationPetCardProps {
 
 export default function MedicationPetCard({ medication, onEdit, onDelete }: MedicationPetCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const isEnTratamiento = medication.status === 'En tratamiento';
+
+  // Asegurar que si endDate es igual o posterior a hoy (hora local del teléfono), esté "En tratamiento"
+  const today = todayIso();
+  const isEnTratamiento =
+    medication.status === 'En tratamiento' ||
+    (Boolean(medication.endDate) && medication.endDate >= today);
 
   const formattedStartDate = isoToDisplay(medication.startDate);
   const formattedEndDate = medication.endDate ? isoToDisplay(medication.endDate) : null;
