@@ -261,7 +261,7 @@ export default function CreateMedicationPetModal({
                 <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
                   CADA CUÁNTAS HORAS
                 </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
                   <TextInput
                     value={form.frequencyHours}
                     onChangeText={(val) => {
@@ -283,7 +283,7 @@ export default function CreateMedicationPetModal({
                 <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
                   NÚMERO DE TOMAS
                 </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
                   <TextInput
                     value={form.quantityDose}
                     onChangeText={(val) => {
@@ -308,7 +308,7 @@ export default function CreateMedicationPetModal({
                 <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
                   FECHA DE INICIO
                 </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
                   <TextInput
                     value={form.startDate}
                     onChangeText={(val) => {
@@ -325,15 +325,20 @@ export default function CreateMedicationPetModal({
               </View>
 
               {/* Fecha de Fin Calculada (Solo Lectura) */}
-              <View className="flex-1">
-                <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
-                  FECHA ESTIMADA DE FIN
-                </Text>
-                <View className="flex-row items-center justify-between rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#F5ECE8]/60">
-                  <Text className="text-sm font-bold text-[#2B1D1D]">
-                    {estimatedEndDateDisplay || 'Calculando...'}
+              <View className="flex-1 opacity-75">
+                <View className="mb-1.5 flex-row items-center gap-1">
+                  <Text className="text-xs font-bold tracking-wider text-[#8C7B77]">
+                    FECHA DE FIN
                   </Text>
-                  <Ionicons name="sparkles-outline" size={16} color="#DE6B80" />
+                  <View className="rounded-full bg-[#EAE2DC] px-1.5 py-0.2">
+                    <Text className="text-[9px] font-bold text-[#8C7B77]">AUTO</Text>
+                  </View>
+                </View>
+                <View className="h-[52px] flex-row items-center justify-between rounded-2xl border border-dashed border-[#D5C7C0] px-4 bg-[#EDE5E0]/60">
+                  <Text className="text-base font-medium text-[#7A6B67]">
+                    {estimatedEndDateDisplay || 'dd/mm/aaaa'}
+                  </Text>
+                  <Ionicons name="lock-closed-outline" size={16} color="#A89993" />
                 </View>
               </View>
             </View>
