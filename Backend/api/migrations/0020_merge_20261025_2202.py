@@ -6,8 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0017_remove_medicationpet_unique_active_medication_per_pet_and_more'),
-        ('api', '0018_seed_argentina_geo'),
+        ('api', '0019_medicationpet_end_date_not_null'),
     ]
 
     operations = [

@@ -1,4 +1,5 @@
 from datetime import date
+from django.utils import timezone
 from django.db import models
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException, NotFound
@@ -45,9 +46,9 @@ class MedicationPetSerializer(serializers.ModelSerializer):
             if obj.startDate and obj.frequencyHours and obj.quantityDose:
                 computed = calculate_medication_end_date(obj.startDate, obj.frequencyHours, obj.quantityDose)
                 if computed:
-                    return "En tratamiento" if computed >= date.today() else "Finalizado"
+                    return "En tratamiento" if computed >= timezone.localdate() else "Finalizado"
             return "En tratamiento"
-        return "En tratamiento" if obj.endDate >= date.today() else "Finalizado"
+        return "En tratamiento" if obj.endDate >= timezone.localdate() else "Finalizado"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,7 +89,7 @@ class MedicationPetSerializer(serializers.ModelSerializer):
         return value
 
     def validate_startDate(self, value):
-        if value is not None and value > date.today():
+        if value is not None and value > timezone.localdate():
             raise serializers.ValidationError("La fecha de inicio no puede ser futura.")
         return value
 
@@ -121,7 +122,7 @@ class MedicationPetSerializer(serializers.ModelSerializer):
                 isDeleted=False,
             )
             active_dup = active_dup.filter(
-                models.Q(endDate__gte=date.today()) | models.Q(endDate__isnull=True)
+                models.Q(endDate__gte=timezone.localdate()) | models.Q(endDate__isnull=True)
             )
             if self.instance:
                 active_dup = active_dup.exclude(pk=self.instance.pk)
