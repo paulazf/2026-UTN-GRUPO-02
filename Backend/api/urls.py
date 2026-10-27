@@ -15,6 +15,7 @@ from api.views import (
     CityViewSet,
     AddressViewSet,
     AppointmentViewSet,
+    FeedingViewSet,
 )
 from api.views.owner import OwnerRegisterView, OwnerProfileView, OwnerPasswordView
 from api.views.auth import LoginView, LogoutView
@@ -33,6 +34,7 @@ router.register(r'provinces', ProvinceViewSet, basename='province')
 router.register(r'cities', CityViewSet, basename='city')
 router.register(r'addresses', AddressViewSet, basename='address')
 router.register(r'appointments', AppointmentViewSet, basename='appointment')
+router.register(r'feedings', FeedingViewSet, basename='feeding')
 
 urlpatterns = [
     path('owner/', OwnerRegisterView.as_view(), name='owner_register'),

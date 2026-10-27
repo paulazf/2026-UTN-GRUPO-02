@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,7 +31,6 @@ interface FormState {
   frequencyHours: string;
   quantityDose: string;
   startDate: string; // DD/MM/AAAA
-  endDate: string; // DD/MM/AAAA
   notes: string;
 }
 
@@ -50,7 +49,6 @@ export default function CreateMedicationPetModal({
     frequencyHours: '',
     quantityDose: '1',
     startDate: '',
-    endDate: '',
     notes: '',
   });
 
@@ -64,7 +62,6 @@ export default function CreateMedicationPetModal({
           frequencyHours: String(medicationToEdit.frequencyHours),
           quantityDose: String(medicationToEdit.quantityDose),
           startDate: isoToDisplay(medicationToEdit.startDate),
-          endDate: medicationToEdit.endDate ? isoToDisplay(medicationToEdit.endDate) : '',
           notes: medicationToEdit.notes || '',
         });
       } else {
@@ -79,7 +76,6 @@ export default function CreateMedicationPetModal({
       frequencyHours: '',
       quantityDose: '1',
       startDate: '',
-      endDate: '',
       notes: '',
     });
     setSubmitting(false);
@@ -89,6 +85,27 @@ export default function CreateMedicationPetModal({
     resetForm();
     onClose();
   };
+
+  // Cálculo de fecha de fin estimada para visualización en tiempo real
+  const estimatedEndDateDisplay = useMemo(() => {
+    const freq = parseInt(form.frequencyHours, 10);
+    const dose = parseInt(form.quantityDose, 10);
+    const startIso = displayToIso(form.startDate);
+
+    if (!startIso || isNaN(freq) || freq <= 0 || isNaN(dose) || dose <= 0) {
+      return null;
+    }
+
+    const totalHours = freq * dose;
+    const daysToAdd = totalHours >= 24 ? Math.ceil(totalHours / 24) : 0;
+
+    const [year, month, day] = startIso.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    dateObj.setDate(dateObj.getDate() + daysToAdd);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(dateObj.getDate())}/${pad(dateObj.getMonth() + 1)}/${dateObj.getFullYear()}`;
+  }, [form.startDate, form.frequencyHours, form.quantityDose]);
 
   const validate = (): boolean => {
     if (!form.medicationId) {
@@ -109,7 +126,7 @@ export default function CreateMedicationPetModal({
     if (!form.quantityDose.trim() || isNaN(dose) || dose <= 0) {
       Alert.alert(
         'Dosis inválida',
-        'La cantidad por toma debe ser un número entero mayor a cero (ej. 1).'
+        'La cantidad de tomas debe ser un número entero mayor a cero (ej. 1).'
       );
       return false;
     }
@@ -130,18 +147,6 @@ export default function CreateMedicationPetModal({
       return false;
     }
 
-    if (form.endDate.trim()) {
-      const endIso = displayToIso(form.endDate);
-      if (!endIso) {
-        Alert.alert('Fecha inválida', 'La fecha de fin debe tener el formato dd/mm/aaaa.');
-        return false;
-      }
-      if (endIso < startIso) {
-        Alert.alert('Fecha inválida', 'La fecha de fin no puede ser anterior a la de inicio.');
-        return false;
-      }
-    }
-
     return true;
   };
 
@@ -151,7 +156,6 @@ export default function CreateMedicationPetModal({
     try {
       setSubmitting(true);
       const startIso = displayToIso(form.startDate)!;
-      const endIso = form.endDate.trim() ? displayToIso(form.endDate) : null;
 
       let result: MedicationPet;
       if (isEditing && medicationToEdit) {
@@ -159,7 +163,6 @@ export default function CreateMedicationPetModal({
           frequencyHours: parseInt(form.frequencyHours, 10),
           quantityDose: parseInt(form.quantityDose, 10),
           startDate: startIso,
-          endDate: endIso,
           notes: form.notes.trim() || null,
         });
       } else {
@@ -169,7 +172,6 @@ export default function CreateMedicationPetModal({
           frequencyHours: parseInt(form.frequencyHours, 10),
           quantityDose: parseInt(form.quantityDose, 10),
           startDate: startIso,
-          endDate: endIso,
           notes: form.notes.trim() || null,
         });
       }
@@ -259,7 +261,7 @@ export default function CreateMedicationPetModal({
                 <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
                   CADA CUÁNTAS HORAS
                 </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
                   <TextInput
                     value={form.frequencyHours}
                     onChangeText={(val) => {
@@ -276,12 +278,12 @@ export default function CreateMedicationPetModal({
                 </View>
               </View>
 
-              {/* Campo 3: Cantidad por toma */}
+              {/* Campo 3: Cantidad de tomas */}
               <View className="flex-1">
                 <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
                   NÚMERO DE TOMAS
                 </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
                   <TextInput
                     value={form.quantityDose}
                     onChangeText={(val) => {
@@ -291,22 +293,22 @@ export default function CreateMedicationPetModal({
                     placeholder="ej. 1"
                     placeholderTextColor="#B5A7A3"
                     keyboardType="number-pad"
-                    maxLength={2}
+                    maxLength={3}
                     className="flex-1 text-base font-medium text-[#2B1D1D]"
                   />
-                  <Text className="text-xs font-semibold text-[#8C7B77]">cant.</Text>
+                  <Text className="text-xs font-semibold text-[#8C7B77]">tomas</Text>
                 </View>
               </View>
             </View>
 
-            {/* Fila Fechas: Desde y Hasta (opcional) */}
+            {/* Fila Fecha de Inicio y Fecha Estimada de Fin */}
             <View className="mb-4 flex-row gap-3">
               {/* Fecha Desde */}
               <View className="flex-1">
                 <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
-                  DESDE
+                  FECHA DE INICIO
                 </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
+                <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
                   <TextInput
                     value={form.startDate}
                     onChangeText={(val) => {
@@ -322,24 +324,21 @@ export default function CreateMedicationPetModal({
                 </View>
               </View>
 
-              {/* Fecha Hasta */}
-              <View className="flex-1">
-                <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
-                  HASTA (OPCIONAL)
-                </Text>
-                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 py-3 bg-[#FAF5F2]">
-                  <TextInput
-                    value={form.endDate}
-                    onChangeText={(val) => {
-                      setForm((prev) => ({ ...prev, endDate: maskDate(val) }));
-                    }}
-                    placeholder="dd/mm/aaaa"
-                    placeholderTextColor="#B5A7A3"
-                    keyboardType="number-pad"
-                    maxLength={10}
-                    className="flex-1 text-base font-medium text-[#2B1D1D]"
-                  />
-                  <Ionicons name="calendar-outline" size={18} color="#8C7B77" />
+              {/* Fecha de Fin Calculada (Solo Lectura) */}
+              <View className="flex-1 opacity-75">
+                <View className="mb-1.5 flex-row items-center gap-1">
+                  <Text className="text-xs font-bold tracking-wider text-[#8C7B77]">
+                    FECHA DE FIN
+                  </Text>
+                  <View className="rounded-full bg-[#EAE2DC] px-1.5 py-0.2">
+                    <Text className="text-[9px] font-bold text-[#8C7B77]">AUTO</Text>
+                  </View>
+                </View>
+                <View className="h-[52px] flex-row items-center justify-between rounded-2xl border border-dashed border-[#D5C7C0] px-4 bg-[#EDE5E0]/60">
+                  <Text className="text-base font-medium text-[#7A6B67]">
+                    {estimatedEndDateDisplay || 'dd/mm/aaaa'}
+                  </Text>
+                  <Ionicons name="lock-closed-outline" size={16} color="#A89993" />
                 </View>
               </View>
             </View>
