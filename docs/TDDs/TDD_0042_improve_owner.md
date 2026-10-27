@@ -1,12 +1,12 @@
 ---
-id: 0038
+id: 0042
 estado: Por implementar
 autor: Martina Lopez
 fecha: 25-10-2026
 titulo: Mejoras de Validación, Consistencia y Pruebas de Owner
 ---
 
-# TDD-0014: Mejoras de Validación, Consistencia y Pruebas de Owner
+# TDD-0042: Mejoras de Validación, Consistencia y Pruebas de Owner
 
 ## Contexto de Negocio (PRD)
 
