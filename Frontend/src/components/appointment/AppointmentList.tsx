@@ -18,9 +18,10 @@ import CreateAppointmentModal from './CreateAppointmentModal';
 
 interface AppointmentListProps {
   petId: number;
+  petBirthDate?: string | null;
 }
 
-export default function AppointmentList({ petId }: AppointmentListProps) {
+export default function AppointmentList({ petId, petBirthDate }: AppointmentListProps) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -238,6 +239,7 @@ export default function AppointmentList({ petId }: AppointmentListProps) {
       <CreateAppointmentModal
         visible={isModalOpen}
         petId={petId}
+        petBirthDate={petBirthDate}
         appointmentToEdit={editingAppointment}
         onClose={() => {
           setIsModalOpen(false);

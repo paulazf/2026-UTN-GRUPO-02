@@ -310,10 +310,10 @@ export default function AddressPicker({
 
   // 2. VISTA DE GESTIÓN (reemplaza temporalmente el formulario del turno dentro del mismo sheet)
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, minHeight: 440 }}>
       {/* VISTA A: LISTADO DE DOMICILIOS CON BUSCADOR */}
       {innerView === 'LIST' && (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, minHeight: 440 }}>
           <View className="mb-3 flex-row items-center justify-between border-b border-[#F0E4DF]/60 pb-3">
             <View className="flex-row items-center gap-2">
               <Pressable

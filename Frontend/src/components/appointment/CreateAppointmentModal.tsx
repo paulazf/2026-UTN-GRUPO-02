@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -26,6 +25,7 @@ import AddressPicker from './AddressPicker';
 interface CreateAppointmentModalProps {
   visible: boolean;
   petId: number;
+  petBirthDate?: string | null;
   appointmentToEdit?: Appointment | null;
   onClose: () => void;
   onSaved: (appointment: Appointment) => void;
@@ -34,6 +34,7 @@ interface CreateAppointmentModalProps {
 export default function CreateAppointmentModal({
   visible,
   petId,
+  petBirthDate,
   appointmentToEdit,
   onClose,
   onSaved,
@@ -108,6 +109,14 @@ export default function CreateAppointmentModal({
     const isoDate = displayToIso(date);
     if (!isoDate) {
       Alert.alert('Fecha inválida', 'La fecha debe tener un formato válido dd/mm/aaaa.');
+      return false;
+    }
+
+    if (petBirthDate && isoDate < petBirthDate) {
+      Alert.alert(
+        'Fecha inválida',
+        `La fecha del turno no puede ser previa al nacimiento de la mascota (${isoToDisplay(petBirthDate)}).`
+      );
       return false;
     }
 
@@ -194,9 +203,13 @@ export default function CreateAppointmentModal({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' }}
       >
+        <Pressable
+          className="absolute inset-0"
+          onPress={handleClose}
+          accessibilityLabel="Cerrar modal"
+        />
         <View
-          style={{ height: Dimensions.get('window').height * 0.88 }}
-          className="rounded-t-[36px] bg-white pt-3 pb-6 shadow-xl"
+          className="max-h-[92%] rounded-t-[36px] bg-white pt-3 pb-6 shadow-xl"
         >
           {/* Indicador superior */}
           <View className="items-center pb-2">
@@ -205,7 +218,7 @@ export default function CreateAppointmentModal({
 
           {isManagingAddress ? (
             /* VISTA DE SELECCIÓN Y ADMINISTRACIÓN DE DOMICILIOS */
-            <View style={{ flex: 1 }} className="px-6 pt-1">
+            <View style={{ flex: 1, minHeight: 440 }} className="px-6 pt-1">
               <AddressPicker
                 isManaging={true}
                 onOpenManage={() => setIsManagingAddress(true)}
@@ -254,6 +267,7 @@ export default function CreateAppointmentModal({
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
                 contentContainerClassName="px-6 pt-5 pb-6"
               >
                 {/* Fila: Fecha y Hora */}

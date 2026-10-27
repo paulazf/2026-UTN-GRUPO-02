@@ -196,7 +196,7 @@ export default function PetDetailScreen({
           ) : currentTab === 'MEDICACION' ? (
             <MedicationPetList petId={pet.id} />
           ) : currentTab === 'TURNOS' ? (
-            <AppointmentList petId={pet.id} />
+            <AppointmentList petId={pet.id} petBirthDate={pet.birthDate} />
           ) : (
             <View className="items-center py-10">
               <Text className="text-sm text-[#8C7B77]">Próximamente disponible.</Text>
