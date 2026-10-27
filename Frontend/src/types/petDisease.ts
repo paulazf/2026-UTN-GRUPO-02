@@ -27,3 +27,8 @@ export interface CreatePetDiseasePayload {
   notes?: string | null;
 }
 
+export interface UpdatePetDiseasePayload {
+  startDate?: string; // YYYY-MM-DD
+  endDate?: string | null; // YYYY-MM-DD o null
+  notes?: string | null;
+}
