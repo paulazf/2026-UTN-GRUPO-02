@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,15 +13,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Disease, PetDisease } from '../../types/petDisease';
-import { createPetDisease } from '../../services/petDiseaseService';
-import { displayToIso, maskDate, todayIso } from '../../utils/dates';
+import { createPetDisease, updatePetDisease } from '../../services/petDiseaseService';
+import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
 import DiseasePicker from './DiseasePicker';
 
 interface CreatePetDiseaseModalProps {
   visible: boolean;
   petId: number;
+  diseaseToEdit?: PetDisease | null;
   onClose: () => void;
-  onCreated: (newDisease: PetDisease) => void;
+  onSaved: (disease: PetDisease) => void;
+  onCreated?: (newDisease: PetDisease) => void;
 }
 
 interface FormState {
@@ -34,9 +36,13 @@ interface FormState {
 export default function CreatePetDiseaseModal({
   visible,
   petId,
+  diseaseToEdit,
   onClose,
+  onSaved,
   onCreated,
 }: CreatePetDiseaseModalProps) {
+  const isEditing = !!diseaseToEdit;
+
   const [form, setForm] = useState<FormState>({
     diseaseId: null,
     startDate: '',
@@ -45,6 +51,21 @@ export default function CreatePetDiseaseModal({
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      if (diseaseToEdit) {
+        setForm({
+          diseaseId: diseaseToEdit.idDisease,
+          startDate: isoToDisplay(diseaseToEdit.startDate),
+          endDate: diseaseToEdit.endDate ? isoToDisplay(diseaseToEdit.endDate) : '',
+          notes: diseaseToEdit.notes || '',
+        });
+      } else {
+        resetForm();
+      }
+    }
+  }, [visible, diseaseToEdit]);
 
   const resetForm = () => {
     setForm({
@@ -62,7 +83,7 @@ export default function CreatePetDiseaseModal({
   };
 
   const validate = (): boolean => {
-    if (!form.diseaseId) {
+    if (!isEditing && !form.diseaseId) {
       Alert.alert('Campo requerido', 'Por favor, seleccioná una condición o diagnóstico.');
       return false;
     }
@@ -89,6 +110,10 @@ export default function CreatePetDiseaseModal({
         Alert.alert('Fecha inválida', 'La fecha de fin debe tener el formato dd/mm/aaaa.');
         return false;
       }
+      if (endIso > todayIso()) {
+        Alert.alert('Fecha inválida', 'La fecha de fin no puede ser posterior a hoy.');
+        return false;
+      }
       if (endIso < startIso) {
         Alert.alert('Fecha inválida', 'La fecha de fin no puede ser anterior a la de inicio.');
         return false;
@@ -107,15 +132,25 @@ export default function CreatePetDiseaseModal({
       const startIso = displayToIso(form.startDate)!;
       const endIso = form.endDate.trim() ? displayToIso(form.endDate) : null;
 
-      const created = await createPetDisease({
-        idPet: petId,
-        idDisease: form.diseaseId!,
-        startDate: startIso,
-        endDate: endIso,
-        notes: form.notes.trim() || null,
-      });
+      let result: PetDisease;
+      if (isEditing && diseaseToEdit) {
+        result = await updatePetDisease(diseaseToEdit.id, {
+          startDate: startIso,
+          endDate: endIso,
+          notes: form.notes.trim() || null,
+        });
+      } else {
+        result = await createPetDisease({
+          idPet: petId,
+          idDisease: form.diseaseId!,
+          startDate: startIso,
+          endDate: endIso,
+          notes: form.notes.trim() || null,
+        });
+      }
 
-      onCreated(created);
+      onSaved(result);
+      if (onCreated) onCreated(result);
       handleClose();
     } catch (err: any) {
       Alert.alert(
@@ -147,7 +182,7 @@ export default function CreatePetDiseaseModal({
           {/* Encabezado: Título y botón cerrar */}
           <View className="flex-row items-center justify-between border-b border-[#F0E4DF]/60 px-6 pb-4">
             <Text className="text-xl font-bold tracking-tight text-[#2B1D1D]">
-              Agregar condición
+              {isEditing ? 'Editar condición' : 'Agregar condición'}
             </Text>
             <Pressable
               onPress={handleClose}
@@ -163,13 +198,34 @@ export default function CreatePetDiseaseModal({
             keyboardShouldPersistTaps="handled"
             contentContainerClassName="px-6 pt-5 pb-6"
           >
-            {/* Campo 1: Condición / Diagnóstico (Picker) */}
-            <DiseasePicker
-              selectedDiseaseId={form.diseaseId}
-              onSelectDisease={(disease: Disease) => {
-                setForm((prev) => ({ ...prev, diseaseId: disease.id }));
-              }}
-            />
+            {/* Campo 1: Condición / Diagnóstico (Picker o Tarjeta fija si es edición) */}
+            {isEditing && diseaseToEdit ? (
+              <View className="mb-4">
+                <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
+                  CONDICIÓN / DIAGNÓSTICO
+                </Text>
+                <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] bg-[#FAF5F2] px-4 py-3.5">
+                  <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#FCECEF]">
+                    <Ionicons name="bandage" size={18} color="#DE6B80" />
+                  </View>
+                  <View className="ml-3 flex-1">
+                    <Text className="text-sm font-bold text-[#2B1D1D]">
+                      {diseaseToEdit.diseaseName}
+                    </Text>
+                    <Text className="text-[11px] font-medium text-[#8C7B77]">
+                      Diagnóstico asignado
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <DiseasePicker
+                selectedDiseaseId={form.diseaseId}
+                onSelectDisease={(disease: Disease) => {
+                  setForm((prev) => ({ ...prev, diseaseId: disease.id }));
+                }}
+              />
+            )}
 
             {/* Campo 2: Desde (startDate) */}
             <View className="mb-4">
@@ -242,7 +298,7 @@ export default function CreatePetDiseaseModal({
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Text className="text-base font-bold text-white">
-                  Guardar condición
+                  {isEditing ? 'Guardar cambios' : 'Guardar condición'}
                 </Text>
               )}
             </Pressable>
@@ -252,4 +308,3 @@ export default function CreatePetDiseaseModal({
     </Modal>
   );
 }
-

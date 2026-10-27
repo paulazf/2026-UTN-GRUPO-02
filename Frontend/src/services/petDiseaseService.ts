@@ -1,5 +1,10 @@
 import axiosClient from '../api/axiosClient';
-import { CreatePetDiseasePayload, Disease, PetDisease } from '../types/petDisease';
+import {
+  CreatePetDiseasePayload,
+  Disease,
+  PetDisease,
+  UpdatePetDiseasePayload,
+} from '../types/petDisease';
 
 /**
  * Obtiene el listado de enfermedades registradas para una mascota específica.
@@ -18,9 +23,13 @@ export async function createPetDisease(payload: CreatePetDiseasePayload): Promis
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
+    const nonFieldError = Array.isArray(errorData?.non_field_errors)
+      ? errorData.non_field_errors[0]
+      : errorData?.non_field_errors;
+
     const message =
       errorData?.detail ||
-      errorData?.non_field_errors?.[0] ||
+      nonFieldError ||
       errorData?.startDate?.[0] ||
       errorData?.endDate?.[0] ||
       errorData?.idDisease?.[0] ||
@@ -39,3 +48,42 @@ export async function fetchDiseases(): Promise<Disease[]> {
   return response.data;
 }
 
+/**
+ * Elimina (baja lógica) una condición médica de una mascota.
+ */
+export async function deletePetDisease(id: number): Promise<void> {
+  try {
+    await axiosClient.delete(`/pet-diseases/${id}/`);
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    const message = errorData?.detail || 'No se pudo eliminar la condición. Intenta nuevamente.';
+    throw new Error(message);
+  }
+}
+
+/**
+ * Modifica (parcialmente) una condición médica registrada de una mascota.
+ */
+export async function updatePetDisease(
+  id: number,
+  payload: UpdatePetDiseasePayload,
+): Promise<PetDisease> {
+  try {
+    const response = await axiosClient.patch<PetDisease>(`/pet-diseases/${id}/`, payload);
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    const nonFieldError = Array.isArray(errorData?.non_field_errors)
+      ? errorData.non_field_errors[0]
+      : errorData?.non_field_errors;
+
+    const message =
+      errorData?.detail ||
+      nonFieldError ||
+      errorData?.startDate?.[0] ||
+      errorData?.endDate?.[0] ||
+      errorData?.notes?.[0] ||
+      'No se pudo modificar la condición. Intenta nuevamente.';
+    throw new Error(message);
+  }
+}

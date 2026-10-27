@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   Text,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PetDisease } from '../../types/petDisease';
-import { fetchPetDiseases } from '../../services/petDiseaseService';
+import { deletePetDisease, fetchPetDiseases } from '../../services/petDiseaseService';
 import PetDiseaseCard from './PetDiseaseCard';
 import CreatePetDiseaseModal from './CreatePetDiseaseModal';
 
@@ -20,6 +21,7 @@ export default function PetDiseaseList({ petId }: PetDiseaseListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDisease, setEditingDisease] = useState<PetDisease | null>(null);
 
   const loadDiseases = useCallback(async () => {
     try {
@@ -38,9 +40,49 @@ export default function PetDiseaseList({ petId }: PetDiseaseListProps) {
     loadDiseases();
   }, [loadDiseases]);
 
-  const handleCreated = (newDisease: PetDisease) => {
-    // Inserta al principio de la lista
-    setDiseases((prev) => [newDisease, ...prev]);
+  const handleOpenCreate = () => {
+    setEditingDisease(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (disease: PetDisease) => {
+    setEditingDisease(disease);
+    setIsModalOpen(true);
+  };
+
+  const handleSaved = (saved: PetDisease) => {
+    setDiseases((prev) => {
+      const exists = prev.some((item) => item.id === saved.id);
+      if (exists) {
+        return prev.map((item) => (item.id === saved.id ? saved : item));
+      }
+      return [saved, ...prev];
+    });
+  };
+
+  const handleDelete = (disease: PetDisease) => {
+    Alert.alert(
+      'Eliminar condición',
+      `¿Eliminar la condición "${disease.diseaseName}" de la historia clínica?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletePetDisease(disease.id);
+              setDiseases((prev) => prev.filter((item) => item.id !== disease.id));
+            } catch (err: any) {
+              Alert.alert(
+                'Error al eliminar',
+                err?.message || 'No se pudo eliminar la condición. Intenta nuevamente.'
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const countText = `${diseases.length} ${
@@ -56,7 +98,7 @@ export default function PetDiseaseList({ petId }: PetDiseaseListProps) {
         </Text>
 
         <Pressable
-          onPress={() => setIsModalOpen(true)}
+          onPress={handleOpenCreate}
           className="rounded-full bg-[#D9627A] px-4 py-2 shadow-xs active:opacity-85"
         >
           <Text className="text-xs font-bold text-white">+ Agregar</Text>
@@ -85,7 +127,7 @@ export default function PetDiseaseList({ petId }: PetDiseaseListProps) {
         </View>
       ) : diseases.length === 0 ? (
         <Pressable
-          onPress={() => setIsModalOpen(true)}
+          onPress={handleOpenCreate}
           className="items-center rounded-3xl border-2 border-dashed border-[#D9627A] bg-[#FDF0F3] p-8 active:opacity-75"
         >
           <Ionicons name="bandage-outline" size={28} color="#D9627A" />
@@ -98,18 +140,23 @@ export default function PetDiseaseList({ petId }: PetDiseaseListProps) {
         </Pressable>
       ) : (
         diseases.map((item) => (
-          <PetDiseaseCard key={item.id} disease={item} />
+          <PetDiseaseCard
+            key={item.id}
+            disease={item}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+          />
         ))
       )}
 
-      {/* Modal para agregar condición */}
+      {/* Modal para agregar o editar condición */}
       <CreatePetDiseaseModal
         visible={isModalOpen}
         petId={petId}
+        diseaseToEdit={editingDisease}
         onClose={() => setIsModalOpen(false)}
-        onCreated={handleCreated}
+        onSaved={handleSaved}
       />
     </View>
   );
 }
-
