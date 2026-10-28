@@ -72,7 +72,16 @@ class AppointmentSerializer(serializers.ModelSerializer):
         target_date = attrs.get("date") or (self.instance.date if self.instance else None)
         target_time = attrs.get("time") or (self.instance.time if self.instance else None)
 
-        # 1. Validar colisión de turno activo en misma mascota, fecha y hora
+        # 1. Validar que la fecha del turno no sea previa al nacimiento de la mascota
+        if target_pet and target_date:
+            from api.models.pet import Pet
+            pet_obj = Pet.objects.filter(pk=target_pet).first()
+            if pet_obj and pet_obj.birthDate and target_date < pet_obj.birthDate:
+                raise serializers.ValidationError(
+                    {"date": "La fecha del turno no puede ser previa al nacimiento de la mascota."}
+                )
+
+        # 2. Validar colisión de turno activo en misma mascota, fecha y hora
         if target_pet and target_date and target_time:
             dup_qs = Appointment.objects.filter(
                 pet_id=target_pet,
