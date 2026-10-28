@@ -17,6 +17,7 @@ import MedicationPetList from '../../components/medicationPet/MedicationPetList'
 import EditPetModal from '../../components/pet/EditPetModal';
 import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 import FeedingList from '../../components/feeding/FeedingList';
+import AppointmentList from '../../components/appointment/AppointmentList';
 
 type PetDetailTab =
   | 'VACUNAS'
@@ -204,6 +205,8 @@ export default function PetDetailScreen({
             <MedicationPetList petId={pet.id} />
           ) : currentTab === 'ALIMENTACION' ? (
             <FeedingList petId={pet.id} />
+          ) : currentTab === 'TURNOS' ? (
+            <AppointmentList petId={pet.id} petBirthDate={pet.birthDate} />
           ) : (
             <View className="items-center py-10">
               <Text className="text-sm text-[#8C7B77]">Próximamente disponible.</Text>

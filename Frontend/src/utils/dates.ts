@@ -35,3 +35,20 @@ export function todayIso(): string {
   const d = String(now.getDate()).padStart(2, '0');
   return `${now.getFullYear()}-${m}-${d}`;
 }
+
+// "1630" -> "16:30"
+export function maskTime(text: string): string {
+  const digits = text.replace(/\D/g, '').slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
+// "16:30:00" -> "16:30 hs"
+export function formatTimeDisplay(time: string): string {
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length >= 2) {
+    return `${parts[0]}:${parts[1]} hs`;
+  }
+  return time;
+}

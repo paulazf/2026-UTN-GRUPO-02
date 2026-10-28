@@ -12,6 +12,7 @@ from .province import Province
 from .city import City
 from .address import Address
 from .appointment import Appointment
+from .feeding import Feeding, FeedingType
 
 __all__ = [
     "Breed",
@@ -31,4 +32,6 @@ __all__ = [
     "City",
     "Address",
     "Appointment",
+    "Feeding",
+    "FeedingType",
 ]
