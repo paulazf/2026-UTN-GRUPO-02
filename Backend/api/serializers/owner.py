@@ -17,7 +17,15 @@ class OwnerSerializer(serializers.ModelSerializer):
         read_only_fields = ['idOwner']
 
     def validate_email(self, value):
-        return value.strip().lower()
+        value = value.strip().lower()
+        query_user = User.objects.filter(username=value)
+        query_owner = Owner.objects.filter(email=value)
+        if self.instance:
+            query_user = query_user.exclude(pk=self.instance.user_id)
+            query_owner = query_owner.exclude(pk=self.instance.pk)
+        if query_user.exists() or query_owner.exists():
+            raise serializers.ValidationError("Ya existe un usuario con este correo electrónico.")
+        return value
 
     def validate(self, attrs):
         if not self.instance and 'password' in attrs:
