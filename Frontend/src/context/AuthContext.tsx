@@ -6,7 +6,7 @@ interface OwnerData {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone: string | null;
 }
 
 interface AuthContextProps {
