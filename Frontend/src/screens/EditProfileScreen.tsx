@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useState, useContext, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -17,8 +17,17 @@ export default function EditProfileScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const scrollViewRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (errorMsg) {
+      Keyboard.dismiss();
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [errorMsg]);
 
   const handleSave = async () => {
+    Keyboard.dismiss();
     const cleanFirstName = firstName.trim();
     const cleanLastName = lastName.trim();
     const cleanPhone = phone.trim();
@@ -100,7 +109,16 @@ export default function EditProfileScreen() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1 px-6 pt-6" keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView 
+        className="flex-1" 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
+          ref={scrollViewRef}
+          className="flex-1 px-6 pt-6" 
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 60 }}
+        >
         
         {errorMsg !== '' && (
           <View className="flex-row items-center bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
@@ -192,7 +210,8 @@ export default function EditProfileScreen() {
             <Text className="text-white text-[16px] font-bold">Guardar cambios</Text>
           )}
         </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
