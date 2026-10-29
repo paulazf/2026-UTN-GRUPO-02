@@ -96,40 +96,6 @@ titulo: Autenticación e Inicio de Sesión con Google (Google Sign-In)
 
 ## Diseño Técnico (RFC)
 
-### Diagrama de Secuencia
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor U as Usuario
-    participant App as App Móvil (Expo)
-    participant G as Google OAuth2
-    participant Back as Backend (Django)
-    participant DB as Base de Datos
-
-    U->>App: Presiona "Continuar con Google"
-    App->>G: Solicita autenticación OAuth2 (scopes: email, profile)
-    G->>U: Despliega selector de cuentas / confirmación
-    U->>G: Selecciona cuenta y autoriza
-    G-->>App: Retorna `idToken` (JWT) firmado por Google
-    App->>Back: POST /api/v1/auth/google/ { "idToken": "..." }
-    Back->>G: Valida firma digital y exp (google-auth library)
-    G-->>Back: Payload verificado (email, given_name, family_name, sub)
-    alt Cuenta no existe
-        Back->>DB: Crea User (set_unusable_password) y Owner (atómico)
-    else Cuenta existe y activa
-        Back->>DB: Obtiene User y Owner existente
-    else Cuenta dada de baja (isDeleted=true)
-        Back-->>App: 403 Forbidden {"detail": "Cuenta eliminada..."}
-    end
-    Back->>DB: Genera o recupera Token DRF
-    Back-->>App: 200 OK { "token": "...", "owner": {...}, "isNewUser": bool }
-    App->>App: authContext.login(token, owner)
-    App-->>U: Redirección al Home / Dashboard
-```
-
----
-
 ### Contrato de API
 
 #### Endpoint: `POST /api/v1/auth/google/`
