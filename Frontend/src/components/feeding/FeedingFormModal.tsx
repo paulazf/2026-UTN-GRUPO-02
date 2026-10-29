@@ -58,9 +58,7 @@ function validate(form: FormState): FormErrors {
   if (!isoDate) errors.sinceDate = 'Ingresá una fecha válida (DD/MM/AAAA).';
   else if (isoDate > todayIso()) errors.sinceDate = 'La fecha de inicio no puede ser futura.';
 
-  if (!form.portion.trim()) errors.portion = 'Ingresá la porción diaria.';
   if (form.portion.trim().length > 100) errors.portion = 'Usá hasta 100 caracteres.';
-  if (!form.frequency.trim()) errors.frequency = 'Ingresá cuántas comidas recibe por día.';
   if (form.frequency.trim().length > 100) errors.frequency = 'Usá hasta 100 caracteres.';
   return errors;
 }
