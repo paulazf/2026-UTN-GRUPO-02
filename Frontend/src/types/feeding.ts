@@ -12,9 +12,9 @@ export interface Feeding {
   food: string;
   type: FeedingType;
   typeDisplay: string;
-  portion: string;
+  portion: string | null;
   sinceDate: string;
-  frequency: string;
+  frequency: string | null;
   notes: string;
   isDeleted: boolean;
   created_at: string;

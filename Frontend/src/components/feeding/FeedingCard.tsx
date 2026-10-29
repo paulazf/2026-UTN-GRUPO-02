@@ -13,9 +13,10 @@ interface FeedingCardProps {
 
 export default function FeedingCard({ feeding, isCurrent, onEdit, onDelete }: FeedingCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const mealsLabel = /^\d+$/.test(feeding.frequency.trim())
-    ? `${feeding.frequency} ${feeding.frequency === '1' ? 'comida' : 'comidas'} al día`
-    : feeding.frequency;
+  const frequency = feeding.frequency?.trim() ?? '';
+  const mealsLabel = /^\d+$/.test(frequency)
+    ? `${frequency} ${frequency === '1' ? 'comida' : 'comidas'} al día`
+    : frequency;
 
   return (
     <View
