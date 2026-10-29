@@ -16,5 +16,9 @@ class Owner(models.Model):
     class Meta:
         db_table = 'owner'
 
+    @property
+    def full_name(self):
+        return f"{self.firstName} {self.lastName}".strip()
+
     def __str__(self):
-        return self.email
+        return f"{self.full_name} ({self.email})"
