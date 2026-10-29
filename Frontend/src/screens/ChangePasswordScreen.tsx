@@ -37,6 +37,11 @@ export default function ChangePasswordScreen() {
       return;
     }
 
+    if (currentPassword === newPassword) {
+      setErrorMsg('La nueva contraseña debe ser distinta de la actual.');
+      return;
+    }
+
     setIsLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
@@ -58,7 +63,23 @@ export default function ChangePasswordScreen() {
         }, 1500);
       }
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.error || 'La contraseña actual es incorrecta o hubo un error.');
+      const data = error.response?.data;
+      if (data?.newPassword) {
+        const msg = Array.isArray(data.newPassword) ? data.newPassword[0] : data.newPassword;
+        setErrorMsg(msg);
+      } else if (data?.currentPassword) {
+        const msg = Array.isArray(data.currentPassword) ? data.currentPassword[0] : data.currentPassword;
+        setErrorMsg(msg);
+      } else if (data?.detail || data?.error) {
+        setErrorMsg(data.detail || data.error);
+      } else if (data?.non_field_errors) {
+        const msg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        setErrorMsg(msg);
+      } else if (data) {
+        setErrorMsg('Ocurrió un error al cambiar la contraseña. Revisá los datos ingresados.');
+      } else {
+        setErrorMsg('No se pudo conectar con el servidor. Verificá tu conexión a internet.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +128,7 @@ export default function ChangePasswordScreen() {
               placeholderTextColor="#CBD5E0"
               secureTextEntry={!showCurrent}
               value={currentPassword}
-              onChangeText={setCurrentPassword}
+              onChangeText={(text) => { setCurrentPassword(text); setErrorMsg(''); }}
             />
             <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)} className="pl-2">
               <Ionicons name={showCurrent ? "eye-off" : "eye"} size={20} color="#A0AEC0" />
@@ -127,7 +148,7 @@ export default function ChangePasswordScreen() {
               placeholderTextColor="#CBD5E0"
               secureTextEntry={!showNew}
               value={newPassword}
-              onChangeText={setNewPassword}
+              onChangeText={(text) => { setNewPassword(text); setErrorMsg(''); }}
             />
             <TouchableOpacity onPress={() => setShowNew(!showNew)} className="pl-2">
               <Ionicons name={showNew ? "eye-off" : "eye"} size={20} color="#A0AEC0" />
@@ -147,7 +168,7 @@ export default function ChangePasswordScreen() {
               placeholderTextColor="#CBD5E0"
               secureTextEntry={!showNew}
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(text) => { setConfirmPassword(text); setErrorMsg(''); }}
             />
           </View>
         </View>
