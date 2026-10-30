@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useContext, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
@@ -14,9 +14,20 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const scrollViewRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (errorMsg) {
+      Keyboard.dismiss();
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [errorMsg]);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    Keyboard.dismiss();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
       setErrorMsg('Por favor completá ambos campos.');
       return;
     }
@@ -25,16 +36,22 @@ export default function LoginScreen() {
     setErrorMsg('');
 
     try {
-      const response = await axiosClient.post('/auth/login/', { email, password });
+      const response = await axiosClient.post('/auth/login/', { email: cleanEmail, password });
       if (response.status === 200) {
         const { token, owner } = response.data;
         authContext?.login(token, owner);
       }
     } catch (error: any) {
-      if (error.response?.data?.error) {
-        setErrorMsg(error.response.data.error);
-      } else {
+      const data = error.response?.data;
+      if (data?.detail || data?.error) {
+        setErrorMsg(data.detail || data.error);
+      } else if (data?.non_field_errors) {
+        const msg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        setErrorMsg(msg);
+      } else if (data) {
         setErrorMsg('Email o contraseña incorrectos. Intentá de nuevo.');
+      } else {
+        setErrorMsg('No se pudo conectar con el servidor. Verificá tu conexión a internet.');
       }
     } finally {
       setIsLoading(false);
@@ -56,7 +73,17 @@ export default function LoginScreen() {
         </Text>
       </View>
 
-      <View className="flex-1 px-6 pt-10">
+      <KeyboardAvoidingView 
+        className="flex-1" 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
+          ref={scrollViewRef}
+          className="flex-1 px-6 pt-10"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 60 }}
+        >
         {/* TITULOS */}
         <Text className="text-[32px] font-extrabold text-[#1A202C] mb-1">
           Iniciar sesión
@@ -151,11 +178,12 @@ export default function LoginScreen() {
         {/* FOOTER - CREAR CUENTA */}
         <View className="flex-row justify-center mt-auto mb-10">
           <Text className="text-[#718096] text-[15px]">¿No tenés cuenta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
             <Text className="text-[#D8657B] text-[15px] font-bold">Crear cuenta</Text>
           </TouchableOpacity>
         </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
