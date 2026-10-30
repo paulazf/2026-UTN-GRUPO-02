@@ -16,6 +16,7 @@ from api.views import (
     AddressViewSet,
     AppointmentViewSet,
     FeedingViewSet,
+    CalendarEventsView,
 )
 from api.views.owner import OwnerRegisterView, OwnerProfileView, OwnerPasswordView
 from api.views.auth import LoginView, LogoutView
@@ -42,5 +43,6 @@ urlpatterns = [
     path('owner/me/password/', OwnerPasswordView.as_view(), name='owner_password'),
     path('auth/login/', LoginView.as_view(), name='auth_login'),
     path('auth/logout/', LogoutView.as_view(), name='auth_logout'),
+    path('calendar/events/', CalendarEventsView.as_view(), name='calendar_events'),
     path('', include(router.urls)),
 ]
