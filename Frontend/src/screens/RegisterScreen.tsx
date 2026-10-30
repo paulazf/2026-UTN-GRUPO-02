@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useContext, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
@@ -22,10 +22,23 @@ export default function RegisterScreen() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const scrollViewRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (errorMsg) {
+      Keyboard.dismiss();
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [errorMsg]);
 
   const handleRegister = async () => {
+    Keyboard.dismiss();
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
     // Validaciones básicas
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!cleanFirstName || !cleanLastName || !cleanEmail || !password || !confirmPassword) {
       setErrorMsg('Por favor completá todos los campos.');
       return;
     }
@@ -46,27 +59,46 @@ export default function RegisterScreen() {
     try {
       // Registrar al usuario
       const response = await axiosClient.post('/owner/', {
-        firstName,
-        lastName,
-        email,
+        firstName: cleanFirstName,
+        lastName: cleanLastName,
+        email: cleanEmail,
         password
       });
       
       if (response.status === 201 || response.status === 200) {
-        // Auto login luego de crear la cuenta
-        const loginResponse = await axiosClient.post('/auth/login/', { email, password });
-        if (loginResponse.status === 200) {
-          const { token, owner } = loginResponse.data;
-          authContext?.login(token, owner);
+        if (response.data?.token && response.data?.owner) {
+          authContext?.login(response.data.token, response.data.owner);
+        } else {
+          const loginResponse = await axiosClient.post('/auth/login/', { email: cleanEmail, password });
+          if (loginResponse.status === 200) {
+            const { token, owner } = loginResponse.data;
+            authContext?.login(token, owner);
+          }
         }
       }
     } catch (error: any) {
-      if (error.response?.data?.email) {
-        setErrorMsg('Este email ya está registrado.');
-      } else if (error.response?.data?.error || error.response?.data?.detail) {
-        setErrorMsg(error.response.data.error || error.response.data.detail);
-      } else {
+      const data = error.response?.data;
+      if (data?.password) {
+        const msg = Array.isArray(data.password) ? data.password[0] : data.password;
+        setErrorMsg(msg);
+      } else if (data?.email) {
+        const msg = Array.isArray(data.email) ? data.email[0] : data.email;
+        setErrorMsg(msg);
+      } else if (data?.firstName) {
+        const msg = Array.isArray(data.firstName) ? data.firstName[0] : data.firstName;
+        setErrorMsg(msg);
+      } else if (data?.lastName) {
+        const msg = Array.isArray(data.lastName) ? data.lastName[0] : data.lastName;
+        setErrorMsg(msg);
+      } else if (data?.detail || data?.error) {
+        setErrorMsg(data.detail || data.error);
+      } else if (data?.non_field_errors) {
+        const msg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        setErrorMsg(msg);
+      } else if (data) {
         setErrorMsg('Ocurrió un error. Revisá los datos ingresados.');
+      } else {
+        setErrorMsg('No se pudo conectar con el servidor. Verificá tu conexión a internet.');
       }
     } finally {
       setIsLoading(false);
@@ -93,6 +125,7 @@ export default function RegisterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView 
+          ref={scrollViewRef}
           className="flex-1 px-6 pt-10"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
