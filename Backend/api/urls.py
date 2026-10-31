@@ -19,7 +19,7 @@ from api.views import (
     CalendarEventsView,
 )
 from api.views.owner import OwnerRegisterView, OwnerProfileView, OwnerPasswordView
-from api.views.auth import LoginView, LogoutView
+from api.views.auth import LoginView, LogoutView, GoogleAuthView
 
 router = DefaultRouter()
 router.register(r'breeds', BreedViewSet, basename='breed')
@@ -43,6 +43,7 @@ urlpatterns = [
     path('owner/me/password/', OwnerPasswordView.as_view(), name='owner_password'),
     path('auth/login/', LoginView.as_view(), name='auth_login'),
     path('auth/logout/', LogoutView.as_view(), name='auth_logout'),
+    path('auth/google/', GoogleAuthView.as_view(), name='auth_google'),
     path('calendar/events/', CalendarEventsView.as_view(), name='calendar_events'),
     path('', include(router.urls)),
 ]

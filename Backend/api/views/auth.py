@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.db import transaction
 
+from ..models.owner import Owner
 from ..serializers.owner import OwnerSerializer
+from ..services.google_auth import verify_google_id_token
 
 class LoginView(views.APIView):
     permission_classes = [AllowAny]
@@ -59,3 +63,72 @@ class LogoutView(views.APIView):
                 {"detail": "Algo salió mal al cerrar la sesión."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class GoogleAuthView(views.APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token_str = (request.data.get("idToken") or "").strip()
+        if not token_str:
+            return Response(
+                {"detail": "Debe proporcionar el token de autenticación de Google (idToken)."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        google_data = verify_google_id_token(token_str)
+        email = (google_data.get("email") or "").strip().lower()
+        first_name = (google_data.get("given_name") or "").strip() or "Usuario"
+        last_name = (google_data.get("family_name") or "").strip() or "Google"
+
+        if not email:
+            return Response(
+                {"detail": "La cuenta de Google no posee un correo electrónico asociado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        is_new_user = False
+
+        with transaction.atomic():
+            user = User.objects.filter(username=email).first()
+
+            if user:
+                if hasattr(user, 'owner_profile'):
+                    if user.owner_profile.isDeleted:
+                        return Response(
+                            {"detail": "Esta cuenta ha sido eliminada. Comuníquese con soporte."},
+                            status=status.HTTP_403_FORBIDDEN
+                        )
+                    owner = user.owner_profile
+                else:
+                    owner = Owner.objects.create(
+                        user=user,
+                        email=email,
+                        firstName=first_name,
+                        lastName=last_name
+                    )
+            else:
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                user.set_unusable_password()
+                user.save()
+
+                owner = Owner.objects.create(
+                    user=user,
+                    email=email,
+                    firstName=first_name,
+                    lastName=last_name,
+                    phone=None
+                )
+                is_new_user = True
+
+            token, _ = Token.objects.get_or_create(user=user)
+
+        return Response({
+            "token": token.key,
+            "owner": OwnerSerializer(owner).data,
+            "isNewUser": is_new_user
+        }, status=status.HTTP_200_OK)
