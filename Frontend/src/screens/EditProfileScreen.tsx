@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useState, useContext, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -19,15 +19,39 @@ export default function EditProfileScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const scrollViewRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (errorMsg) {
+      Keyboard.dismiss();
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [errorMsg]);
 
   const handleSave = async () => {
+    Keyboard.dismiss();
+
     if (isGoogleUser) {
       setErrorMsg('Los datos de una cuenta vinculada a Google no pueden modificarse.');
       return;
     }
 
-    if (!firstName.trim() || !lastName.trim()) {
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    const cleanPhone = phone.trim();
+
+    if (!cleanFirstName || !cleanLastName) {
       setErrorMsg('Nombre y apellido son obligatorios.');
+      return;
+    }
+
+    if (cleanFirstName.length > 150) {
+      setErrorMsg('El nombre no puede superar los 150 caracteres.');
+      return;
+    }
+
+    if (cleanLastName.length > 150) {
+      setErrorMsg('El apellido no puede superar los 150 caracteres.');
       return;
     }
 
@@ -37,9 +61,9 @@ export default function EditProfileScreen() {
 
     try {
       const response = await axiosClient.patch('/owner/me/', {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phone: phone.trim()
+        firstName: cleanFirstName,
+        lastName: cleanLastName,
+        phone: cleanPhone || null
       });
 
       if (response.status === 200) {
@@ -53,7 +77,26 @@ export default function EditProfileScreen() {
         }, 1500);
       }
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.error || 'Ocurrió un error al actualizar el perfil.');
+      const data = error.response?.data;
+      if (data?.firstName) {
+        const msg = Array.isArray(data.firstName) ? data.firstName[0] : data.firstName;
+        setErrorMsg(msg);
+      } else if (data?.lastName) {
+        const msg = Array.isArray(data.lastName) ? data.lastName[0] : data.lastName;
+        setErrorMsg(msg);
+      } else if (data?.phone) {
+        const msg = Array.isArray(data.phone) ? data.phone[0] : data.phone;
+        setErrorMsg(msg);
+      } else if (data?.detail || data?.error) {
+        setErrorMsg(data.detail || data.error);
+      } else if (data?.non_field_errors) {
+        const msg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        setErrorMsg(msg);
+      } else if (data) {
+        setErrorMsg('Ocurrió un error al actualizar el perfil. Revisá los datos ingresados.');
+      } else {
+        setErrorMsg('No se pudo conectar con el servidor. Verificá tu conexión a internet.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +117,16 @@ export default function EditProfileScreen() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1 px-6 pt-6" keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView 
+        className="flex-1" 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
+          ref={scrollViewRef}
+          className="flex-1 px-6 pt-6" 
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 60 }}
+        >
         
         {/* Banner para usuarios autenticados con Google */}
         {isGoogleUser && (
@@ -113,7 +165,7 @@ export default function EditProfileScreen() {
               placeholder="Tu nombre"
               placeholderTextColor="#CBD5E0"
               value={firstName}
-              onChangeText={setFirstName}
+              onChangeText={(text) => { setFirstName(text); setErrorMsg(''); }}
               editable={!isGoogleUser}
             />
             {isGoogleUser && <Ionicons name="lock-closed" size={16} color="#A0AEC0" />}
@@ -133,7 +185,7 @@ export default function EditProfileScreen() {
               placeholder="Tu apellido"
               placeholderTextColor="#CBD5E0"
               value={lastName}
-              onChangeText={setLastName}
+              onChangeText={(text) => { setLastName(text); setErrorMsg(''); }}
               editable={!isGoogleUser}
             />
             {isGoogleUser && <Ionicons name="lock-closed" size={16} color="#A0AEC0" />}
@@ -154,7 +206,7 @@ export default function EditProfileScreen() {
               placeholderTextColor="#CBD5E0"
               keyboardType="phone-pad"
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(text) => { setPhone(text); setErrorMsg(''); }}
               editable={!isGoogleUser}
             />
             {isGoogleUser && <Ionicons name="lock-closed" size={16} color="#A0AEC0" />}
@@ -197,7 +249,8 @@ export default function EditProfileScreen() {
             )}
           </TouchableOpacity>
         )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
