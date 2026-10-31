@@ -8,6 +8,7 @@ class Owner(models.Model):
     lastName = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
+    authProvider = models.CharField(max_length=20, default='email')
     
     isDeleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

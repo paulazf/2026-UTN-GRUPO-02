@@ -4,12 +4,12 @@ from ..models.owner import Owner
 from django.db import transaction
 
 class OwnerSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Owner
-        fields = ['idOwner', 'firstName', 'lastName', 'email', 'phone', 'password']
-        read_only_fields = ['idOwner']
+        fields = ['idOwner', 'firstName', 'lastName', 'email', 'phone', 'authProvider', 'password']
+        read_only_fields = ['idOwner', 'authProvider']
 
     @transaction.atomic
     def create(self, validated_data):

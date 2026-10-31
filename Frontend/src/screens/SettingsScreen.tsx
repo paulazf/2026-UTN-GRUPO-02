@@ -11,6 +11,8 @@ export default function SettingsScreen() {
   const authContext = useContext(AuthContext);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const isGoogleUser = authContext?.userData?.authProvider === 'google';
+
   const handleDeleteAccount = () => {
     Alert.alert(
       "Eliminar cuenta",
@@ -41,6 +43,18 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleChangePasswordPress = () => {
+    if (isGoogleUser) {
+      Alert.alert(
+        "Cuenta de Google",
+        "Tu cuenta está autenticada con Google y no posee una contraseña local en PetLife para cambiar.",
+        [{ text: "Entendido" }]
+      );
+      return;
+    }
+    navigation.navigate('ChangePassword' as never);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#FFF5F3]" edges={['top']}>
       {/* Header */}
@@ -59,6 +73,21 @@ export default function SettingsScreen() {
 
       <ScrollView className="flex-1 px-6 pt-6">
         
+        {/* Banner de cuenta Google */}
+        {isGoogleUser && (
+          <View className="flex-row items-center bg-blue-50 border border-blue-200 rounded-3xl p-4 mb-5 shadow-xs">
+            <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
+              <Ionicons name="logo-google" size={20} color="#2563EB" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[13px] font-bold text-blue-900">Cuenta autenticada con Google</Text>
+              <Text className="text-[11px] text-blue-700 mt-0.5 leading-4">
+                Tus datos y contraseña son administrados directamente por Google.
+              </Text>
+            </View>
+          </View>
+        )}
+
         <Text className="text-[12px] font-bold text-[#A0AEC0] mb-4 ml-2 tracking-widest uppercase">
           Cuenta y Privacidad
         </Text>
@@ -71,19 +100,29 @@ export default function SettingsScreen() {
           <View className="w-10 h-10 bg-[#FCE8E8] rounded-full justify-center items-center mr-4">
             <Ionicons name="person-outline" size={20} color="#D8657B" />
           </View>
-          <Text className="flex-1 text-[#2D3748] text-[16px] font-semibold">Editar perfil</Text>
+          <View className="flex-1">
+            <Text className="text-[#2D3748] text-[16px] font-semibold">Editar perfil</Text>
+            {isGoogleUser && (
+              <Text className="text-[11px] text-[#A0AEC0] mt-0.5">Solo lectura (Google)</Text>
+            )}
+          </View>
           <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
         </TouchableOpacity>
 
         <TouchableOpacity 
-          className="flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm border border-slate-50"
-          onPress={() => navigation.navigate('ChangePassword' as never)}
+          className={`flex-row items-center bg-white p-4 rounded-3xl mb-3 shadow-sm border border-slate-50 ${isGoogleUser ? 'opacity-80' : ''}`}
+          onPress={handleChangePasswordPress}
           disabled={isDeleting}
         >
           <View className="w-10 h-10 bg-[#E2E8F0] rounded-full justify-center items-center mr-4">
             <Ionicons name="lock-closed-outline" size={20} color="#4A5568" />
           </View>
-          <Text className="flex-1 text-[#2D3748] text-[16px] font-semibold">Cambiar contraseña</Text>
+          <View className="flex-1">
+            <Text className="text-[#2D3748] text-[16px] font-semibold">Cambiar contraseña</Text>
+            {isGoogleUser && (
+              <Text className="text-[11px] text-[#A0AEC0] mt-0.5">No disponible con Google</Text>
+            )}
+          </View>
           <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
         </TouchableOpacity>
 

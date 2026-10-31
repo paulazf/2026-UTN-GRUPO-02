@@ -2,10 +2,12 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
 interface OwnerData {
+  idOwner?: number;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
+  authProvider?: string;
 }
 
 interface AuthContextProps {

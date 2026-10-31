@@ -34,11 +34,18 @@ class OwnerProfileView(views.APIView):
         """Actualizar perfil (firstName, lastName, phone)"""
         if not hasattr(request.user, 'owner_profile'):
             return Response({"error": "Perfil no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        owner = request.user.owner_profile
+        if owner.authProvider == 'google':
+            return Response(
+                {"error": "No es posible modificar los datos porque la cuenta está autenticada con Google."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
             
-        serializer = OwnerUpdateSerializer(request.user.owner_profile, data=request.data, partial=True)
+        serializer = OwnerUpdateSerializer(owner, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(OwnerSerializer(request.user.owner_profile).data, status=status.HTTP_200_OK)
+            return Response(OwnerSerializer(owner).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
@@ -74,9 +81,21 @@ class OwnerPasswordView(views.APIView):
 
     def post(self, request):
         """Cambio de contraseña (TDD-0002)"""
+        user = request.user
+        if hasattr(user, 'owner_profile') and user.owner_profile.authProvider == 'google':
+            return Response(
+                {"error": "No es posible cambiar la contraseña porque la cuenta está autenticada con Google."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.has_usable_password():
+            return Response(
+                {"error": "Esta cuenta no posee una contraseña local para modificar."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         serializer = ChangePasswordSerializer(data=request.data)
         if serializer.is_valid():
-            user = request.user
             if not user.check_password(serializer.validated_data['currentPassword']):
                 return Response({"error": "La contraseña actual es incorrecta."}, status=status.HTTP_400_BAD_REQUEST)
             

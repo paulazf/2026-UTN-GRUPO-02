@@ -63,6 +63,7 @@ class GoogleAuthTests(APITestCase):
         self.assertEqual(r.data["owner"]["email"], "martina.google@gmail.com")
         self.assertEqual(r.data["owner"]["firstName"], "Martina")
         self.assertEqual(r.data["owner"]["lastName"], "Lopez")
+        self.assertEqual(r.data["owner"]["authProvider"], "google")
 
         # Verificar persistencia en base de datos
         user = User.objects.get(username="martina.google@gmail.com")
@@ -72,6 +73,7 @@ class GoogleAuthTests(APITestCase):
 
         owner = Owner.objects.get(user=user)
         self.assertEqual(owner.email, "martina.google@gmail.com")
+        self.assertEqual(owner.authProvider, "google")
         self.assertFalse(owner.isDeleted)
 
         # Token DRF generado correctamente
@@ -102,6 +104,7 @@ class GoogleAuthTests(APITestCase):
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertFalse(r.data["isNewUser"])
         self.assertEqual(r.data["owner"]["idOwner"], owner.idOwner)
+        self.assertEqual(r.data["owner"]["authProvider"], "google")
 
         # No se crearon nuevos registros
         self.assertEqual(User.objects.count(), initial_user_count)
@@ -140,6 +143,67 @@ class GoogleAuthTests(APITestCase):
         r = self.client.post(URL_GOOGLE_AUTH, {"idToken": "valid-id-token"}, format="json")
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", r.data)
+
+    def test_google_auth_usuario_no_puede_modificar_perfil(self):
+        """Un usuario autenticado con Google no debe poder editar su perfil (400 Bad Request)."""
+        user = User.objects.create_user(
+            username="google.user@gmail.com",
+            email="google.user@gmail.com",
+            first_name="Google",
+            last_name="User"
+        )
+        user.set_unusable_password()
+        user.save()
+
+        owner = Owner.objects.create(
+            user=user,
+            email="google.user@gmail.com",
+            firstName="Google",
+            lastName="User",
+            authProvider="google"
+        )
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+        r = self.client.patch("/api/v1/owner/me/", {"firstName": "NuevoNombre"}, format="json")
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", r.data)
+        self.assertEqual(
+            r.data["error"],
+            "No es posible modificar los datos porque la cuenta está autenticada con Google."
+        )
+
+    def test_google_auth_usuario_no_puede_cambiar_password(self):
+        """Un usuario autenticado con Google no debe poder cambiar contraseña (400 Bad Request)."""
+        user = User.objects.create_user(
+            username="google.user@gmail.com",
+            email="google.user@gmail.com",
+            first_name="Google",
+            last_name="User"
+        )
+        user.set_unusable_password()
+        user.save()
+
+        owner = Owner.objects.create(
+            user=user,
+            email="google.user@gmail.com",
+            firstName="Google",
+            lastName="User",
+            authProvider="google"
+        )
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+        r = self.client.post("/api/v1/owner/me/password/", {
+            "currentPassword": "any",
+            "newPassword": "newpassword123"
+        }, format="json")
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", r.data)
+        self.assertEqual(
+            r.data["error"],
+            "No es posible cambiar la contraseña porque la cuenta está autenticada con Google."
+        )
 
 
 class VerifyGoogleIdTokenServiceTests(APITestCase):

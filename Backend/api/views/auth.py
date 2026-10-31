@@ -99,12 +99,16 @@ class GoogleAuthView(views.APIView):
                             status=status.HTTP_403_FORBIDDEN
                         )
                     owner = user.owner_profile
+                    if owner.authProvider != 'google':
+                        owner.authProvider = 'google'
+                        owner.save(update_fields=['authProvider'])
                 else:
                     owner = Owner.objects.create(
                         user=user,
                         email=email,
                         firstName=first_name,
-                        lastName=last_name
+                        lastName=last_name,
+                        authProvider='google'
                     )
             else:
                 user = User.objects.create_user(
@@ -121,7 +125,8 @@ class GoogleAuthView(views.APIView):
                     email=email,
                     firstName=first_name,
                     lastName=last_name,
-                    phone=None
+                    phone=None,
+                    authProvider='google'
                 )
                 is_new_user = True
 
