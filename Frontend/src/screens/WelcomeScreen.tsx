@@ -1,12 +1,18 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { useGoogleAuth } from '../services/googleAuth';
 
 export default function WelcomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [errorMsg, setErrorMsg] = useState('');
+  const { signInWithGoogle, isGoogleLoading } = useGoogleAuth((msg) => {
+    setErrorMsg(msg);
+    Alert.alert('Google Sign-In', msg);
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF5F3]">
@@ -24,6 +30,13 @@ export default function WelcomeScreen() {
         <Text className="text-[15px] text-[#718096] text-center mb-10 px-4 leading-relaxed">
           La app pensada para cuidar la salud, vacunas y felicidad de tus mejores amigos de cuatro patas.
         </Text>
+
+        {/* MENSAJE DE ERROR */}
+        {errorMsg ? (
+          <View className="w-full bg-red-100 border border-red-300 rounded-xl p-3 mb-4">
+            <Text className="text-red-700 text-[13px] text-center">{errorMsg}</Text>
+          </View>
+        ) : null}
 
         {/* BOTONES */}
         <View className="w-full space-y-4">
@@ -50,9 +63,19 @@ export default function WelcomeScreen() {
         </View>
 
         {/* BOTON GOOGLE */}
-        <TouchableOpacity className="bg-white border border-slate-200 rounded-full h-[52px] w-full justify-center items-center flex-row shadow-sm">
-          <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
-          <Text className="text-[#2D3748] text-[15px] font-semibold">Continuar con Google</Text>
+        <TouchableOpacity 
+          className="bg-white border border-slate-200 rounded-full h-[52px] w-full justify-center items-center flex-row shadow-sm"
+          onPress={signInWithGoogle}
+          disabled={isGoogleLoading}
+        >
+          {isGoogleLoading ? (
+            <ActivityIndicator color="#D8657B" />
+          ) : (
+            <>
+              <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
+              <Text className="text-[#2D3748] text-[15px] font-semibold">Continuar con Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
       </View>

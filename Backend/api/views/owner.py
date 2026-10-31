@@ -48,6 +48,12 @@ class OwnerProfileView(views.APIView):
     def patch(self, request):
         """Actualizar perfil (firstName, lastName, phone)"""
         owner = self.get_owner()
+        if owner.authProvider == 'google':
+            return Response(
+                {"error": "No es posible modificar los datos porque la cuenta está autenticada con Google."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
         serializer = OwnerUpdateSerializer(owner, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -83,9 +89,21 @@ class OwnerPasswordView(views.APIView):
 
     def post(self, request):
         """Cambio de contraseña (TDD-0002)"""
+        user = request.user
+        if hasattr(user, 'owner_profile') and user.owner_profile.authProvider == 'google':
+            return Response(
+                {"error": "No es posible cambiar la contraseña porque la cuenta está autenticada con Google."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.has_usable_password():
+            return Response(
+                {"error": "Esta cuenta no posee una contraseña local para modificar."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
-            user = request.user
             user.set_password(serializer.validated_data['newPassword'])
             user.save()
 

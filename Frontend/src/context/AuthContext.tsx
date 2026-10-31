@@ -3,10 +3,12 @@ import * as SecureStore from 'expo-secure-store';
 import axiosClient from '../api/axiosClient';
 
 interface OwnerData {
+  idOwner?: number;
   firstName: string;
   lastName: string;
   email: string;
   phone: string | null;
+  authProvider?: string;
 }
 
 interface AuthContextProps {

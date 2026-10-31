@@ -13,8 +13,8 @@ class OwnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Owner
-        fields = ['idOwner', 'firstName', 'lastName', 'email', 'phone', 'password']
-        read_only_fields = ['idOwner']
+        fields = ['idOwner', 'firstName', 'lastName', 'email', 'phone', 'authProvider', 'password']
+        read_only_fields = ['idOwner', 'authProvider']
 
     def validate_email(self, value):
         value = value.strip().lower()

@@ -10,6 +10,8 @@ export default function ChangePasswordScreen() {
   const navigation = useNavigation();
   const authContext = useContext(AuthContext);
 
+  const isGoogleUser = authContext?.userData?.authProvider === 'google';
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,6 +33,11 @@ export default function ChangePasswordScreen() {
 
   const handleSave = async () => {
     Keyboard.dismiss();
+    if (isGoogleUser) {
+      setErrorMsg('No es posible cambiar la contraseña porque la cuenta está autenticada con Google.');
+      return;
+    }
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setErrorMsg('Por favor completá todos los campos.');
       return;
@@ -120,6 +127,16 @@ export default function ChangePasswordScreen() {
           contentContainerStyle={{ paddingBottom: 60 }}
         >
         
+        {/* Banner para usuarios de Google */}
+        {isGoogleUser && (
+          <View className="flex-row items-center bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 shadow-xs">
+            <Ionicons name="information-circle-outline" size={24} color="#2563EB" />
+            <Text className="ml-3 text-blue-800 text-[13px] flex-1 leading-5">
+              Tu cuenta está autenticada con Google. No posees una contraseña local en PetLife para modificar.
+            </Text>
+          </View>
+        )}
+
         {errorMsg !== '' && (
           <View className="flex-row items-center bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
             <Ionicons name="warning-outline" size={20} color="#EF4444" />
@@ -134,75 +151,88 @@ export default function ChangePasswordScreen() {
           </View>
         )}
 
-        {/* INPUT CONTRASEÑA ACTUAL */}
-        <View className="mb-5">
-          <Text className="text-[11px] font-bold text-[#A0AEC0] mb-2 ml-1 tracking-widest uppercase">
-            Contraseña actual
-          </Text>
-          <View className="flex-row items-center bg-white border border-[#F4C7C7] rounded-full px-5 h-[52px]">
-            <TextInput
-              className="flex-1 text-[#2D3748] text-[15px]"
-              placeholder="••••••••"
-              placeholderTextColor="#CBD5E0"
-              secureTextEntry={!showCurrent}
-              value={currentPassword}
-              onChangeText={(text) => { setCurrentPassword(text); setErrorMsg(''); }}
-            />
-            <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)} className="pl-2">
-              <Ionicons name={showCurrent ? "eye-off" : "eye"} size={20} color="#A0AEC0" />
+        {isGoogleUser ? (
+          <View className="mt-4">
+            <TouchableOpacity 
+              className="bg-[#E2E8F0] rounded-full h-[52px] justify-center items-center shadow-xs flex-row mb-10"
+              onPress={() => navigation.goBack()}
+            >
+              <Text className="text-[#4A5568] text-[16px] font-bold">Volver</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        ) : (
+          <>
+            {/* INPUT CONTRASEÑA ACTUAL */}
+            <View className="mb-5">
+              <Text className="text-[11px] font-bold text-[#A0AEC0] mb-2 ml-1 tracking-widest uppercase">
+                Contraseña actual
+              </Text>
+              <View className="flex-row items-center bg-white border border-[#F4C7C7] rounded-full px-5 h-[52px]">
+                <TextInput
+                  className="flex-1 text-[#2D3748] text-[15px]"
+                  placeholder="••••••••"
+                  placeholderTextColor="#CBD5E0"
+                  secureTextEntry={!showCurrent}
+                  value={currentPassword}
+                  onChangeText={(text) => { setCurrentPassword(text); setErrorMsg(''); }}
+                />
+                <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)} className="pl-2">
+                  <Ionicons name={showCurrent ? "eye-off" : "eye"} size={20} color="#A0AEC0" />
+                </TouchableOpacity>
+              </View>
+            </View>
 
-        {/* INPUT NUEVA CONTRASEÑA */}
-        <View className="mb-5">
-          <Text className="text-[11px] font-bold text-[#A0AEC0] mb-2 ml-1 tracking-widest uppercase">
-            Nueva contraseña
-          </Text>
-          <View className="flex-row items-center bg-white border border-[#F4C7C7] rounded-full px-5 h-[52px]">
-            <TextInput
-              className="flex-1 text-[#2D3748] text-[15px]"
-              placeholder="••••••••"
-              placeholderTextColor="#CBD5E0"
-              secureTextEntry={!showNew}
-              value={newPassword}
-              onChangeText={(text) => { setNewPassword(text); setErrorMsg(''); }}
-            />
-            <TouchableOpacity onPress={() => setShowNew(!showNew)} className="pl-2">
-              <Ionicons name={showNew ? "eye-off" : "eye"} size={20} color="#A0AEC0" />
+            {/* INPUT NUEVA CONTRASEÑA */}
+            <View className="mb-5">
+              <Text className="text-[11px] font-bold text-[#A0AEC0] mb-2 ml-1 tracking-widest uppercase">
+                Nueva contraseña
+              </Text>
+              <View className="flex-row items-center bg-white border border-[#F4C7C7] rounded-full px-5 h-[52px]">
+                <TextInput
+                  className="flex-1 text-[#2D3748] text-[15px]"
+                  placeholder="••••••••"
+                  placeholderTextColor="#CBD5E0"
+                  secureTextEntry={!showNew}
+                  value={newPassword}
+                  onChangeText={(text) => { setNewPassword(text); setErrorMsg(''); }}
+                />
+                <TouchableOpacity onPress={() => setShowNew(!showNew)} className="pl-2">
+                  <Ionicons name={showNew ? "eye-off" : "eye"} size={20} color="#A0AEC0" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* INPUT CONFIRMAR CONTRASEÑA */}
+            <View className="mb-8">
+              <Text className="text-[11px] font-bold text-[#A0AEC0] mb-2 ml-1 tracking-widest uppercase">
+                Confirmar nueva contraseña
+              </Text>
+              <View className="flex-row items-center bg-white border border-[#F4C7C7] rounded-full px-5 h-[52px]">
+                <TextInput
+                  className="flex-1 text-[#2D3748] text-[15px]"
+                  placeholder="••••••••"
+                  placeholderTextColor="#CBD5E0"
+                  secureTextEntry={!showNew}
+                  value={confirmPassword}
+                  onChangeText={(text) => { setConfirmPassword(text); setErrorMsg(''); }}
+                />
+              </View>
+            </View>
+
+            {/* BOTON PRIMARIO */}
+            <TouchableOpacity 
+              className="bg-[#D8657B] rounded-full h-[52px] justify-center items-center shadow-sm flex-row mb-10"
+              onPress={handleSave}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text className="text-white text-[16px] font-bold">Actualizar contraseña</Text>
+              )}
             </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* INPUT CONFIRMAR CONTRASEÑA */}
-        <View className="mb-8">
-          <Text className="text-[11px] font-bold text-[#A0AEC0] mb-2 ml-1 tracking-widest uppercase">
-            Confirmar nueva contraseña
-          </Text>
-          <View className="flex-row items-center bg-white border border-[#F4C7C7] rounded-full px-5 h-[52px]">
-            <TextInput
-              className="flex-1 text-[#2D3748] text-[15px]"
-              placeholder="••••••••"
-              placeholderTextColor="#CBD5E0"
-              secureTextEntry={!showNew}
-              value={confirmPassword}
-              onChangeText={(text) => { setConfirmPassword(text); setErrorMsg(''); }}
-            />
-          </View>
-        </View>
-
-        {/* BOTON PRIMARIO */}
-        <TouchableOpacity 
-          className="bg-[#D8657B] rounded-full h-[52px] justify-center items-center shadow-sm flex-row mb-10"
-          onPress={handleSave}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text className="text-white text-[16px] font-bold">Actualizar contraseña</Text>
-          )}
-        </TouchableOpacity>
+          </>
+        )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

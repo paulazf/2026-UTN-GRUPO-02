@@ -6,10 +6,12 @@ import { AuthContext } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useGoogleAuth } from '../services/googleAuth';
 
 export default function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const authContext = useContext(AuthContext);
+  const { signInWithGoogle, isGoogleLoading } = useGoogleAuth((msg) => setErrorMsg(msg));
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -266,9 +268,19 @@ export default function RegisterScreen() {
           </TouchableOpacity>
 
           {/* BOTON GOOGLE */}
-          <TouchableOpacity className="bg-white border border-slate-200 rounded-full h-[52px] justify-center items-center flex-row shadow-sm">
-            <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
-            <Text className="text-[#2D3748] text-[15px] font-semibold">Continuar con Google</Text>
+          <TouchableOpacity 
+            className="bg-white border border-slate-200 rounded-full h-[52px] justify-center items-center flex-row shadow-sm"
+            onPress={signInWithGoogle}
+            disabled={isLoading || isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <ActivityIndicator color="#D8657B" />
+            ) : (
+              <>
+                <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
+                <Text className="text-[#2D3748] text-[15px] font-semibold">Continuar con Google</Text>
+              </>
+            )}
           </TouchableOpacity>
 
           {/* FOOTER - INICIAR SESIÓN */}
