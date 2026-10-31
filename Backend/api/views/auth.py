@@ -19,28 +19,28 @@ class LoginView(views.APIView):
 
         if not email or not password:
             return Response(
-                {"error": "Debe proporcionar email y contraseña."},
+                {"detail": "Debe proporcionar email y contraseña."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # Autentica usando el email como username
-        user = authenticate(request, username=email.lower(), password=password)
+        user = authenticate(request, username=(email or "").strip().lower(), password=password)
 
         if not user:
             return Response(
-                {"error": "Credenciales inválidas."},
+                {"detail": "Credenciales inválidas."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
         if not hasattr(user, 'owner_profile'):
             return Response(
-                {"error": "Este usuario no tiene un perfil de Dueño."},
+                {"detail": "Este usuario no tiene un perfil de Dueño."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
         if user.owner_profile.isDeleted:
             return Response(
-                {"error": "Esta cuenta ha sido eliminada. Comuníquese con soporte."},
+                {"detail": "Esta cuenta ha sido eliminada. Comuníquese con soporte."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -60,7 +60,7 @@ class LogoutView(views.APIView):
             return Response({"detail": "Sesión cerrada exitosamente."}, status=status.HTTP_200_OK)
         except Exception:
             return Response(
-                {"error": "Algo salió mal al cerrar la sesión."},
+                {"detail": "Algo salió mal al cerrar la sesión."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

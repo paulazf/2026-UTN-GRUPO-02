@@ -1,11 +1,12 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import axiosClient from '../api/axiosClient';
 
 interface OwnerData {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone: string | null;
 }
 
 interface AuthContextProps {
@@ -63,6 +64,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     setIsLoading(true);
     try {
+      try {
+        await axiosClient.post('/auth/logout/');
+      } catch (err) {
+        // Tolerante a fallos si el dispositivo está sin conexión o el token expiró
+        console.warn('No se pudo invalidar la sesión en el servidor:', err);
+      }
       await SecureStore.deleteItemAsync('userToken');
       await SecureStore.deleteItemAsync('userData');
       setUserToken(null);

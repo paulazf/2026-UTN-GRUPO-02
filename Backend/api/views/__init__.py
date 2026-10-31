@@ -13,6 +13,7 @@ from .geo import ProvinceViewSet, CityViewSet
 from .address import AddressViewSet
 from .appointment import AppointmentViewSet
 from .feeding import FeedingViewSet
+from .calendar import CalendarEventsView
 
 __all__ = [
     "BreedViewSet",
@@ -34,4 +35,5 @@ __all__ = [
     "AddressViewSet",
     "AppointmentViewSet",
     "FeedingViewSet",
+    "CalendarEventsView",
 ]
