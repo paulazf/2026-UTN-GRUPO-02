@@ -5,10 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 import { useNavigation } from '@react-navigation/native';
+import { useGoogleAuth } from '../services/googleAuth';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const authContext = useContext(AuthContext);
+  const { signInWithGoogle, isGoogleLoading } = useGoogleAuth((msg) => setErrorMsg(msg));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -143,15 +145,25 @@ export default function LoginScreen() {
         </View>
 
         {/* BOTON GOOGLE */}
-        <TouchableOpacity className="bg-white border border-slate-200 rounded-full h-[52px] justify-center items-center flex-row shadow-sm">
-          <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
-          <Text className="text-[#2D3748] text-[15px] font-semibold">Continuar con Google</Text>
+        <TouchableOpacity 
+          className="bg-white border border-slate-200 rounded-full h-[52px] justify-center items-center flex-row shadow-sm"
+          onPress={signInWithGoogle}
+          disabled={isLoading || isGoogleLoading}
+        >
+          {isGoogleLoading ? (
+            <ActivityIndicator color="#D8657B" />
+          ) : (
+            <>
+              <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
+              <Text className="text-[#2D3748] text-[15px] font-semibold">Continuar con Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* FOOTER - CREAR CUENTA */}
         <View className="flex-row justify-center mt-auto mb-10">
           <Text className="text-[#718096] text-[15px]">¿No tenés cuenta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
             <Text className="text-[#D8657B] text-[15px] font-bold">Crear cuenta</Text>
           </TouchableOpacity>
         </View>
