@@ -11,6 +11,7 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import DashboardScreen from './screens/DashboardScreen';
 import PetListScreen from './screens/pet/PetListScreen';
 import PetDetailScreen from './screens/pet/PetDetailScreen';
+import CalendarScreen from './screens/CalendarScreen';
 import CreatePetModal from './components/pet/CreatePetModal';
 import BottomNavBar, { NavTab } from './components/BottomNavBar';
 
@@ -64,6 +65,7 @@ function MainTabs() {
             onSelectPet={handleSelectPet}
             onViewAllPets={() => setCurrentTab('MASCOTAS')}
             onOpenCreatePet={() => setIsModalOpen(true)}
+            onNavigateToCalendar={() => setCurrentTab('CALENDARIO')}
             refreshTrigger={refreshTrigger}
           />
         ) : currentTab === 'MASCOTAS' ? (
@@ -72,6 +74,8 @@ function MainTabs() {
             onOpenCreatePet={() => setIsModalOpen(true)}
             refreshTrigger={refreshTrigger}
           />
+          ) : currentTab === 'CALENDARIO' ? (
+          <CalendarScreen />
         ) : (
           <SafeAreaView className="flex-1 items-center justify-center p-6">
             <Ionicons name="calendar-outline" size={40} color="#DE6B80" style={{ marginBottom: 8 }} />
