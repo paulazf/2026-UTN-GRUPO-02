@@ -7,6 +7,13 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "utngrupo02",
+    "ios": {
+      "bundleIdentifier": "com.utn.grupo02",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
     "android": {
       "package": "com.utn.grupo02",
       "adaptiveIcon": {
