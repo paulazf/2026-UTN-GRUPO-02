@@ -28,11 +28,11 @@
       "expo-font",
       "expo-web-browser"
     ],
+    "owner": "grupo-02-utn",
     "extra": {
       "eas": {
-        "projectId": "576211ea-a363-4155-8370-d24ecd7b02be"
+        "projectId": "2c821368-5bcb-4cb3-ab5a-467ab9137ced"
       }
-    },
-    "owner": "grupo-02-utn"
+    }
   }
 }
