@@ -6,6 +6,12 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "utngrupo02",
+    "android": {
+      "package": "com.utn.grupo02",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
     "plugins": [
       "expo-status-bar",
       "expo-secure-store",
