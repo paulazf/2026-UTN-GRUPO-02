@@ -322,7 +322,7 @@ Pruebas manuales sobre el backend deployado y sobre celulares reales:
 ### Etapa 6: Proyecto de EAS compartido (ambos)
 - [x] Crear organización `grupo-02-utn` en expo.dev e invitar integrantes.
 - [x] Actualizar `owner` en `app.json` a `grupo-02-utn`.
-- [ ] Confirmar que el `projectId` de `app.json` es el del proyecto dentro de la organización.
+- [x] Vincular `app.json` al proyecto de la organización (`projectId` 2c821368-5bcb-4cb3-ab5a-467ab9137ced).
 - [ ] Ajustar el build number remoto (`eas build:version:set -p ios`) por encima del último subido a TestFlight.
 
 ### Etapa 7: Distribución (ambos)
