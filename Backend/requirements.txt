@@ -9,3 +9,7 @@ sqlparse==0.6.0
 tzdata==2026.4
 google-auth>=2.30.0
 requests>=2.28.0
+gunicorn>=23.0.0
+whitenoise>=6.8.2
+dj-database-url>=2.3.0
+
