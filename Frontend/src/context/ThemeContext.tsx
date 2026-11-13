@@ -4,6 +4,7 @@ import { vars } from 'nativewind';
 import * as SecureStore from 'expo-secure-store';
 import { currentCalendarSeason, Season, SeasonId, SeasonPalette, SEASONS } from '../theme/seasons';
 import { hexToRgbTriplet, setBrand } from '../theme/brand';
+import { syncAppIcon } from '../theme/appIcon';
 
 const STORAGE_KEY = 'seasonalThemeEnabled';
 
@@ -45,6 +46,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {});
   }, []);
+
+  // Ícono de la app en el celular: sigue la temporada real (fecha + interruptor de Perfil).
+  // La vista previa de desarrollo no lo cambia, para no disparar el aviso de iOS en cada prueba.
+  const iconSeason: SeasonId = enabled ? calendarSeasonId : 'original';
+  useEffect(() => {
+    syncAppIcon(iconSeason);
+  }, [iconSeason]);
 
   const setEnabled = useCallback((value: boolean) => {
     setEnabledState(value);
