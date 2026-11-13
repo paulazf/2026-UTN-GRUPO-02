@@ -47,9 +47,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, []);
 
-  // Ícono de la app en el celular: sigue la temporada real (fecha + interruptor de Perfil).
-  // La vista previa de desarrollo no lo cambia, para no disparar el aviso de iOS en cada prueba.
-  const iconSeason: SeasonId = enabled ? calendarSeasonId : 'original';
+  // Ícono de la app en el celular: sigue la temporada que se está mostrando
+  // (fecha + interruptor de Perfil, o la vista previa en los builds de prueba).
+  const iconSeason: SeasonId = previewSeason ?? (enabled ? calendarSeasonId : 'original');
   useEffect(() => {
     syncAppIcon(iconSeason);
   }, [iconSeason]);

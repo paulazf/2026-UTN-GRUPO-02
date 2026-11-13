@@ -125,3 +125,10 @@ export function currentCalendarSeason(): SeasonId {
   if (forced && forced in SEASONS) return forced;
   return seasonForDate(new Date());
 }
+
+/**
+ * Selector de festividades en Perfil, para probar y mostrar las temáticas.
+ * Siempre visible en desarrollo; en un build solo si EXPO_PUBLIC_SEASON_PREVIEW=true (eas.json).
+ * Para la versión final en la tienda hay que sacar esa variable: el usuario solo puede apagar la temática.
+ */
+export const SEASON_PREVIEW_ENABLED = __DEV__ || process.env.EXPO_PUBLIC_SEASON_PREVIEW === 'true';

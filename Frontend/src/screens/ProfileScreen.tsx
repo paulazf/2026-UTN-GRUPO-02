@@ -7,7 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import { fetchPets } from '../services/petService';
 import ProfileDeletePetModal from '../components/pet/ProfileDeletePetModal';
 import { useSeasonTheme } from '../context/ThemeContext';
-import { SEASONS, SeasonId } from '../theme/seasons';
+import { SEASON_PREVIEW_ENABLED, SEASONS, SeasonId } from '../theme/seasons';
 import PawLogo from '../components/brand/PawLogo';
 
 export default function ProfileScreen() {
@@ -132,11 +132,11 @@ export default function ProfileScreen() {
             />
           </View>
 
-          {/* Solo en desarrollo: probar cada festividad sin esperar la fecha */}
-          {__DEV__ && (
+          {/* Solo para pruebas: probar cada festividad sin esperar la fecha */}
+          {SEASON_PREVIEW_ENABLED && (
             <View className="mb-3 rounded-3xl border border-dashed border-[#E0D3CD] bg-white p-4">
               <Text className="text-xs font-bold uppercase tracking-wider text-[#8C7B77]">
-                Vista previa (solo desarrollo)
+                Vista previa de festividades (pruebas)
               </Text>
               <View className="mt-3 flex-row flex-wrap gap-2">
                 {(Object.keys(SEASONS) as SeasonId[]).map((id) => {
