@@ -15,6 +15,7 @@ import {
 import { todayIso } from '../../utils/dates';
 import AppointmentCard from './AppointmentCard';
 import CreateAppointmentModal from './CreateAppointmentModal';
+import { brand } from '../../theme/brand';
 
 interface AppointmentListProps {
   petId: number;
@@ -138,7 +139,7 @@ export default function AppointmentList({ petId, petBirthDate }: AppointmentList
 
         <Pressable
           onPress={handleOpenCreate}
-          className="rounded-full bg-[#D9627A] px-4 py-2 shadow-xs active:opacity-85"
+          className="rounded-full bg-brand px-4 py-2 shadow-xs active:opacity-85"
         >
           <Text className="text-xs font-bold text-white">+ Agendar</Text>
         </Pressable>
@@ -147,7 +148,7 @@ export default function AppointmentList({ petId, petBirthDate }: AppointmentList
       {/* Estados: Loading, Error, Vacío o Lista */}
       {loading ? (
         <View className="items-center py-12">
-          <ActivityIndicator size="large" color="#DE6B80" />
+          <ActivityIndicator size="large" color={brand.accent} />
           <Text className="mt-3 text-xs text-[#8C7B77]">Cargando turnos...</Text>
         </View>
       ) : error ? (
@@ -157,18 +158,18 @@ export default function AppointmentList({ petId, petBirthDate }: AppointmentList
           </Text>
           <Pressable
             onPress={loadAppointments}
-            className="rounded-xl bg-[#FCECEF] px-4 py-2 active:opacity-80"
+            className="rounded-xl bg-brand-tint px-4 py-2 active:opacity-80"
           >
-            <Text className="text-xs font-bold text-[#DE6B80]">Reintentar</Text>
+            <Text className="text-xs font-bold text-brand">Reintentar</Text>
           </Pressable>
         </View>
       ) : appointments.length === 0 ? (
         <Pressable
           onPress={handleOpenCreate}
-          className="items-center rounded-3xl border-2 border-dashed border-[#D9627A] bg-[#FDF0F3] p-8 active:opacity-75"
+          className="items-center rounded-3xl border-2 border-dashed border-brand bg-brand-tint p-8 active:opacity-75"
         >
-          <Ionicons name="calendar-outline" size={28} color="#D9627A" />
-          <Text className="mt-2 text-sm font-extrabold text-[#D9627A]">
+          <Ionicons name="calendar-outline" size={28} color={brand.accent} />
+          <Text className="mt-2 text-sm font-extrabold text-brand">
             Todavía no hay turnos agendados
           </Text>
           <Text className="mt-1 text-center text-xs font-medium text-[#A07878]">
@@ -182,8 +183,8 @@ export default function AppointmentList({ petId, petBirthDate }: AppointmentList
             title="Próximos turnos"
             count={upcomingAppointments.length}
             icon="calendar"
-            iconColor="#DE6B80"
-            iconBg="#FCECEF"
+            iconColor={brand.accent}
+            iconBg={brand.tint}
             expanded={showUpcoming}
             onToggle={() => setShowUpcoming((prev) => !prev)}
           >

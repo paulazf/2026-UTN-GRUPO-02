@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { PetSpecies } from '../../types/pet';
 import { Vaccine, VaccineType } from '../../types/vaccinePet';
 import { fetchVaccines } from '../../services/vaccinePetService';
+import { brand } from '../../theme/brand';
 
 interface VaccinePickerProps {
   species: PetSpecies;
@@ -82,7 +83,7 @@ export default function VaccinePicker({
           disabled
             ? 'border-[#F0E4DF] bg-[#F3EEEB]'
             : isOpen
-              ? 'border-[#DE6B80] bg-[#FFF8F9] active:opacity-80'
+              ? 'border-brand bg-brand-soft active:opacity-80'
               : 'border-[#F0E4DF] bg-[#FAF5F2] active:opacity-80'
         }`}
       >
@@ -126,14 +127,14 @@ export default function VaccinePicker({
 
           {loading ? (
             <View className="items-center py-4">
-              <ActivityIndicator color="#DE6B80" />
+              <ActivityIndicator color={brand.accent} />
               <Text className="mt-2 text-xs text-[#8C7B77]">Cargando catálogo...</Text>
             </View>
           ) : loadError ? (
             <View className="items-center py-3">
               <Text className="mb-2 text-center text-xs text-red-500">{loadError}</Text>
-              <Pressable onPress={loadCatalog} className="rounded-xl bg-[#FCECEF] px-4 py-2 active:opacity-80">
-                <Text className="text-xs font-bold text-[#DE6B80]">Reintentar</Text>
+              <Pressable onPress={loadCatalog} className="rounded-xl bg-brand-tint px-4 py-2 active:opacity-80">
+                <Text className="text-xs font-bold text-brand">Reintentar</Text>
               </Pressable>
             </View>
           ) : (
@@ -165,14 +166,14 @@ export default function VaccinePicker({
                               setIsOpen(false);
                               setSearch('');
                             }}
-                            className={`flex-row items-center justify-between rounded-xl px-3 py-2.5 active:bg-[#FCECEF] ${
-                              isSelected ? 'bg-[#FCECEF]' : ''
+                            className={`flex-row items-center justify-between rounded-xl px-3 py-2.5 active:bg-brand-tint ${
+                              isSelected ? 'bg-brand-tint' : ''
                             }`}
                           >
                             <View className="flex-1 pr-2">
                               <Text
                                 className={`text-sm ${
-                                  isSelected ? 'font-bold text-[#DE6B80]' : 'text-[#2B1D1D]'
+                                  isSelected ? 'font-bold text-brand' : 'text-[#2B1D1D]'
                                 }`}
                               >
                                 {vaccine.name}
@@ -183,7 +184,7 @@ export default function VaccinePicker({
                                 </Text>
                               )}
                             </View>
-                            {isSelected && <Ionicons name="checkmark" size={16} color="#DE6B80" />}
+                            {isSelected && <Ionicons name="checkmark" size={16} color={brand.accent} />}
                           </Pressable>
                         );
                       })}

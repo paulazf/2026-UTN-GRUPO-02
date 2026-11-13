@@ -17,6 +17,7 @@ import { fetchCalendarEvents } from '../services/calendarService';
 import CalendarFilterPills from '../components/calendar/CalendarFilterPills';
 import CalendarEventCard from '../components/calendar/CalendarEventCard';
 import { useSeasonTheme } from '../context/ThemeContext';
+import { brand } from '../theme/brand';
 
 const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -238,7 +239,7 @@ export default function CalendarScreen() {
           <>
             {/* Sección 1: Vencidas (Colapsada por defecto, solo visible si hay vacunas vencidas) */}
             {expiredEvents.length > 0 && (
-              <View className="mb-7 rounded-2xl border border-[#FDE8E8] bg-[#FFF5F5] overflow-hidden shadow-xs">
+              <View className="mb-7 rounded-2xl border border-brand-tint bg-[#FFF5F5] overflow-hidden shadow-xs">
                 <Pressable
                   onPress={() => setIsExpiredExpanded(!isExpiredExpanded)}
                   className="flex-row items-center justify-between p-4 active:opacity-75"
@@ -295,9 +296,9 @@ export default function CalendarScreen() {
 
                   {/* Badge de advertencia de vencimiento en el mes */}
                   {group.hasVaccineExpiration && (
-                    <View className="flex-row items-center gap-1.5 rounded-full bg-[#FDE8E8] px-2.5 py-1 border border-[#f0c0c0]">
-                      <Ionicons name="warning-outline" size={13} color="#DE6B80" />
-                      <Text className="text-xs font-bold text-[#DE6B80]">
+                    <View className="flex-row items-center gap-1.5 rounded-full bg-brand-tint px-2.5 py-1 border border-[#f0c0c0]">
+                      <Ionicons name="warning-outline" size={13} color={brand.accent} />
+                      <Text className="text-xs font-bold text-brand">
                         Vencimiento
                       </Text>
                     </View>

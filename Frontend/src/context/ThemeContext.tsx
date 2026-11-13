@@ -1,6 +1,9 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { View } from 'react-native';
+import { vars } from 'nativewind';
 import * as SecureStore from 'expo-secure-store';
 import { currentCalendarSeason, Season, SeasonId, SeasonPalette, SEASONS } from '../theme/seasons';
+import { hexToRgbTriplet, setBrand } from '../theme/brand';
 
 const STORAGE_KEY = 'seasonalThemeEnabled';
 
@@ -61,7 +64,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
   }, [enabled, calendarSeasonId, setEnabled, previewSeason]);
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  // Colores para las props (Ionicons, ActivityIndicator...) y variables CSS para las clases brand-*.
+  setBrand(value.palette);
+  const cssVars = useMemo(
+    () =>
+      vars({
+        '--brand': hexToRgbTriplet(value.palette.accent),
+        '--brand-header': hexToRgbTriplet(value.palette.header),
+        '--brand-tint': hexToRgbTriplet(value.palette.tint),
+        '--brand-soft': hexToRgbTriplet(value.palette.soft),
+      }),
+    [value.palette],
+  );
+
+  return (
+    <ThemeContext.Provider value={value}>
+      <View className="flex-1" style={cssVars}>
+        {children}
+      </View>
+    </ThemeContext.Provider>
+  );
 }
 
 export const useSeasonTheme = () => useContext(ThemeContext);

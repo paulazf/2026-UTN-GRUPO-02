@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
+import { brand } from '../theme/brand';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
@@ -64,7 +65,7 @@ export default function SettingsScreen() {
           onPress={() => navigation.goBack()}
           disabled={isDeleting}
         >
-          <Ionicons name="arrow-back" size={20} color="#D8657B" />
+          <Ionicons name="arrow-back" size={20} color={brand.accent} />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-[18px] font-bold text-[#2D3748] mr-10">
           Configuración
@@ -97,8 +98,8 @@ export default function SettingsScreen() {
           onPress={() => navigation.navigate('EditProfile' as never)}
           disabled={isDeleting}
         >
-          <View className="w-10 h-10 bg-[#FCE8E8] rounded-full justify-center items-center mr-4">
-            <Ionicons name="person-outline" size={20} color="#D8657B" />
+          <View className="w-10 h-10 bg-brand-tint rounded-full justify-center items-center mr-4">
+            <Ionicons name="person-outline" size={20} color={brand.accent} />
           </View>
           <View className="flex-1">
             <Text className="text-[#2D3748] text-[16px] font-semibold">Editar perfil</Text>
@@ -150,8 +151,8 @@ export default function SettingsScreen() {
           onPress={() => authContext?.logout()}
           disabled={isDeleting}
         >
-          <Ionicons name="log-out-outline" size={24} color="#D8657B" className="mr-2" />
-          <Text className="text-[#D8657B] text-[16px] font-bold">Cerrar sesión</Text>
+          <Ionicons name="log-out-outline" size={24} color={brand.accent} className="mr-2" />
+          <Text className="text-brand text-[16px] font-bold">Cerrar sesión</Text>
         </TouchableOpacity>
 
       </ScrollView>

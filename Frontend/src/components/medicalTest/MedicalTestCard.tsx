@@ -9,6 +9,7 @@ import {
   STATUS_LABELS,
 } from '../../types/medicalTest';
 import { isoToDisplay } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 interface MedicalTestCardProps {
   test: MedicalTest;
@@ -137,8 +138,8 @@ function ActionButton({ icon, label, onPress, danger = false }: ActionButtonProp
         danger ? 'bg-[#FCEAEA]' : 'bg-[#FDF5F0]'
       }`}
     >
-      <Ionicons name={icon} size={14} color={danger ? '#B92020' : '#D9627A'} />
-      <Text className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-[#D9627A]'}`}>{label}</Text>
+      <Ionicons name={icon} size={14} color={danger ? '#B92020' : brand.accent} />
+      <Text className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-brand'}`}>{label}</Text>
     </Pressable>
   );
 }
@@ -160,14 +161,14 @@ function FileRow({
           <Image source={{ uri: file.url }} className="h-9 w-9 rounded-xl bg-[#F0DDD5]" />
         ) : (
           <View className="h-9 w-9 items-center justify-center rounded-xl bg-white">
-            <Ionicons name="document-text-outline" size={18} color="#D9627A" />
+            <Ionicons name="document-text-outline" size={18} color={brand.accent} />
           </View>
         )}
         <View className="flex-1">
           <Text className="text-xs font-bold text-[#3D2020]" numberOfLines={1}>
             {file.name}
           </Text>
-          <Text className="text-[10px] font-semibold text-[#D9627A]">
+          <Text className="text-[10px] font-semibold text-brand">
             {isImage ? 'Ver imagen' : 'Ver PDF'}
           </Text>
         </View>
@@ -178,7 +179,7 @@ function FileRow({
         className="h-8 w-8 items-center justify-center rounded-full bg-white active:opacity-75"
         accessibilityLabel={`Compartir ${file.name}`}
       >
-        <Ionicons name="share-outline" size={16} color="#D9627A" />
+        <Ionicons name="share-outline" size={16} color={brand.accent} />
       </Pressable>
     </View>
   );

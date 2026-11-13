@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
+import { brand } from '../theme/brand';
 
 export default function EditProfileScreen() {
   const navigation = useNavigation();
@@ -110,7 +111,7 @@ export default function EditProfileScreen() {
           className="w-10 h-10 bg-white rounded-full justify-center items-center shadow-sm"
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={20} color="#D8657B" />
+          <Ionicons name="arrow-back" size={20} color={brand.accent} />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-[18px] font-bold text-[#2D3748] mr-10">
           Editar perfil
@@ -238,7 +239,7 @@ export default function EditProfileScreen() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity 
-            className="bg-[#D8657B] rounded-full h-[52px] justify-center items-center shadow-sm flex-row mb-10"
+            className="bg-brand rounded-full h-[52px] justify-center items-center shadow-sm flex-row mb-10"
             onPress={handleSave}
             disabled={isLoading}
           >

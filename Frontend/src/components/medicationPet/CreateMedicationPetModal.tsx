@@ -16,6 +16,7 @@ import { Medication, MedicationPet } from '../../types/medicationPet';
 import { createMedicationPet, updateMedicationPet } from '../../services/medicationPetService';
 import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
 import MedicationPicker from './MedicationPicker';
+import { brand } from '../../theme/brand';
 
 interface CreateMedicationPetModalProps {
   visible: boolean;
@@ -214,9 +215,9 @@ export default function CreateMedicationPetModal({
             <Pressable
               onPress={handleClose}
               hitSlop={10}
-              className="h-8 w-8 items-center justify-center rounded-full bg-[#FCECEF] active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full bg-brand-tint active:opacity-70"
             >
-              <Ionicons name="close" size={18} color="#DE6B80" />
+              <Ionicons name="close" size={18} color={brand.accent} />
             </Pressable>
           </View>
 
@@ -232,8 +233,8 @@ export default function CreateMedicationPetModal({
                   MEDICAMENTO
                 </Text>
                 <View className="flex-row items-center rounded-2xl border border-[#F0E4DF] bg-[#FAF5F2] px-4 py-3.5">
-                  <View className="h-9 w-9 items-center justify-center rounded-xl bg-[#FCECEF]">
-                    <Ionicons name="medkit" size={18} color="#DE6B80" />
+                  <View className="h-9 w-9 items-center justify-center rounded-xl bg-brand-tint">
+                    <Ionicons name="medkit" size={18} color={brand.accent} />
                   </View>
                   <View className="ml-3 flex-1">
                     <Text className="text-sm font-bold text-[#2B1D1D]">
@@ -366,7 +367,7 @@ export default function CreateMedicationPetModal({
             <Pressable
               onPress={handleSubmit}
               disabled={submitting}
-              className="items-center justify-center rounded-2xl bg-[#D9627A] py-4 shadow-sm active:opacity-85"
+              className="items-center justify-center rounded-2xl bg-brand py-4 shadow-sm active:opacity-85"
             >
               {submitting ? (
                 <ActivityIndicator color="#FFFFFF" />
