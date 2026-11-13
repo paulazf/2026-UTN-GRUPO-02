@@ -1,5 +1,5 @@
-import React from 'react';
-import Svg, { Circle, Path } from 'react-native-svg';
+import React, { useId } from 'react';
+import Svg, { Circle, ClipPath, Defs, G, Path } from 'react-native-svg';
 import { SeasonId } from '../../theme/seasons';
 
 interface PawLogoProps {
@@ -45,6 +45,23 @@ const PETALS = [
   'M100 141C96.8724 138.728 91.7053 140.508 88.459 144.976C85.2128 149.444 85.1167 154.908 88.2443 157.18C91.372 159.453 96.539 157.673 99.7853 153.205C103.032 148.737 103.128 143.272 100 141Z',
   'M100 141C101.195 137.323 97.9051 132.959 92.6526 131.252C87.4 129.546 82.1735 131.143 80.9789 134.82C79.7842 138.496 83.0738 142.861 88.3263 144.567C93.5789 146.274 98.8053 144.677 100 141Z',
 ];
+// Glitter de Navidad: puntitos fijos (siempre los mismos) que se recortan a la silueta de la huella.
+const GLITTER_DOTS = (() => {
+  let seed = 7;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  return Array.from({ length: 320 }, () => ({
+    x: 12 + rand() * 176,
+    y: 28 + rand() * 158,
+    r: 1.6 + rand() * 2.6,
+    tone: Math.floor(rand() * 3),
+    opacity: 0.35 + rand() * 0.55,
+  }));
+})();
+const isWhite = (c: string) => /^#?(fff|ffffff)$/i.test(c.trim());
+
 const PUMPKIN_ORANGE = '#E0742A';
 const PUMPKIN_DARK = '#2B1A12';
 const SUN_YELLOW = '#F6B40E';
@@ -52,6 +69,9 @@ const SUN_YELLOW = '#F6B40E';
 /** Logo de PetLife: la huella con el gesto de cada festividad adentro de la silueta. */
 export default function PawLogo({ season = 'original', size = 44, color = '#FFFFFF', cut = '#E87A8E' }: PawLogoProps) {
   const paw = season === 'halloween' ? PUMPKIN_ORANGE : color;
+  const clipId = `paw-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  // Sobre la huella blanca: brillos plateados y dorados. Sobre una huella de color: oscuros, rosados y blancos.
+  const glitterTones = isWhite(paw) ? ['#B9BDC9', '#E8C779', '#F2B8B8'] : ['#5E0A12', '#FF9AA2', '#FFFFFF'];
   const sunRays = Array.from({ length: 12 }, (_, i) => {
     const t = (i * Math.PI) / 6;
     return `M${100 + 17 * Math.cos(t)} ${141 + 17 * Math.sin(t)}L${100 + 23 * Math.cos(t)} ${141 + 23 * Math.sin(t)}`;
@@ -63,6 +83,24 @@ export default function PawLogo({ season = 'original', size = 44, color = '#FFFF
         ? HEART_TOES.map((d) => <Path key={d} d={d} fill={paw} />)
         : TOES.map((d) => <Path key={d} d={d} fill={paw} />)}
       <Path d={PAD} fill={paw} />
+
+      {season === 'navidad' && (
+        <>
+          <Defs>
+            <ClipPath id={clipId}>
+              {TOES.map((d) => (
+                <Path key={d} d={d} />
+              ))}
+              <Path d={PAD} />
+            </ClipPath>
+          </Defs>
+          <G clipPath={`url(#${clipId})`}>
+            {GLITTER_DOTS.map((dot, i) => (
+              <Circle key={i} cx={dot.x} cy={dot.y} r={dot.r} fill={glitterTones[dot.tone]} opacity={dot.opacity} />
+            ))}
+          </G>
+        </>
+      )}
 
       {(season === 'original' || season === 'sanValentin') && <Path d={HEART} fill={cut} />}
       {season === 'navidad' && <Path d={STAR} fill={cut} />}

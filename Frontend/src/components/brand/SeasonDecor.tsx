@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 import { SeasonId } from '../../theme/seasons';
 import { HEART } from './PawLogo';
@@ -8,9 +8,13 @@ interface SeasonDecorProps {
   season: SeasonId;
   /** "header": franja de 390 x 112 alineada a la derecha. "splash": pantalla completa de 390 x 844. */
   variant: 'header' | 'splash';
+  /** Color del trazo: blanco sobre el color de la temporada, el acento sobre fondos claros. */
+  color?: string;
+  opacity?: number;
 }
 
-const STROKE = { stroke: '#FFFFFF', strokeOpacity: 0.3, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+// El color y la opacidad del trazo se heredan del <G> que envuelve cada composición.
+const STROKE = { strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 const n = (v: number) => Math.round(v * 10) / 10;
 
 // ---------- piezas (todas de línea blanca, en coordenadas de un lienzo de 390 de ancho)
@@ -149,20 +153,36 @@ function splashDecor(season: SeasonId) {
 }
 
 /** Adornos de línea de cada festividad. Son decorativos: no reciben toques ni los lee el lector de pantalla. */
-export default function SeasonDecor({ season, variant }: SeasonDecorProps) {
+export default function SeasonDecor({ season, variant, color = '#FFFFFF', opacity = 0.3 }: SeasonDecorProps) {
+  // El SVG se dibuja con el tamaño real medido: con ancho y alto en porcentaje
+  // algunos dispositivos lo dejan en 0 x 0 y los adornos no se ven.
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const content = variant === 'header' ? headerDecor(season) : splashDecor(season);
   if (!content) return null;
+
   return (
-    <Svg
+    <View
       pointerEvents="none"
       accessible={false}
+      importantForAccessibility="no-hide-descendants"
       style={StyleSheet.absoluteFill}
-      width="100%"
-      height="100%"
-      viewBox={variant === 'header' ? '0 0 390 112' : '0 0 390 844'}
-      preserveAspectRatio={variant === 'header' ? 'xMaxYMin slice' : 'xMidYMid slice'}
+      onLayout={(e) => {
+        const { width, height } = e.nativeEvent.layout;
+        if (!size || size.width !== width || size.height !== height) setSize({ width, height });
+      }}
     >
-      {content}
-    </Svg>
+      {size && size.width > 0 && size.height > 0 ? (
+        <Svg
+          width={size.width}
+          height={size.height}
+          viewBox={variant === 'header' ? '0 0 390 112' : '0 0 390 844'}
+          preserveAspectRatio={variant === 'header' ? 'xMaxYMin slice' : 'xMidYMid slice'}
+        >
+          <G stroke={color} strokeOpacity={opacity}>
+            {content}
+          </G>
+        </Svg>
+      ) : null}
+    </View>
   );
 }
