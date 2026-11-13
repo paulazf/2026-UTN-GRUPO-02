@@ -27,9 +27,9 @@ export default function WelcomeScreen() {
         {/* LOGO DE LA TEMPORADA */}
         <View
           className="w-[200px] h-[200px] rounded-full justify-center items-center mb-8 border-[6px] border-[#FFF5F3] shadow-sm"
-          style={{ backgroundColor: palette.tint }}
+          style={{ backgroundColor: palette.header }}
         >
-          <PawLogo season={season} size={112} color={palette.accent} cut={palette.tint} />
+          <PawLogo season={season} size={112} color="#FFFFFF" cut={palette.header} />
         </View>
 
         {/* TEXTOS */}
