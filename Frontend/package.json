@@ -16,6 +16,7 @@
     "axios": "^1.20.0",
     "babel-preset-expo": "~58.0.0",
     "expo": "~58.0.25",
+    "expo-alternate-app-icons": "^11.0.0",
     "expo-auth-session": "~58.0.18",
     "expo-constants": "~58.0.16",
     "expo-crypto": "~58.0.8",
