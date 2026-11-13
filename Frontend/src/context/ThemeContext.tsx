@@ -13,6 +13,9 @@ interface ThemeContextValue {
   /** Preferencia del usuario: seguir las festividades o usar siempre la paleta original. */
   enabled: boolean;
   setEnabled: (value: boolean) => void;
+  /** Vista previa para probar una festividad fuera de fecha (no se guarda). null = seguir la fecha. */
+  previewSeason: SeasonId | null;
+  setPreviewSeason: (season: SeasonId | null) => void;
 }
 
 const fallback: ThemeContextValue = {
@@ -21,6 +24,8 @@ const fallback: ThemeContextValue = {
   calendarSeason: SEASONS.original,
   enabled: true,
   setEnabled: () => {},
+  previewSeason: null,
+  setPreviewSeason: () => {},
 };
 
 const ThemeContext = createContext<ThemeContextValue>(fallback);
@@ -28,6 +33,7 @@ const ThemeContext = createContext<ThemeContextValue>(fallback);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [enabled, setEnabledState] = useState(true);
   const [calendarSeasonId] = useState<SeasonId>(() => currentCalendarSeason());
+  const [previewSeason, setPreviewSeason] = useState<SeasonId | null>(null);
 
   useEffect(() => {
     SecureStore.getItemAsync(STORAGE_KEY)
@@ -43,15 +49,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<ThemeContextValue>(() => {
-    const season: SeasonId = enabled ? calendarSeasonId : 'original';
+    const season: SeasonId = previewSeason ?? (enabled ? calendarSeasonId : 'original');
     return {
       season,
       palette: SEASONS[season].palette,
       calendarSeason: SEASONS[calendarSeasonId],
       enabled,
       setEnabled,
+      previewSeason,
+      setPreviewSeason,
     };
-  }, [enabled, calendarSeasonId, setEnabled]);
+  }, [enabled, calendarSeasonId, setEnabled, previewSeason]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

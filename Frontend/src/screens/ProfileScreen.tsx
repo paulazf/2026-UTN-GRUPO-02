@@ -7,12 +7,13 @@ import { AuthContext } from '../context/AuthContext';
 import { fetchPets } from '../services/petService';
 import ProfileDeletePetModal from '../components/pet/ProfileDeletePetModal';
 import { useSeasonTheme } from '../context/ThemeContext';
+import { SEASONS, SeasonId } from '../theme/seasons';
 import PawLogo from '../components/brand/PawLogo';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const authContext = useContext(AuthContext);
-  const { palette, enabled, setEnabled, calendarSeason } = useSeasonTheme();
+  const { palette, enabled, setEnabled, calendarSeason, season, previewSeason, setPreviewSeason } = useSeasonTheme();
 
   const seasonSubtitle = !enabled
     ? 'Apagada · paleta original'
@@ -130,6 +131,37 @@ export default function ProfileScreen() {
               accessibilityLabel="Temática de temporada"
             />
           </View>
+
+          {/* Solo en desarrollo: probar cada festividad sin esperar la fecha */}
+          {__DEV__ && (
+            <View className="mb-3 rounded-3xl border border-dashed border-[#E0D3CD] bg-white p-4">
+              <Text className="text-xs font-bold uppercase tracking-wider text-[#8C7B77]">
+                Vista previa (solo desarrollo)
+              </Text>
+              <View className="mt-3 flex-row flex-wrap gap-2">
+                {(Object.keys(SEASONS) as SeasonId[]).map((id) => {
+                  const selected = previewSeason === id || (!previewSeason && season === id);
+                  return (
+                    <TouchableOpacity
+                      key={id}
+                      onPress={() => setPreviewSeason(id)}
+                      className="rounded-full px-3 py-1.5"
+                      style={{ backgroundColor: selected ? SEASONS[id].palette.header : '#F5ECE8' }}
+                    >
+                      <Text className="text-xs font-bold" style={{ color: selected ? '#FFFFFF' : '#2B1D1D' }}>
+                        {SEASONS[id].label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                {previewSeason && (
+                  <TouchableOpacity onPress={() => setPreviewSeason(null)} className="rounded-full px-3 py-1.5">
+                    <Text className="text-xs font-bold text-[#8C7B77]">Seguir la fecha</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
 
           <TouchableOpacity className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs">
             <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
