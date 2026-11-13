@@ -1,5 +1,5 @@
 import './global.css';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -111,7 +111,14 @@ function RootNavigator() {
 
   const { isLoading, userToken } = authContext;
 
-  if (isLoading) {
+  // La pantalla de carga se muestra al menos 1,5 s al abrir la app, para que se vea la marca.
+  const [minSplashDone, setMinSplashDone] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMinSplashDone(true), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading || !minSplashDone) {
     return <LoadingScreen />;
   }
 
