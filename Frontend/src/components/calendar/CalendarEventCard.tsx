@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { CalendarEvent } from '../../types/calendar';
+import { useSeasonTheme } from '../../context/ThemeContext';
 
 interface CalendarEventCardProps {
   event: CalendarEvent;
@@ -61,6 +62,7 @@ function formatDateDDMMAAAA(dateString: string): string {
 
 export default function CalendarEventCard({ event }: CalendarEventCardProps) {
   const style = getEntityStyle(event);
+  const { palette } = useSeasonTheme();
 
   // Regla de indicador derecho:
   // - En los próximos 10 días (1 a 10 días): se muestran los días que faltan (ej. 3d, 10d).
@@ -112,9 +114,10 @@ export default function CalendarEventCard({ event }: CalendarEventCardProps) {
         </View>
       ) : isToday ? (
         <View
-          className="rounded-full px-3 py-1 items-center justify-center bg-[#FDF2F4]"
+          className="rounded-full px-3 py-1 items-center justify-center"
+          style={{ backgroundColor: palette.tint }}
         >
-          <Text className="text-xs font-bold text-[#DE6B80]">
+          <Text className="text-xs font-bold" style={{ color: palette.accent }}>
             Hoy
           </Text>
         </View>

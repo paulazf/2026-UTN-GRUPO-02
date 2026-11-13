@@ -15,6 +15,8 @@ import { fetchPets } from '../services/petService';
 import { fetchCalendarEvents } from '../services/calendarService';
 import PetCarouselCard from '../components/pet/PetCarouselCard';
 import CalendarEventCard from '../components/calendar/CalendarEventCard';
+import BrandHeader from '../components/brand/BrandHeader';
+import { useSeasonTheme } from '../context/ThemeContext';
 
 interface DashboardScreenProps {
   onSelectPet: (petId: number) => void;
@@ -35,6 +37,7 @@ export default function DashboardScreen({
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { palette } = useSeasonTheme();
 
   const loadData = async () => {
     try {
@@ -101,19 +104,18 @@ export default function DashboardScreen({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DE6B80" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.accent} />
         }
       >
-        {/* Espacio para integrar datos del usuario */}
-        <View className="h-24 rounded-b-[40px] bg-[#E87A8E] shadow-sm justify-center px-6">
-        </View>
+        {/* Header de marca: logo, nombre y adornos de la temporada */}
+        <BrandHeader />
 
         <View className="px-5 mt-6">
           {/* Sección mis mascotas */}
           <View className="mb-3 flex-row items-center justify-between">
             <Text className="text-lg font-bold text-[#2B1D1D]">Mis mascotas</Text>
             <Pressable onPress={onViewAllPets} className="active:opacity-70">
-              <Text className="text-xs font-semibold text-[#DE6B80]">Ver todas</Text>
+              <Text className="text-xs font-semibold" style={{ color: palette.accent }}>Ver todas</Text>
             </Pressable>
           </View>
 
@@ -130,12 +132,16 @@ export default function DashboardScreen({
             {/* Tarjeta para agregar mascota */}
             <Pressable
               onPress={onOpenCreatePet}
-              className="w-32 items-center justify-center rounded-3xl border-2 border-dashed border-[#DE6B80] bg-[#FFF8F9] p-4 active:opacity-75"
+              className="w-32 items-center justify-center rounded-3xl border-2 border-dashed p-4 active:opacity-75"
+              style={{ borderColor: palette.accent, backgroundColor: palette.soft }}
             >
-              <View className="mb-1 h-9 w-9 items-center justify-center rounded-full bg-[#FCECEF]">
-                <Text className="text-lg font-bold text-[#DE6B80]">+</Text>
+              <View
+                className="mb-1 h-9 w-9 items-center justify-center rounded-full"
+                style={{ backgroundColor: palette.tint }}
+              >
+                <Text className="text-lg font-bold" style={{ color: palette.accent }}>+</Text>
               </View>
-              <Text className="text-center text-xs font-bold text-[#DE6B80]">Agregar</Text>
+              <Text className="text-center text-xs font-bold" style={{ color: palette.accent }}>Agregar</Text>
               <Text className="text-center text-[10px] text-[#8C7B77]">Nueva...</Text>
             </Pressable>
           </ScrollView>
@@ -179,19 +185,19 @@ export default function DashboardScreen({
               <Text className="text-lg font-bold text-[#2B1D1D]">Próximos eventos</Text>
               {onNavigateToCalendar && (
                 <Pressable onPress={onNavigateToCalendar} className="active:opacity-70">
-                  <Text className="text-xs font-semibold text-[#DE6B80]">Ver calendario</Text>
+                  <Text className="text-xs font-semibold" style={{ color: palette.accent }}>Ver calendario</Text>
                 </Pressable>
               )}
             </View>
 
             {loadingEvents && !refreshing ? (
               <View className="py-8 items-center justify-center">
-                <ActivityIndicator size="small" color="#DE6B80" />
+                <ActivityIndicator size="small" color={palette.accent} />
                 <Text className="text-xs text-[#8C7B77] mt-2">Cargando próximos eventos...</Text>
               </View>
             ) : next30DaysEvents.length === 0 ? (
               <View className="py-6 items-center justify-center rounded-2xl bg-white border border-[#F5ECE8] px-4">
-                <Ionicons name="calendar-outline" size={28} color="#DE6B80" />
+                <Ionicons name="calendar-outline" size={28} color={palette.accent} />
                 <Text className="text-sm font-semibold text-[#2B1D1D] mt-2">
                   Sin eventos en los próximos 30 días
                 </Text>

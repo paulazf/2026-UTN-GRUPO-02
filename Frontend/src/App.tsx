@@ -1,11 +1,13 @@
 import './global.css';
 import React, { useState, useContext } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import { ThemeProvider, useSeasonTheme } from './context/ThemeContext';
+import LoadingScreen from './components/brand/LoadingScreen';
 
 // Import Screens from main (manual routing components)
 import DashboardScreen from './screens/DashboardScreen';
@@ -35,6 +37,7 @@ function MainTabs() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const navigation = useNavigation();
+  const { palette } = useSeasonTheme();
 
   const handleSelectPet = (petId: number) => setSelectedPetId(petId);
   const handleBack = () => setSelectedPetId(null);
@@ -78,7 +81,7 @@ function MainTabs() {
           <CalendarScreen />
         ) : (
           <SafeAreaView className="flex-1 items-center justify-center p-6">
-            <Ionicons name="calendar-outline" size={40} color="#DE6B80" style={{ marginBottom: 8 }} />
+            <Ionicons name="calendar-outline" size={40} color={palette.accent} style={{ marginBottom: 8 }} />
             <Text className="text-xl font-bold text-[#2B1D1D]">Calendario</Text>
             <Text className="text-sm text-[#8C7B77] mt-1 text-center">
               Próximamente disponible.
@@ -109,11 +112,7 @@ function RootNavigator() {
   const { isLoading, userToken } = authContext;
 
   if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#4F46E5" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -140,11 +139,13 @@ function RootNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
