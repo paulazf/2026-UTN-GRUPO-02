@@ -1,4 +1,4 @@
-﻿from datetime import date
+from datetime import date
 from django.db import models
 from django.db.models import Q
 
@@ -10,7 +10,7 @@ class Pet(models.Model):
     birthDate = models.DateField()
     neutered = models.BooleanField(default=False)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
-    photo = models.URLField(null=True, blank=True)
+    photo = models.URLField(max_length=500, null=True, blank=True)
     breed = models.ForeignKey(Breed, on_delete=models.PROTECT, related_name="pets")
     idOwner = models.PositiveIntegerField(help_text="ID del dueño asignado por el módulo Owner")
     isDeleted = models.BooleanField(default=False)
