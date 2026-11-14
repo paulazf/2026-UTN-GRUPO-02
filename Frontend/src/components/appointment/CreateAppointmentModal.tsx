@@ -21,6 +21,7 @@ import {
 } from '../../services/appointmentService';
 import { displayToIso, isoToDisplay, maskDate, maskTime } from '../../utils/dates';
 import AddressPicker from './AddressPicker';
+import { brand } from '../../theme/brand';
 
 interface CreateAppointmentModalProps {
   visible: boolean;
@@ -258,9 +259,9 @@ export default function CreateAppointmentModal({
                 <Pressable
                   onPress={handleClose}
                   hitSlop={10}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-[#FCECEF] active:opacity-70"
+                  className="h-8 w-8 items-center justify-center rounded-full bg-brand-tint active:opacity-70"
                 >
-                  <Ionicons name="close" size={18} color="#DE6B80" />
+                  <Ionicons name="close" size={18} color={brand.accent} />
                 </Pressable>
               </View>
 
@@ -377,7 +378,7 @@ export default function CreateAppointmentModal({
                 <Pressable
                   onPress={handleSubmit}
                   disabled={submitting}
-                  className="mt-2 items-center justify-center rounded-2xl bg-[#D9627A] py-4 shadow-sm active:opacity-85"
+                  className="mt-2 items-center justify-center rounded-2xl bg-brand py-4 shadow-sm active:opacity-85"
                 >
                   {submitting ? (
                     <ActivityIndicator color="#FFFFFF" />

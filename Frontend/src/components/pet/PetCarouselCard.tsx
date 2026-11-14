@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
+import { useSeasonTheme } from '../../context/ThemeContext';
 
 interface PetCarouselCardProps {
   pet: Pet;
@@ -9,6 +10,7 @@ interface PetCarouselCardProps {
 }
 
 export default function PetCarouselCard({ pet, onPress }: PetCarouselCardProps) {
+  const { palette } = useSeasonTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -21,8 +23,11 @@ export default function PetCarouselCard({ pet, onPress }: PetCarouselCardProps) 
           resizeMode="cover"
         />
       ) : (
-        <View className="h-24 w-full items-center justify-center rounded-2xl bg-[#FCECEF]">
-          <Ionicons name="paw" size={32} color="#DE6B80" style={{ opacity: 0.6 }} />
+        <View
+          className="h-24 w-full items-center justify-center rounded-2xl"
+          style={{ backgroundColor: palette.tint }}
+        >
+          <Ionicons name="paw" size={32} color={palette.accent} style={{ opacity: 0.6 }} />
         </View>
       )}
       <Text className="mt-2.5 text-base font-bold text-[#2B1D1D]" numberOfLines={1}>

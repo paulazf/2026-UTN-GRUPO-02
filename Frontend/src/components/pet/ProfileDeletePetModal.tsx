@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
 import { deletePet, fetchPets } from '../../services/petService';
+import { brand } from '../../theme/brand';
 
 interface ProfileDeletePetModalProps {
   visible: boolean;
@@ -88,7 +89,7 @@ export default function ProfileDeletePetModal({
 
           {loadingPets ? (
             <View className="py-6 items-center">
-              <ActivityIndicator size="small" color="#DE6B80" />
+              <ActivityIndicator size="small" color={brand.accent} />
             </View>
           ) : pets.length === 0 ? (
             <View className="py-6 items-center">
@@ -130,7 +131,7 @@ export default function ProfileDeletePetModal({
                             />
                           ) : (
                             <View className="h-9 w-9 items-center justify-center rounded-xl bg-white border border-[#F0E4DF]">
-                              <Ionicons name="paw" size={16} color="#DE6B80" />
+                              <Ionicons name="paw" size={16} color={brand.accent} />
                             </View>
                           )}
                           <View className="flex-1">

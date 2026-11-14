@@ -1,0 +1,124 @@
+import React, { useId } from 'react';
+import Svg, { Circle, ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
+import { SeasonId } from '../../theme/seasons';
+
+interface PawLogoProps {
+  season?: SeasonId;
+  size?: number;
+  /** Color de la huella. Halloween siempre usa su naranja. */
+  color?: string;
+  /** Color del recorte del centro; normalmente el color del fondo. */
+  cut?: string;
+}
+
+const TOES = [
+  'M72 80C81.9411 80 90 68.8071 90 55C90 41.1929 81.9411 30 72 30C62.0589 30 54 41.1929 54 55C54 68.8071 62.0589 80 72 80Z',
+  'M128 80C137.941 80 146 68.8071 146 55C146 41.1929 137.941 30 128 30C118.059 30 110 41.1929 110 55C110 68.8071 118.059 80 128 80Z',
+  'M48 114.053C55.6527 109.634 56.9315 97.5224 50.8564 87C44.7813 76.4776 33.6527 71.5292 26 75.9474C18.3473 80.3657 17.0685 92.4776 23.1436 103C29.2187 113.522 40.3473 118.471 48 114.053Z',
+  'M152 114.053C159.653 118.471 170.781 113.522 176.856 103C182.932 92.4776 181.653 80.3657 174 75.9474C166.347 71.5292 155.219 76.4776 149.144 87C143.068 97.5224 144.347 109.634 152 114.053Z',
+];
+const PAD =
+  'M100 99C71 99 47 126 39 146C31 167 43 185 61 184C73 183 79 175 87.5 175C95 175 96.5 182.5 100 182.5C103.5 182.5 105 175 112.5 175C121 175 127 183 139 184C157 185 169 167 161 146C153 126 129 99 100 99Z';
+export const HEART =
+  'M100 158C92 151 80 144 80 133C80 126 85 121 92 121C96 121 99 124 100 126C101 124 104 121 108 121C115 121 120 126 120 133C120 144 108 151 100 158Z';
+const STAR =
+  'M95.5163 120.085C97.3504 116.369 102.65 116.369 104.484 120.085L106.772 124.721C107.5 126.197 108.908 127.22 110.536 127.456L115.653 128.2C119.754 128.796 121.391 133.835 118.424 136.728L114.722 140.337C113.543 141.486 113.005 143.141 113.284 144.763L114.158 149.858C114.858 153.943 110.571 157.057 106.903 155.129L102.327 152.723C100.87 151.957 99.1299 151.957 97.6733 152.723L93.0972 155.129C89.429 157.057 85.1419 153.943 85.8424 149.858L86.7164 144.763C86.9946 143.141 86.4568 141.486 85.2784 140.337L81.5762 136.728C78.6086 133.835 80.2462 128.796 84.3473 128.2L89.4636 127.456C91.0921 127.22 92.4999 126.197 93.2283 124.721L95.5163 120.085Z';
+const HEART_TOES = [
+  'M74.9609 76.068C64.7301 69.3767 49.9441 63.3256 48.1835 50.7987C47.0632 42.8271 51.957 36.3328 59.9286 35.2124C64.4839 34.5722 68.3804 37.5085 69.8393 39.6261C70.658 37.1884 73.5943 33.2918 78.1496 32.6517C86.1212 31.5313 92.6155 36.4251 93.7358 44.3968C95.4964 56.9237 82.951 66.8159 74.9609 76.068Z',
+  'M125.039 76.068C117.049 66.8159 104.504 56.9237 106.264 44.3968C107.384 36.4251 113.879 31.5313 121.85 32.6517C126.406 33.2918 129.342 37.1884 130.161 39.6261C131.62 37.5085 135.516 34.5722 140.071 35.2124C148.043 36.3328 152.937 42.8271 151.816 50.7987C150.056 63.3256 135.27 69.3767 125.039 76.068Z',
+  'M46.988 113.785C35.0856 110.996 19.1217 110.367 13.1829 99.1978C9.40365 92.0901 11.7811 84.3137 18.8889 80.5344C22.9504 78.3749 27.6163 79.8014 29.7114 81.2922C29.6471 78.7216 31.0735 74.0557 35.1351 71.8962C42.2428 68.1169 50.0192 70.4944 53.7985 77.6021C59.7373 88.7714 51.3319 102.358 46.988 113.785Z',
+  'M153.012 113.785C148.668 102.358 140.263 88.7714 146.202 77.6021C149.981 70.4944 157.757 68.1169 164.865 71.8962C168.926 74.0557 170.353 78.7216 170.289 81.2922C172.384 79.8014 177.05 78.3749 181.111 80.5344C188.219 84.3137 190.596 92.0901 186.817 99.1978C180.878 110.367 164.914 110.996 153.012 113.785Z',
+];
+const EGG_BAND = 'M38 148C70 140 130 140 162 148L164 160C131 152 69 152 36 160L38 148Z';
+const EGG_ZIGZAG =
+  'M58 126L65 120L72 126L79 120L86 126L93 120L100 126L107 120L114 126L121 120L128 126L135 120L142 126';
+const PUMPKIN_MOUTH =
+  'M66 140C72 146 78 149 84 150L88 143L93 151L100 144L107 151L112 143L116 150C122 149 128 146 134 140C132 160 118 170 100 170C82 170 68 160 66 140Z';
+const PUMPKIN_EYES = [
+  'M78.3373 115.487C79.1293 114.303 80.8707 114.303 81.6627 115.487L87.4462 124.138C88.3346 125.467 87.3821 127.25 85.7835 127.25H74.2165C72.6179 127.25 71.6654 125.467 72.5538 124.138L78.3373 115.487Z',
+  'M118.337 115.487C119.129 114.303 120.871 114.303 121.663 115.487L127.446 124.138C128.335 125.467 127.382 127.25 125.784 127.25H114.216C112.618 127.25 111.665 125.467 112.554 124.138L118.337 115.487Z',
+];
+const PETALS = [
+  'M100 141C103.866 141 107 136.523 107 131C107 125.477 103.866 121 100 121C96.134 121 93 125.477 93 131C93 136.523 96.134 141 100 141Z',
+  'M100 141C101.195 144.677 106.421 146.274 111.674 144.567C116.926 142.861 120.216 138.496 119.021 134.82C117.826 131.143 112.6 129.546 107.347 131.252C102.095 132.959 98.8053 137.323 100 141Z',
+  'M100 141C96.8723 143.272 96.9685 148.737 100.215 153.205C103.461 157.673 108.628 159.453 111.756 157.18C114.883 154.908 114.787 149.444 111.541 144.976C108.295 140.508 103.128 138.728 100 141Z',
+  'M100 141C96.8724 138.728 91.7053 140.508 88.459 144.976C85.2128 149.444 85.1167 154.908 88.2443 157.18C91.372 159.453 96.539 157.673 99.7853 153.205C103.032 148.737 103.128 143.272 100 141Z',
+  'M100 141C101.195 137.323 97.9051 132.959 92.6526 131.252C87.4 129.546 82.1735 131.143 80.9789 134.82C79.7842 138.496 83.0738 142.861 88.3263 144.567C93.5789 146.274 98.8053 144.677 100 141Z',
+];
+// Glitter de Navidad: textura fotográfica recortada a la silueta de la huella.
+// Plateada sobre fondos de color (header, carga) y roja sobre fondos claros (bienvenida).
+const GLITTER_SILVER = require('../../../assets/textures/glitter-silver.png');
+const GLITTER_RED = require('../../../assets/textures/glitter-red.png');
+const isWhite = (c: string) => /^#?(fff|ffffff)$/i.test(c.trim());
+
+const PUMPKIN_ORANGE = '#E0742A';
+const PUMPKIN_DARK = '#2B1A12';
+const SUN_YELLOW = '#F6B40E';
+
+/** Logo de PetLife: la huella con el gesto de cada festividad adentro de la silueta. */
+export default function PawLogo({ season = 'original', size = 44, color = '#FFFFFF', cut = '#E87A8E' }: PawLogoProps) {
+  const paw = season === 'halloween' ? PUMPKIN_ORANGE : color;
+  const clipId = `paw-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+
+  const sunRays = Array.from({ length: 12 }, (_, i) => {
+    const t = (i * Math.PI) / 6;
+    return `M${100 + 17 * Math.cos(t)} ${141 + 17 * Math.sin(t)}L${100 + 23 * Math.cos(t)} ${141 + 23 * Math.sin(t)}`;
+  }).join('');
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 200 200" accessibilityLabel="PetLife">
+      {season === 'sanValentin'
+        ? HEART_TOES.map((d) => <Path key={d} d={d} fill={paw} />)
+        : TOES.map((d) => <Path key={d} d={d} fill={paw} />)}
+      <Path d={PAD} fill={paw} />
+
+      {season === 'navidad' && (
+        <>
+          <Defs>
+            <ClipPath id={clipId}>
+              {TOES.map((d) => (
+                <Path key={d} d={d} />
+              ))}
+              <Path d={PAD} />
+            </ClipPath>
+          </Defs>
+          <SvgImage
+            href={isWhite(paw) ? GLITTER_SILVER : GLITTER_RED}
+            x={0}
+            y={0}
+            width={200}
+            height={200}
+            preserveAspectRatio="xMidYMid slice"
+            clipPath={`url(#${clipId})`}
+          />
+        </>
+      )}
+
+      {(season === 'original' || season === 'sanValentin') && <Path d={HEART} fill={cut} />}
+      {season === 'navidad' && <Path d={STAR} fill={cut} />}
+      {season === 'pascuas' && (
+        <>
+          <Path d={EGG_BAND} fill={cut} />
+          <Path d={EGG_ZIGZAG} stroke={cut} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <Path d="M74 112C90 108 110 108 126 112" stroke={cut} strokeWidth={3} strokeLinecap="round" fill="none" />
+          <Path d="M42 170C72 164 128 164 158 170" stroke={cut} strokeWidth={3} strokeLinecap="round" fill="none" />
+        </>
+      )}
+      {season === 'halloween' && (
+        <>
+          <Path d={PUMPKIN_MOUTH} fill={PUMPKIN_DARK} />
+          {PUMPKIN_EYES.map((d) => (
+            <Path key={d} d={d} fill={PUMPKIN_DARK} />
+          ))}
+        </>
+      )}
+      {season === 'primavera' && PETALS.map((d) => <Path key={d} d={d} fill={cut} />)}
+      {season === 'patrias' && (
+        <>
+          <Circle cx={100} cy={141} r={10} fill={SUN_YELLOW} />
+          <Path d={sunRays} stroke={SUN_YELLOW} strokeWidth={3} strokeLinecap="round" fill="none" />
+        </>
+      )}
+    </Svg>
+  );
+}
