@@ -76,7 +76,7 @@ class PetSerializer(serializers.ModelSerializer):
     )
     idOwner = serializers.IntegerField(read_only=True)
     age = serializers.IntegerField(read_only=True)
-    photo = PhotoField(max_length=500, required=False, allow_null=True)
+    photo = PhotoField(required=False, allow_null=True)
 
     class Meta:
         model = Pet
