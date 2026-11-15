@@ -1,4 +1,5 @@
-import { configureNotifications, ensurePermission, replaceGroup } from './notificationService';
+import { cancelGroup, configureNotifications, ensurePermission, replaceGroup } from './notificationService';
+import { getPrefs, isGroupEnabled } from './preferences';
 import { REMINDER_SOURCES } from './sources';
 import { Reminder, ReminderGroup } from './types';
 
@@ -20,7 +21,14 @@ export function syncReminders(groups?: ReminderGroup[]): Promise<void> {
 async function doSync(groups?: ReminderGroup[]): Promise<void> {
   await configureNotifications();
   const now = new Date();
-  const sources = REMINDER_SOURCES.filter((s) => !groups || groups.includes(s.group));
+  const prefs = await getPrefs();
+  const requested = REMINDER_SOURCES.filter((s) => !groups || groups.includes(s.group));
+
+  // Los grupos que el usuario apagó en Perfil > Notificaciones se cancelan y no se cargan.
+  for (const source of requested.filter((s) => !isGroupEnabled(prefs, s.group))) {
+    await cancelGroup(source.group);
+  }
+  const sources = requested.filter((s) => isGroupEnabled(prefs, s.group));
 
   const planned: { group: ReminderGroup; limit: number; reminders: Reminder[] }[] = [];
   for (const source of sources) {

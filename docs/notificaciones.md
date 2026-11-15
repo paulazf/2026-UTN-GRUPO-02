@@ -69,7 +69,10 @@ syncReminders(['vaccine']);
 npm run test:notifications
 ```
 
+**7. Perfil > Notificaciones:** el interruptor del grupo aparece solo. Solo agregá su ícono en `GROUP_ICONS` de `NotificationSettingsScreen.tsx`.
+
 ## Reglas
 - `key` única y estable por aviso (ej. `vaccine-12`): si cambia el dato, el aviso se reemplaza.
 - No usar `expo-notifications` fuera de `notificationService.ts`.
-- Para probar rápido: crear el dato con fecha 2 minutos más tarde y cerrar la app.
+- Para probar que llegan: Perfil > Notificaciones > "Enviar aviso de prueba".
+- Para probar rápido un grupo: crear el dato con fecha 2 minutos más tarde y cerrar la app.

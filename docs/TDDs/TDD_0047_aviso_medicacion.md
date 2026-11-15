@@ -45,8 +45,9 @@ Además:
 2. **Un aviso por toma:** título "Hora del {medicamento} de {mascota}" y detalle "Toma N de M · cada X hs".
 3. **Siempre al día:** al crear, editar o eliminar un tratamiento, y cada vez que se abre la app, los avisos se recalculan.
 4. **Permiso:** la app pide permiso de notificaciones recién cuando hay algo para avisar. Si el usuario lo niega, la app sigue funcionando sin avisos.
-5. **Cierre de sesión:** al cerrar sesión se borran los avisos pendientes de esa cuenta.
-6. **Plataformas:** funciona igual en iOS y Android, en Expo Go y en los builds de TestFlight y APK.
+5. **Perfil > Notificaciones:** muestra el estado del permiso (con botón para activarlo o abrir los Ajustes), un interruptor por tipo de aviso, los próximos avisos programados y un botón para enviar un aviso de prueba.
+6. **Cierre de sesión:** al cerrar sesión se borran los avisos pendientes de esa cuenta.
+7. **Plataformas:** funciona igual en iOS y Android, en Expo Go y en los builds de TestFlight y APK.
 
 ---
 
@@ -100,6 +101,7 @@ GET /medication-pets/reminders/  -->  planner (función pura)  -->  replaceGroup
 | `planners/medicationPlanner.ts` | `planMedicationReminders(tratamientos, ahora)`: HU-304. |
 | `sources.ts` | Registro de fuentes: grupo, límite y cómo cargar sus avisos. |
 | `sync.ts` | `syncReminders(grupos?)`: carga, pide permiso si hace falta y reprograma. Encola llamadas simultáneas. |
+| `preferences.ts` | Qué tipos de aviso quiere el usuario (SecureStore). Por defecto, todos. |
 | `useReminderSync.ts` | Hook usado en `App.tsx`: sincroniza al iniciar sesión y al volver a primer plano. |
 
 Otros cambios:
@@ -107,6 +109,7 @@ Otros cambios:
 - `MedicationPetList`: `syncReminders(['medication'])` al eliminar.
 - `MedicationPetCard`: muestra la hora de la primera toma.
 - `AuthContext.logout`: `cancelAllReminders()`.
+- `NotificationSettingsScreen` (Perfil > Notificaciones): los interruptores salen de `REMINDER_SOURCES`, así que un grupo nuevo aparece solo.
 - `app.json`: plugin `expo-notifications` con ícono blanco de huella (`assets/icons/notification-icon.png`) y color de marca.
 
 ### Cómo sumar otra notificación
@@ -144,7 +147,8 @@ Ver `docs/notificaciones.md`: agregar el grupo, su canal, un planner y una entra
 4. Eliminar el tratamiento: no llega ningún aviso.
 5. Negar el permiso: la app funciona igual, sin avisos.
 6. Cerrar sesión: no llegan avisos de esa cuenta.
-7. Android: en Ajustes > Notificaciones de PetLife aparece el canal "Medicación".
+7. Perfil > Notificaciones: "Enviar aviso de prueba" llega a los 5 segundos; al apagar "Medicación" desaparecen los próximos avisos.
+8. Android: en Ajustes > Notificaciones de PetLife aparece el canal "Medicación".
 
 ---
 
@@ -162,6 +166,7 @@ Ver `docs/notificaciones.md`: agregar el grupo, su canal, un planner y una entra
 - [x] Planner de medicación con tests.
 - [x] Hora de la primera toma en el formulario y la tarjeta.
 - [x] Sincronizar al guardar, eliminar, abrir la app y cerrar sesión.
+- [x] Pantalla Perfil > Notificaciones.
 
 ### Etapa 4: Cierre
 - [ ] Prueba manual en iPhone y Android.

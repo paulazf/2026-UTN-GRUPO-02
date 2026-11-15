@@ -103,3 +103,65 @@ export async function cancelAllReminders(): Promise<void> {
   if (Platform.OS === 'web') return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
+
+export type PermissionState = 'granted' | 'denied' | 'undetermined';
+
+/** Estado del permiso sin pedirlo (para mostrarlo en la pantalla de notificaciones). */
+export async function getPermissionState(): Promise<PermissionState> {
+  if (Platform.OS === 'web') return 'denied';
+  const p = await Notifications.getPermissionsAsync();
+  if (p.granted || p.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL) return 'granted';
+  return p.canAskAgain ? 'undetermined' : 'denied';
+}
+
+export interface UpcomingReminder {
+  id: string;
+  group: string;
+  title: string;
+  body: string;
+  date: Date | null;
+}
+
+/** Avisos programados, ordenados por fecha. */
+export async function getUpcomingReminders(): Promise<UpcomingReminder[]> {
+  if (Platform.OS === 'web') return [];
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  const items = await Promise.all(
+    scheduled.map(async (n) => {
+      let date: Date | null = null;
+      try {
+        const next = await Notifications.getNextTriggerDateAsync(n.trigger as Notifications.SchedulableNotificationTriggerInput);
+        date = next ? new Date(next) : null;
+      } catch {
+        date = null;
+      }
+      return {
+        id: n.identifier,
+        group: String(n.content.data?.group ?? ''),
+        title: n.content.title ?? '',
+        body: n.content.body ?? '',
+        date,
+      };
+    }),
+  );
+  return items.sort((a, b) => (a.date?.getTime() ?? Infinity) - (b.date?.getTime() ?? Infinity));
+}
+
+/** Aviso de prueba a los pocos segundos, para revisar que llegan en el teléfono. */
+export async function sendTestNotification(seconds = 5): Promise<void> {
+  await configureNotifications();
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'PetLife',
+      body: 'Así te vamos a avisar cada toma 🐾',
+      sound: true,
+      color: NOTIFICATION_COLOR,
+      data: { group: 'test' },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds,
+      channelId: 'medication',
+    },
+  });
+}
