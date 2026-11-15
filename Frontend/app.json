@@ -28,6 +28,13 @@
       "expo-font",
       "expo-web-browser",
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/notification-icon.png",
+          "color": "#E87A8E"
+        }
+      ],
+      [
         "expo-alternate-app-icons",
         [
           {
