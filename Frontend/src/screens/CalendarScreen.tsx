@@ -31,7 +31,11 @@ interface MonthGroup {
   hasVaccineExpiration: boolean;
 }
 
-export default function CalendarScreen() {
+interface CalendarScreenProps {
+  onOpenEvent?: (event: CalendarEvent) => void;
+}
+
+export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}) {
   const { palette } = useSeasonTheme();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
@@ -266,7 +270,7 @@ export default function CalendarScreen() {
                 {isExpiredExpanded && (
                   <View className="px-4 pb-3 pt-1">
                     {expiredEvents.map((event) => (
-                      <CalendarEventCard key={event.id} event={event} />
+                      <CalendarEventCard key={event.id} event={event} onPress={onOpenEvent} />
                     ))}
                   </View>
                 )}
@@ -281,7 +285,7 @@ export default function CalendarScreen() {
                   <Text className="text-lg font-bold text-[#2B1D1D]">Hoy</Text>
                 </View>
                 {todayEvents.map((event) => (
-                  <CalendarEventCard key={event.id} event={event} />
+                  <CalendarEventCard key={event.id} event={event} onPress={onOpenEvent} />
                 ))}
               </View>
             )}
@@ -306,7 +310,7 @@ export default function CalendarScreen() {
                 </View>
 
                 {group.events.map((event) => (
-                  <CalendarEventCard key={event.id} event={event} />
+                  <CalendarEventCard key={event.id} event={event} onPress={onOpenEvent} />
                 ))}
               </View>
             ))}

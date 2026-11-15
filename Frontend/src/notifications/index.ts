@@ -1,5 +1,7 @@
 export { syncReminders } from './sync';
 export { useReminderSync } from './useReminderSync';
+export { useReminderTap } from './useReminderTap';
+export type { ReminderTap } from './useReminderTap';
 export {
   cancelAllReminders,
   ensurePermission,

@@ -19,8 +19,9 @@ import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 import FeedingList from '../../components/feeding/FeedingList';
 import AppointmentList from '../../components/appointment/AppointmentList';
 import { brand } from '../../theme/brand';
+import { CalendarEntityType } from '../../types/calendar';
 
-type PetDetailTab =
+export type PetDetailTab =
   | 'VACUNAS'
   | 'MEDICACION'
   | 'TURNOS'
@@ -37,20 +38,34 @@ const DETAIL_TABS: { key: PetDetailTab; label: string }[] = [
   { key: 'ALIMENTACION', label: 'Alimentación' },
 ];
 
+/** Pestaña de la ficha que muestra cada tipo de evento del calendario. */
+export const TAB_BY_EVENT: Record<CalendarEntityType, PetDetailTab> = {
+  MEDICATION: 'MEDICACION',
+  VACCINE: 'VACUNAS',
+  APPOINTMENT: 'TURNOS',
+};
+
 interface PetDetailScreenProps {
   petId: number;
+  /** Pestaña con la que se abre (ej. desde un evento del calendario o una notificación). */
+  initialTab?: PetDetailTab;
   onBack: () => void;
   onPetUpdated?: (pet: Pet) => void;
 }
 
 export default function PetDetailScreen({
   petId,
+  initialTab,
   onBack,
   onPetUpdated,
 }: PetDetailScreenProps) {
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentTab, setCurrentTab] = useState<PetDetailTab>('ESTUDIOS');
+  const [currentTab, setCurrentTab] = useState<PetDetailTab>(initialTab ?? 'ESTUDIOS');
+
+  useEffect(() => {
+    if (initialTab) setCurrentTab(initialTab);
+  }, [initialTab]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const loadDetail = async () => {

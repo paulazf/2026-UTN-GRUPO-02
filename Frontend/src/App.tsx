@@ -8,12 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { ThemeProvider, useSeasonTheme } from './context/ThemeContext';
 import LoadingScreen from './components/brand/LoadingScreen';
-import { useReminderSync } from './notifications';
+import { useReminderSync, useReminderTap } from './notifications';
 
 // Import Screens from main (manual routing components)
 import DashboardScreen from './screens/DashboardScreen';
 import PetListScreen from './screens/pet/PetListScreen';
-import PetDetailScreen from './screens/pet/PetDetailScreen';
+import PetDetailScreen, { PetDetailTab, TAB_BY_EVENT } from './screens/pet/PetDetailScreen';
+import { CalendarEvent } from './types/calendar';
 import CalendarScreen from './screens/CalendarScreen';
 import CreatePetModal from './components/pet/CreatePetModal';
 import BottomNavBar, { NavTab } from './components/BottomNavBar';
@@ -35,14 +36,34 @@ const Stack = createNativeStackNavigator();
 function MainTabs() {
   const [currentTab, setCurrentTab] = useState<NavTab>('INICIO');
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
+  const [selectedPetTab, setSelectedPetTab] = useState<PetDetailTab | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const navigation = useNavigation();
   const { palette } = useSeasonTheme();
 
-  const handleSelectPet = (petId: number) => setSelectedPetId(petId);
+  const handleSelectPet = (petId: number) => {
+    setSelectedPetTab(undefined);
+    setSelectedPetId(petId);
+  };
   const handleBack = () => setSelectedPetId(null);
+
+  // Abre la ficha de la mascota directo en una pestaña (Medicación, Vacunas, Turnos).
+  const openPetTab = (petId: number, tab: PetDetailTab) => {
+    setSelectedPetTab(tab);
+    setSelectedPetId(petId);
+  };
+  const handleOpenEvent = (event: CalendarEvent) =>
+    openPetTab(event.petId, TAB_BY_EVENT[event.entityType]);
+
+  // Tocar el aviso de una toma lleva a la Medicación de esa mascota.
+  useReminderTap(({ group, petId }) => {
+    if (group === 'medication' && petId) {
+      navigation.navigate('MainTabs' as never);
+      openPetTab(petId, 'MEDICACION');
+    }
+  });
   const handlePetCreated = () => setRefreshTrigger((prev) => prev + 1);
   const handlePetUpdated = () => setRefreshTrigger((prev) => prev + 1);
 
@@ -62,6 +83,7 @@ function MainTabs() {
         {selectedPetId ? (
           <PetDetailScreen
             petId={selectedPetId}
+            initialTab={selectedPetTab}
             onBack={handleBack}
             onPetUpdated={handlePetUpdated}
           />
@@ -71,6 +93,7 @@ function MainTabs() {
             onViewAllPets={() => setCurrentTab('MASCOTAS')}
             onOpenCreatePet={() => setIsModalOpen(true)}
             onNavigateToCalendar={() => setCurrentTab('CALENDARIO')}
+            onOpenEvent={handleOpenEvent}
             refreshTrigger={refreshTrigger}
           />
         ) : currentTab === 'MASCOTAS' ? (
@@ -80,7 +103,7 @@ function MainTabs() {
             refreshTrigger={refreshTrigger}
           />
           ) : currentTab === 'CALENDARIO' ? (
-          <CalendarScreen />
+          <CalendarScreen onOpenEvent={handleOpenEvent} />
         ) : (
           <SafeAreaView className="flex-1 items-center justify-center p-6">
             <Ionicons name="calendar-outline" size={40} color={palette.accent} style={{ marginBottom: 8 }} />
