@@ -18,6 +18,7 @@ import EditPetModal from '../../components/pet/EditPetModal';
 import VaccinePetList from '../../components/vaccinePet/VaccinePetList';
 import FeedingList from '../../components/feeding/FeedingList';
 import AppointmentList from '../../components/appointment/AppointmentList';
+import { brand } from '../../theme/brand';
 
 type PetDetailTab =
   | 'VACUNAS'
@@ -76,7 +77,7 @@ export default function PetDetailScreen({
   if (loading || !pet) {
     return (
       <SafeAreaView className="flex-1 bg-[#FAF6F3] items-center justify-center">
-        <ActivityIndicator size="large" color="#DE6B80" />
+        <ActivityIndicator size="large" color={brand.accent} />
         <Text className="mt-3 text-sm text-[#8C7B77]">Cargando datos de la mascota...</Text>
       </SafeAreaView>
     );
@@ -91,7 +92,7 @@ export default function PetDetailScreen({
   return (
     <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-16">
-        <View className="rounded-b-[40px] bg-[#FCECEF] px-5 pt-12 pb-6 shadow-sm">
+        <View className="rounded-b-[40px] bg-brand-tint px-5 pt-12 pb-6 shadow-sm">
           <View className="mb-4 flex-row items-center justify-between">
             <Pressable
               onPress={onBack}
@@ -104,8 +105,8 @@ export default function PetDetailScreen({
               onPress={() => setIsEditModalOpen(true)}
               className="flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2 shadow-xs active:opacity-80"
             >
-              <Ionicons name="create-outline" size={16} color="#DE6B80" />
-              <Text className="text-xs font-bold text-[#DE6B80]">Modificar</Text>
+              <Ionicons name="create-outline" size={16} color={brand.accent} />
+              <Text className="text-xs font-bold text-brand">Modificar</Text>
             </Pressable>
           </View>
 
@@ -118,7 +119,7 @@ export default function PetDetailScreen({
               />
             ) : (
               <View className="h-24 w-24 items-center justify-center rounded-3xl border border-[#F0E4DF] bg-white shadow-xs">
-                <Ionicons name="paw" size={32} color="#DE6B80" />
+                <Ionicons name="paw" size={32} color={brand.accent} />
                 <Text className="mt-1 text-[10px] font-semibold text-[#8C7B77]">Sin foto</Text>
               </View>
             )}
@@ -180,7 +181,7 @@ export default function PetDetailScreen({
               key={tab.key}
               onPress={() => setCurrentTab(tab.key)}
               className={`rounded-full px-4 py-1.5 active:opacity-80 ${
-                currentTab === tab.key ? 'bg-[#D9627A]' : 'border border-[#F0DDD5] bg-white'
+                currentTab === tab.key ? 'bg-brand' : 'border border-[#F0DDD5] bg-white'
               }`}
             >
               <Text

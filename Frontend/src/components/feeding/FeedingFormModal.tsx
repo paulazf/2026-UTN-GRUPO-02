@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Feeding, FeedingPayload, FeedingType, FEEDING_TYPE_OPTIONS } from '../../types/feeding';
 import { createFeeding, FeedingApiError, updateFeeding } from '../../services/feedingService';
 import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 interface FeedingFormModalProps {
   visible: boolean;
@@ -163,10 +164,10 @@ export default function FeedingFormModal({
             </Text>
             <Pressable
               onPress={onClose}
-              className="h-8 w-8 items-center justify-center rounded-full bg-[#FDF0F3] active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full bg-brand-tint active:opacity-70"
               accessibilityLabel="Cerrar"
             >
-              <Ionicons name="close" size={16} color="#D9627A" />
+              <Ionicons name="close" size={16} color={brand.accent} />
             </Pressable>
           </View>
 
@@ -214,19 +215,19 @@ export default function FeedingFormModal({
                           setTypePickerOpen(false);
                         }}
                         className={`flex-row items-center justify-between rounded-xl px-3.5 py-2.5 ${
-                          selected ? 'bg-[#FDF0F3]' : 'active:bg-[#FAF6F3]'
+                          selected ? 'bg-brand-tint' : 'active:bg-[#FAF6F3]'
                         }`}
                         accessibilityRole="radio"
                         accessibilityState={{ selected }}
                       >
                         <Text
                           className={`text-sm font-semibold ${
-                            selected ? 'text-[#D9627A]' : 'text-[#6C5551]'
+                            selected ? 'text-brand' : 'text-[#6C5551]'
                           }`}
                         >
                           {option.label}
                         </Text>
-                        {selected && <Ionicons name="checkmark" size={16} color="#D9627A" />}
+                        {selected && <Ionicons name="checkmark" size={16} color={brand.accent} />}
                       </Pressable>
                     );
                   })}
@@ -293,7 +294,7 @@ export default function FeedingFormModal({
             <Pressable
               onPress={handleSubmit}
               disabled={submitting}
-              className="items-center rounded-3xl bg-[#D9627A] p-3.5 active:opacity-90"
+              className="items-center rounded-3xl bg-brand p-3.5 active:opacity-90"
             >
               {submitting ? (
                 <ActivityIndicator color="white" />

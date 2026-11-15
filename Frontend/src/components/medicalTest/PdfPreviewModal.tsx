@@ -151,7 +151,7 @@ export default function PdfPreviewModal({ file, onClose, onShare }: PdfPreviewMo
               {file && (
                 <Pressable
                   onPress={() => onShare(file)}
-                  className="mt-4 rounded-full bg-[#D9627A] px-4 py-2 active:opacity-90"
+                  className="mt-4 rounded-full bg-brand px-4 py-2 active:opacity-90"
                 >
                   <Text className="text-xs font-bold text-white">Abrir con otra app</Text>
                 </Pressable>

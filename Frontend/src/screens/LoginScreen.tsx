@@ -6,9 +6,11 @@ import { AuthContext } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 import { useNavigation } from '@react-navigation/native';
 import { useGoogleAuth } from '../services/googleAuth';
+import { useSeasonTheme } from '../context/ThemeContext';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const { palette } = useSeasonTheme();
   const authContext = useContext(AuthContext);
   const { signInWithGoogle, isGoogleLoading } = useGoogleAuth((msg) => setErrorMsg(msg));
   const [email, setEmail] = useState('');
@@ -65,10 +67,11 @@ export default function LoginScreen() {
       {/* HEADER (Flecha y Título) */}
       <View className="flex-row items-center px-6 pt-8 pb-2 mt-4 relative h-14">
         <TouchableOpacity 
-          className="absolute left-6 top-6 z-10 w-10 h-10 bg-[#FCE8E8] rounded-full justify-center items-center"
+          className="absolute left-6 top-6 z-10 w-10 h-10 rounded-full justify-center items-center"
+          style={{ backgroundColor: palette.tint }}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={20} color="#D8657B" />
+          <Ionicons name="arrow-back" size={20} color={palette.accent} />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-[16px] font-semibold text-[#1A202C] mt-4">
           Ingreso
@@ -148,12 +151,13 @@ export default function LoginScreen() {
 
         {/* OLVIDE MI CONTRASEÑA */}
         <TouchableOpacity className="self-end mt-2 mb-8">
-          <Text className="text-[#D8657B] font-medium text-[14px]">¿Olvidé mi contraseña?</Text>
+          <Text className="font-medium text-[14px]" style={{ color: palette.accent }}>¿Olvidé mi contraseña?</Text>
         </TouchableOpacity>
 
         {/* BOTON PRIMARIO */}
         <TouchableOpacity 
-          className="bg-[#D8657B] rounded-full h-[52px] justify-center items-center shadow-sm flex-row"
+          className="rounded-full h-[52px] justify-center items-center shadow-sm flex-row"
+            style={{ backgroundColor: palette.accent }}
           onPress={handleLogin}
           disabled={isLoading}
         >
@@ -178,7 +182,7 @@ export default function LoginScreen() {
           disabled={isLoading || isGoogleLoading}
         >
           {isGoogleLoading ? (
-            <ActivityIndicator color="#D8657B" />
+            <ActivityIndicator color={palette.accent} />
           ) : (
             <>
               <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
@@ -191,7 +195,7 @@ export default function LoginScreen() {
         <View className="flex-row justify-center mt-auto mb-10">
           <Text className="text-[#718096] text-[15px]">¿No tenés cuenta? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
-            <Text className="text-[#D8657B] text-[15px] font-bold">Crear cuenta</Text>
+            <Text className="text-[15px] font-bold" style={{ color: palette.accent }}>Crear cuenta</Text>
           </TouchableOpacity>
         </View>
         </ScrollView>

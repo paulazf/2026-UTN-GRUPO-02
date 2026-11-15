@@ -17,6 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { CreatePetPayload, PetPhotoFile, PetSpecies } from '../../types/pet';
 import { createPet } from '../../services/petService';
 import BreedPicker from './BreedPicker';
+import { brand } from '../../theme/brand';
 
 interface CreatePetModalProps {
   visible: boolean;
@@ -148,9 +149,9 @@ export default function CreatePetModal({
             <Text className="text-2xl font-bold text-[#2B1D1D]">Nueva mascota</Text>
             <Pressable
               onPress={onClose}
-              className="h-8 w-8 items-center justify-center rounded-full bg-[#FCECEF] active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full bg-brand-tint active:opacity-70"
             >
-              <Ionicons name="close" size={18} color="#DE6B80" />
+              <Ionicons name="close" size={18} color={brand.accent} />
             </Pressable>
           </View>
 
@@ -161,7 +162,7 @@ export default function CreatePetModal({
           >
             {/* CARGA DE FOTO */}
             <View className="mb-5 items-center">
-              <View className="relative mb-3 h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-[#DE6B80] bg-[#FAF5F2] shadow-sm">
+              <View className="relative mb-3 h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-brand bg-[#FAF5F2] shadow-sm">
                 {photoFile ? (
                   <Image
                     source={{ uri: photoFile.uri }}
@@ -170,7 +171,7 @@ export default function CreatePetModal({
                   />
                 ) : (
                   <View className="items-center justify-center p-2">
-                    <Ionicons name="camera-outline" size={38} color="#DE6B80" />
+                    <Ionicons name="camera-outline" size={38} color={brand.accent} />
                     <Text className="mt-1 text-[11px] font-medium text-[#8C7B77]">Sin foto</Text>
                   </View>
                 )}
@@ -178,10 +179,10 @@ export default function CreatePetModal({
 
               <Pressable
                 onPress={handlePickImage}
-                className="mb-1 flex-row items-center gap-2 rounded-2xl bg-[#FCECEF] px-4 py-2.5 active:opacity-75"
+                className="mb-1 flex-row items-center gap-2 rounded-2xl bg-brand-tint px-4 py-2.5 active:opacity-75"
               >
-                <Ionicons name="image-outline" size={18} color="#DE6B80" />
-                <Text className="text-sm font-bold text-[#DE6B80]">
+                <Ionicons name="image-outline" size={18} color={brand.accent} />
+                <Text className="text-sm font-bold text-brand">
                   {photoFile ? 'Cambiar foto de la galería' : 'Elegir foto de la galería'}
                 </Text>
               </Pressable>
@@ -216,7 +217,7 @@ export default function CreatePetModal({
                   onPress={() => handleSpeciesChange('DOG')}
                   className={`flex-1 flex-row items-center justify-center gap-2 rounded-2xl border py-3 active:opacity-80 ${
                     species === 'DOG'
-                      ? 'border-[#DE6B80] bg-[#DE6B80]'
+                      ? 'border-brand bg-brand'
                       : 'border-[#F0E4DF] bg-[#FAF5F2]'
                   }`}
                 >
@@ -233,7 +234,7 @@ export default function CreatePetModal({
                   onPress={() => handleSpeciesChange('CAT')}
                   className={`flex-1 flex-row items-center justify-center gap-2 rounded-2xl border py-3 active:opacity-80 ${
                     species === 'CAT'
-                      ? 'border-[#DE6B80] bg-[#DE6B80]'
+                      ? 'border-brand bg-brand'
                       : 'border-[#F0E4DF] bg-[#FAF5F2]'
                   }`}
                 >
@@ -302,7 +303,7 @@ export default function CreatePetModal({
                   onPress={() => setNeutered(true)}
                   className={`flex-1 items-center justify-center rounded-2xl border py-3 active:opacity-80 ${
                     neutered
-                      ? 'border-[#DE6B80] bg-[#DE6B80]'
+                      ? 'border-brand bg-brand'
                       : 'border-[#F0E4DF] bg-[#FAF5F2]'
                   }`}
                 >
@@ -319,7 +320,7 @@ export default function CreatePetModal({
                   onPress={() => setNeutered(false)}
                   className={`flex-1 items-center justify-center rounded-2xl border py-3 active:opacity-80 ${
                     !neutered
-                      ? 'border-[#DE6B80] bg-[#DE6B80]'
+                      ? 'border-brand bg-brand'
                       : 'border-[#F0E4DF] bg-[#FAF5F2]'
                   }`}
                 >
@@ -338,7 +339,7 @@ export default function CreatePetModal({
             <Pressable
               onPress={handleSubmit}
               disabled={submitting}
-              className="items-center rounded-2xl bg-[#DE6B80] py-4 shadow-sm active:opacity-90"
+              className="items-center rounded-2xl bg-brand py-4 shadow-sm active:opacity-90"
             >
               {submitting ? (
                 <ActivityIndicator color="white" />

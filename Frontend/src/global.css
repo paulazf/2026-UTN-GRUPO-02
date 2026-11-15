@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Colores de marca: valores de la paleta Original. ThemeProvider los cambia según la temporada. */
+:root {
+  --brand: 222 107 128;
+  --brand-header: 232 122 142;
+  --brand-tint: 252 236 239;
+  --brand-soft: 255 248 249;
+}

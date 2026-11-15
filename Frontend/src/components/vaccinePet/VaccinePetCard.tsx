@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { STATUS_LABELS, VaccinePet, VaccinePetStatus, VaccineType } from '../../types/vaccinePet';
 import { isoToDisplay } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 interface VaccinePetCardProps {
   item: VaccinePet;
@@ -116,11 +117,11 @@ function ActionButton({
     <Pressable
       onPress={onPress}
       className={`flex-1 flex-row items-center justify-center gap-1 rounded-full py-2 active:opacity-75 ${
-        danger ? 'bg-[#FDECEC]' : 'bg-[#FCECEF]'
+        danger ? 'bg-[#FDECEC]' : 'bg-brand-tint'
       }`}
     >
-      <Ionicons name={icon} size={14} color={danger ? '#C62828' : '#D9627A'} />
-      <Text className={`text-xs font-bold ${danger ? 'text-[#C62828]' : 'text-[#D9627A]'}`} numberOfLines={1}>
+      <Ionicons name={icon} size={14} color={danger ? '#C62828' : brand.accent} />
+      <Text className={`text-xs font-bold ${danger ? 'text-[#C62828]' : 'text-brand'}`} numberOfLines={1}>
         {label}
       </Text>
     </Pressable>

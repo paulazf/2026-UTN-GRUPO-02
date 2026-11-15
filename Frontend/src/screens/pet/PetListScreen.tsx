@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pet } from '../../types/pet';
 import { fetchPets } from '../../services/petService';
 import PetCard from '../../components/pet/PetCard';
+import { brand } from '../../theme/brand';
 
 interface PetListScreenProps {
   onSelectPet: (petId: number) => void;
@@ -54,7 +55,7 @@ export default function PetListScreen({
         contentContainerClassName="px-5 pt-8 pb-16"
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DE6B80" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={brand.accent} />
         }
       >
         <View className="mb-6">
@@ -66,7 +67,7 @@ export default function PetListScreen({
 
         {loading && !refreshing ? (
           <View className="py-20 items-center justify-center">
-            <ActivityIndicator size="large" color="#DE6B80" />
+            <ActivityIndicator size="large" color={brand.accent} />
             <Text className="mt-3 text-sm text-[#8C7B77]">Cargando mascotas...</Text>
           </View>
         ) : (
@@ -82,9 +83,9 @@ export default function PetListScreen({
             {/* Botón "+ Agregar mascota" */}
             <Pressable
               onPress={onOpenCreatePet}
-              className="mt-2 items-center justify-center rounded-3xl border-2 border-dashed border-[#DE6B80] bg-[#FFF8F9] py-5 active:opacity-75"
+              className="mt-2 items-center justify-center rounded-3xl border-2 border-dashed border-brand bg-brand-soft py-5 active:opacity-75"
             >
-              <Text className="text-base font-bold text-[#DE6B80]">+ Agregar mascota</Text>
+              <Text className="text-base font-bold text-brand">+ Agregar mascota</Text>
             </Pressable>
           </View>
         )}

@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MedicationPet } from '../../types/medicationPet';
 import { isoToDisplay, todayIso } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 interface MedicationPetCardProps {
   medication: MedicationPet;
@@ -53,7 +54,7 @@ export default function MedicationPetCard({ medication, onEdit, onDelete }: Medi
           <View className="flex-row items-center gap-1.5 shrink-0">
             <View
               className={`rounded-full px-2.5 py-1 ${
-                isEnTratamiento ? 'bg-[#FCECEF]' : 'bg-[#E6F7EC]'
+                isEnTratamiento ? 'bg-brand-tint' : 'bg-[#E6F7EC]'
               }`}
             >
               <Text
@@ -139,9 +140,9 @@ function ActionButton({
         danger ? 'bg-[#FCEAEA]' : 'bg-[#FDF5F0]'
       }`}
     >
-      <Ionicons name={icon} size={14} color={danger ? '#B92020' : '#D9627A'} />
+      <Ionicons name={icon} size={14} color={danger ? '#B92020' : brand.accent} />
       <Text
-        className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-[#D9627A]'}`}
+        className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-brand'}`}
         numberOfLines={1}
       >
         {label}

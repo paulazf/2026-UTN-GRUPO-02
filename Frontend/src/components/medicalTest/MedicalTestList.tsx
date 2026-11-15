@@ -10,6 +10,7 @@ import MedicalTestCard from './MedicalTestCard';
 import MedicalTestFormModal from './MedicalTestFormModal';
 import ImagePreviewModal from './ImagePreviewModal';
 import PdfPreviewModal from './PdfPreviewModal';
+import { brand } from '../../theme/brand';
 
 const SECTION_ORDER: MedicalTestType[] = ['laboratory', 'imaging', 'other'];
 
@@ -128,7 +129,7 @@ export default function MedicalTestList({ petId }: MedicalTestListProps) {
         </Text>
         <Pressable
           onPress={handleOpenCreate}
-          className="rounded-full bg-[#D9627A] px-3 py-1.5 active:opacity-90"
+          className="rounded-full bg-brand px-3 py-1.5 active:opacity-90"
         >
           <Text className="text-xs font-bold text-white">+ Subir</Text>
         </Pressable>
@@ -136,23 +137,23 @@ export default function MedicalTestList({ petId }: MedicalTestListProps) {
 
       {loading ? (
         <View className="items-center justify-center py-12">
-          <ActivityIndicator size="large" color="#D9627A" />
+          <ActivityIndicator size="large" color={brand.accent} />
           <Text className="mt-3 text-sm text-[#A07878]">Cargando estudios...</Text>
         </View>
       ) : error ? (
         <View className="items-center rounded-3xl border border-[#F0DDD5] bg-white p-6">
           <Text className="text-center text-sm text-[#3D2020]">{error}</Text>
           <Pressable onPress={loadTests} className="mt-3 active:opacity-70">
-            <Text className="text-sm font-bold text-[#D9627A]">Reintentar</Text>
+            <Text className="text-sm font-bold text-brand">Reintentar</Text>
           </Pressable>
         </View>
       ) : tests.length === 0 ? (
         <Pressable
           onPress={handleOpenCreate}
-          className="items-center rounded-3xl border-2 border-dashed border-[#D9627A] bg-[#FDF0F3] p-8 active:opacity-75"
+          className="items-center rounded-3xl border-2 border-dashed border-brand bg-brand-tint p-8 active:opacity-75"
         >
-          <Ionicons name="document-attach-outline" size={28} color="#D9627A" />
-          <Text className="mt-2 text-sm font-extrabold text-[#D9627A]">Todavía no hay estudios</Text>
+          <Ionicons name="document-attach-outline" size={28} color={brand.accent} />
+          <Text className="mt-2 text-sm font-extrabold text-brand">Todavía no hay estudios</Text>
           <Text className="mt-1 text-center text-xs font-medium text-[#A07878]">
             Tocá acá para subir el primero.
           </Text>

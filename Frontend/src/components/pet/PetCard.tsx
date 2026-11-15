@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
+import { brand } from '../../theme/brand';
 
 interface PetCardProps {
   pet: Pet;
@@ -41,10 +42,10 @@ export default function PetCard({ pet, onPress }: PetCardProps) {
             </View>
           </>
         ) : (
-          <View className="h-full w-full justify-between bg-[#FCECEF] p-4">
+          <View className="h-full w-full justify-between bg-brand-tint p-4">
             <View className="flex-row items-center justify-between">
               <View className="h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-xs">
-                <Ionicons name="paw" size={18} color="#DE6B80" />
+                <Ionicons name="paw" size={18} color={brand.accent} />
               </View>
               <View className="flex-row gap-2">
                 {pet.neutered && (
@@ -59,7 +60,7 @@ export default function PetCard({ pet, onPress }: PetCardProps) {
             </View>
 
             <View className="items-center justify-center">
-              <Ionicons name="paw-outline" size={44} color="#DE6B80" style={{ opacity: 0.25 }} />
+              <Ionicons name="paw-outline" size={44} color={brand.accent} style={{ opacity: 0.25 }} />
             </View>
 
             {/* Nombre, Raza y Edad */}
