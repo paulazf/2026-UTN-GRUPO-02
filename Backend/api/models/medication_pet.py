@@ -1,5 +1,5 @@
 import math
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -37,6 +37,8 @@ class MedicationPet(models.Model):
     frequencyHours = models.IntegerField(db_column="frequencyHours")
     quantityDose = models.IntegerField(db_column="quantityDose")
     startDate = models.DateField(db_column="startDate")
+    # Hora de la primera toma. Las siguientes se calculan sumando frequencyHours.
+    startTime = models.TimeField(default=time(9, 0), db_column="startTime")
     endDate = models.DateField(db_column="endDate")
     notes = models.TextField(null=True, blank=True)
     isDeleted = models.BooleanField(default=False, db_column="isDeleted")

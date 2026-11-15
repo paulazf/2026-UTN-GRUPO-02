@@ -21,6 +21,12 @@ class MedicationPetSerializer(serializers.ModelSerializer):
     idMedication = serializers.IntegerField(source="medication_id")
     medicationName = serializers.CharField(source="medication.name", read_only=True)
     status = serializers.SerializerMethodField()
+    startTime = serializers.TimeField(
+        format="%H:%M",
+        input_formats=["%H:%M", "%H:%M:%S"],
+        required=False,
+        error_messages={"invalid": "La hora de la primera toma debe tener el formato HH:MM."},
+    )
 
     class Meta:
         model = MedicationPet
@@ -33,6 +39,7 @@ class MedicationPetSerializer(serializers.ModelSerializer):
             "frequencyHours",
             "quantityDose",
             "startDate",
+            "startTime",
             "endDate",
             "status",
             "notes",
