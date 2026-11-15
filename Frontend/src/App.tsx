@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { ThemeProvider, useSeasonTheme } from './context/ThemeContext';
 import LoadingScreen from './components/brand/LoadingScreen';
+import { useReminderSync } from './notifications';
 
 // Import Screens from main (manual routing components)
 import DashboardScreen from './screens/DashboardScreen';
@@ -110,6 +111,9 @@ function RootNavigator() {
   if (!authContext) throw new Error("AuthContext debe usarse dentro de un AuthProvider");
 
   const { isLoading, userToken } = authContext;
+
+  // Avisos locales (medicación, y los que se vayan sumando): ver docs/notificaciones.md
+  useReminderSync(userToken != null);
 
   // La pantalla de carga se muestra al menos 1,5 s al abrir la app, para que se vea la marca.
   const [minSplashDone, setMinSplashDone] = useState(false);

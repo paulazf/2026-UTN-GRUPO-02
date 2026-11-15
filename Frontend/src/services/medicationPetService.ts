@@ -15,6 +15,15 @@ export async function fetchMedicationPets(petId: number): Promise<MedicationPet[
 }
 
 /**
+ * Tratamientos que todavía no terminaron, de todas las mascotas del dueño.
+ * Lo usa el módulo de notificaciones para programar los avisos de cada toma.
+ */
+export async function fetchMedicationReminders(): Promise<MedicationPet[]> {
+  const response = await axiosClient.get<MedicationPet[]>('/medication-pets/reminders/');
+  return response.data;
+}
+
+/**
  * Registra un nuevo medicamento/tratamiento asociado a una mascota.
  */
 export async function createMedicationPet(payload: CreateMedicationPetPayload): Promise<MedicationPet> {
@@ -33,6 +42,7 @@ export async function createMedicationPet(payload: CreateMedicationPetPayload): 
       errorData?.frequencyHours?.[0] ||
       errorData?.quantityDose?.[0] ||
       errorData?.startDate?.[0] ||
+      errorData?.startTime?.[0] ||
       errorData?.endDate?.[0] ||
       errorData?.idMedication?.[0] ||
       errorData?.idPet?.[0] ||
@@ -85,6 +95,7 @@ export async function updateMedicationPet(
       errorData?.frequencyHours?.[0] ||
       errorData?.quantityDose?.[0] ||
       errorData?.startDate?.[0] ||
+      errorData?.startTime?.[0] ||
       errorData?.endDate?.[0] ||
       errorData?.notes?.[0] ||
       'No se pudo modificar la medicación. Intenta nuevamente.';

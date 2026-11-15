@@ -26,6 +26,10 @@ export default function MedicationPetCard({ medication, onEdit, onDelete }: Medi
     ? `${formattedStartDate} - ${formattedEndDate}`
     : `Desde el ${formattedStartDate}`;
 
+  const startTimeLabel = medication.startTime
+    ? `Primera toma ${medication.startTime.slice(0, 5)} hs`
+    : null;
+
   const doseLabel = `${medication.quantityDose} ${
     medication.quantityDose === 1 ? 'toma' : 'tomas'
   }`;
@@ -86,6 +90,7 @@ export default function MedicationPetCard({ medication, onEdit, onDelete }: Medi
         {/* Rango de Fechas completo a lo ancho */}
         <Text className="mt-2 text-xs font-medium text-[#8C7B77]">
           {formattedDates}
+          {startTimeLabel ? ` · ${startTimeLabel}` : ''}
         </Text>
 
         {/* Bloque de Notas u Observaciones */}
