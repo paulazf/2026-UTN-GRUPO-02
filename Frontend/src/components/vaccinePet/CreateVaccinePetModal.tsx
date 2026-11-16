@@ -17,6 +17,7 @@ import { UpdateVaccinePetPayload, Vaccine, VaccinePet, VaccineType } from '../..
 import { createVaccinePet, updateVaccinePet } from '../../services/vaccinePetService';
 import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
 import VaccinePicker from './VaccinePicker';
+import { brand } from '../../theme/brand';
 
 /** create = alta nueva · edit = corregir una aplicación · booster = refuerzo de la misma vacuna */
 export type VaccineModalMode =
@@ -228,9 +229,9 @@ export default function CreateVaccinePetModal({
             <Pressable
               onPress={onClose}
               hitSlop={10}
-              className="h-8 w-8 items-center justify-center rounded-full bg-[#FCECEF] active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full bg-brand-tint active:opacity-70"
             >
-              <Ionicons name="close" size={18} color="#DE6B80" />
+              <Ionicons name="close" size={18} color={brand.accent} />
             </Pressable>
           </View>
 
@@ -306,7 +307,7 @@ export default function CreateVaccinePetModal({
             <Pressable
               onPress={handleSubmit}
               disabled={submitting}
-              className="items-center justify-center rounded-2xl bg-[#D9627A] py-4 shadow-sm active:opacity-85"
+              className="items-center justify-center rounded-2xl bg-brand py-4 shadow-sm active:opacity-85"
             >
               {submitting ? (
                 <ActivityIndicator color="#FFFFFF" />

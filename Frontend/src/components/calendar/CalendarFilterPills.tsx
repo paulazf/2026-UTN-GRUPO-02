@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
 import { CalendarEntityType } from '../../types/calendar';
+import { useSeasonTheme } from '../../context/ThemeContext';
 
 interface CalendarFilterPillsProps {
   pets: Pet[];
@@ -33,6 +34,8 @@ export default function CalendarFilterPills({
   selectedEntityType,
   onSelectEntityType,
 }: CalendarFilterPillsProps) {
+  const { palette } = useSeasonTheme();
+
   return (
     <View className="pt-2 pb-1">
       {/* 1. Filtro por Mascota */}
@@ -54,7 +57,7 @@ export default function CalendarFilterPills({
           <Text
             className="text-sm"
             style={{
-              color: selectedPetId === null ? '#DE6B80' : '#FFFFFF',
+              color: selectedPetId === null ? palette.accent : '#FFFFFF',
               fontWeight: selectedPetId === null ? '700' : '500',
             }}
           >
@@ -79,12 +82,12 @@ export default function CalendarFilterPills({
               <Ionicons
                 name={isCat ? 'paw' : 'paw-outline'}
                 size={14}
-                color={isSelected ? '#DE6B80' : '#FFFFFF'}
+                color={isSelected ? palette.accent : '#FFFFFF'}
               />
               <Text
                 className="text-sm"
                 style={{
-                  color: isSelected ? '#DE6B80' : '#FFFFFF',
+                  color: isSelected ? palette.accent : '#FFFFFF',
                   fontWeight: isSelected ? '700' : '500',
                 }}
               >
@@ -122,20 +125,20 @@ export default function CalendarFilterPills({
                   <MaterialCommunityIcons
                     name={opt.icon as any}
                     size={14}
-                    color={isSelected ? '#DE6B80' : '#FFFFFF'}
+                    color={isSelected ? palette.accent : '#FFFFFF'}
                   />
                 ) : (
                   <Ionicons
                     name={opt.icon as any}
                     size={14}
-                    color={isSelected ? '#DE6B80' : '#FFFFFF'}
+                    color={isSelected ? palette.accent : '#FFFFFF'}
                   />
                 )
               ) : null}
               <Text
                 className="text-sm"
                 style={{
-                  color: isSelected ? '#DE6B80' : '#FFFFFF',
+                  color: isSelected ? palette.accent : '#FFFFFF',
                   fontWeight: isSelected ? '700' : '500',
                 }}
               >

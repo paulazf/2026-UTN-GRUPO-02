@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Breed, PetSpecies } from '../../types/pet';
 import { fetchBreeds } from '../../services/petService';
+import { brand } from '../../theme/brand';
 
 interface BreedPickerProps {
   species: PetSpecies;
@@ -79,7 +80,7 @@ export default function BreedPicker({
       <Pressable
         onPress={() => setIsOpen(!isOpen)}
         className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 active:opacity-80 ${
-          isOpen ? 'border-[#DE6B80] bg-[#FFF8F9]' : 'border-[#F0E4DF] bg-[#FAF5F2]'
+          isOpen ? 'border-brand bg-brand-soft' : 'border-[#F0E4DF] bg-[#FAF5F2]'
         }`}
       >
         <Text
@@ -125,7 +126,7 @@ export default function BreedPicker({
 
           {loading ? (
             <View className="py-4 items-center">
-              <ActivityIndicator color="#DE6B80" />
+              <ActivityIndicator color={brand.accent} />
               <Text className="mt-2 text-xs text-[#8C7B77]">Cargando razas...</Text>
             </View>
           ) : error ? (
@@ -133,9 +134,9 @@ export default function BreedPicker({
               <Text className="text-center text-xs text-red-500 mb-2">{error}</Text>
               <Pressable
                 onPress={() => loadBreeds(species)}
-                className="rounded-xl bg-[#FCECEF] px-4 py-2 active:opacity-80"
+                className="rounded-xl bg-brand-tint px-4 py-2 active:opacity-80"
               >
-                <Text className="text-xs font-bold text-[#DE6B80]">Reintentar cargar razas</Text>
+                <Text className="text-xs font-bold text-brand">Reintentar cargar razas</Text>
               </Pressable>
             </View>
           ) : (
@@ -162,19 +163,19 @@ export default function BreedPicker({
                         setIsOpen(false);
                         setSearch('');
                       }}
-                      className={`flex-row items-center justify-between rounded-xl px-3 py-2.5 active:bg-[#FCECEF] ${
-                        isSelected ? 'bg-[#FCECEF]' : ''
+                      className={`flex-row items-center justify-between rounded-xl px-3 py-2.5 active:bg-brand-tint ${
+                        isSelected ? 'bg-brand-tint' : ''
                       }`}
                     >
                       <Text
                         className={`text-sm ${
-                          isSelected ? 'font-bold text-[#DE6B80]' : 'text-[#2B1D1D]'
+                          isSelected ? 'font-bold text-brand' : 'text-[#2B1D1D]'
                         }`}
                       >
                         {breed.name}
                       </Text>
                       {isSelected && (
-                        <Ionicons name="checkmark" size={16} color="#DE6B80" />
+                        <Ionicons name="checkmark" size={16} color={brand.accent} />
                       )}
                     </Pressable>
                   );

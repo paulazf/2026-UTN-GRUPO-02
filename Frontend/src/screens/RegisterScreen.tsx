@@ -7,9 +7,11 @@ import axiosClient from '../api/axiosClient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useGoogleAuth } from '../services/googleAuth';
+import { useSeasonTheme } from '../context/ThemeContext';
 
 export default function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { palette } = useSeasonTheme();
   const authContext = useContext(AuthContext);
   const { signInWithGoogle, isGoogleLoading } = useGoogleAuth((msg) => setErrorMsg(msg));
   
@@ -112,10 +114,11 @@ export default function RegisterScreen() {
       {/* HEADER */}
       <View className="flex-row items-center px-6 pt-8 pb-2 mt-4 relative h-14">
         <TouchableOpacity 
-          className="absolute left-6 top-6 z-10 w-10 h-10 bg-[#FCE8E8] rounded-full justify-center items-center"
+          className="absolute left-6 top-6 z-10 w-10 h-10 rounded-full justify-center items-center"
+          style={{ backgroundColor: palette.tint }}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={20} color="#D8657B" />
+          <Ionicons name="arrow-back" size={20} color={palette.accent} />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-[16px] font-semibold text-[#1A202C] mt-4">
           Registro
@@ -256,7 +259,8 @@ export default function RegisterScreen() {
 
           {/* BOTON PRIMARIO */}
           <TouchableOpacity 
-            className="bg-[#D8657B] rounded-full h-[52px] justify-center items-center shadow-sm flex-row mb-6"
+            className="rounded-full h-[52px] justify-center items-center shadow-sm flex-row mb-6"
+            style={{ backgroundColor: palette.accent }}
             onPress={handleRegister}
             disabled={isLoading}
           >
@@ -274,7 +278,7 @@ export default function RegisterScreen() {
             disabled={isLoading || isGoogleLoading}
           >
             {isGoogleLoading ? (
-              <ActivityIndicator color="#D8657B" />
+              <ActivityIndicator color={palette.accent} />
             ) : (
               <>
                 <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />
@@ -287,7 +291,7 @@ export default function RegisterScreen() {
           <View className="flex-row justify-center mt-10">
             <Text className="text-[#718096] text-[15px]">¿Ya tenés cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text className="text-[#D8657B] text-[15px] font-bold">Iniciar sesión</Text>
+              <Text className="text-[15px] font-bold" style={{ color: palette.accent }}>Iniciar sesión</Text>
             </TouchableOpacity>
           </View>
 

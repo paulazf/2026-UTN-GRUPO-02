@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Appointment } from '../../types/appointment';
 import { formatTimeDisplay, isoToDisplay, todayIso } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -24,7 +25,7 @@ export default function AppointmentCard({
   const deleteActionLabel = isPast ? 'Eliminar turno' : 'Cancelar turno';
 
   let statusLabel = 'Próximo';
-  let statusBadgeStyle = { bg: 'bg-[#FCECEF]', text: 'text-[#B8324E]' };
+  let statusBadgeStyle = { bg: 'bg-brand-tint', text: 'text-[#B8324E]' };
 
   if (appointmentDate < today) {
     statusLabel = 'Realizado';
@@ -60,8 +61,8 @@ export default function AppointmentCard({
         <View className="flex-row items-start justify-between gap-2">
           <View className="flex-1">
             <View className="flex-row items-center gap-2">
-              <View className="h-8 w-8 items-center justify-center rounded-xl bg-[#FCECEF]">
-                <Ionicons name="calendar-outline" size={16} color="#DE6B80" />
+              <View className="h-8 w-8 items-center justify-center rounded-xl bg-brand-tint">
+                <Ionicons name="calendar-outline" size={16} color={brand.accent} />
               </View>
               <View>
                 <Text className="text-base font-bold text-[#2B1D1D]">
@@ -164,9 +165,9 @@ function ActionButton({
         danger ? 'bg-[#FCEAEA]' : 'bg-[#FDF5F0]'
       }`}
     >
-      <Ionicons name={icon} size={14} color={danger ? '#B92020' : '#D9627A'} />
+      <Ionicons name={icon} size={14} color={danger ? '#B92020' : brand.accent} />
       <Text
-        className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-[#D9627A]'}`}
+        className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-brand'}`}
         numberOfLines={1}
       >
         {label}

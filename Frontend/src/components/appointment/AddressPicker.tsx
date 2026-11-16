@@ -17,6 +17,7 @@ import {
   deleteAddress,
   updateAddress,
 } from '../../services/addressService';
+import { brand } from '../../theme/brand';
 
 interface AddressPickerProps {
   isManaging: boolean;
@@ -276,13 +277,13 @@ export default function AddressPicker({
           <View className="flex-1 flex-row items-center gap-3 pr-2">
             <View
               className={`h-9 w-9 items-center justify-center rounded-xl ${
-                currentSelectedAddress ? 'bg-[#FCECEF]' : 'bg-[#EAE2DC]'
+                currentSelectedAddress ? 'bg-brand-tint' : 'bg-[#EAE2DC]'
               }`}
             >
               <Ionicons
                 name={currentSelectedAddress ? 'business-outline' : 'videocam-outline'}
                 size={18}
-                color={currentSelectedAddress ? '#DE6B80' : '#8C7B77'}
+                color={currentSelectedAddress ? brand.accent : '#8C7B77'}
               />
             </View>
             <View className="flex-1">
@@ -300,8 +301,8 @@ export default function AddressPicker({
           </View>
 
           <View className="flex-row items-center gap-1 rounded-full border border-[#F0E4DF] bg-white px-2.5 py-1">
-            <Text className="text-xs font-bold text-[#DE6B80]">Cambiar</Text>
-            <Ionicons name="chevron-forward" size={13} color="#DE6B80" />
+            <Text className="text-xs font-bold text-brand">Cambiar</Text>
+            <Ionicons name="chevron-forward" size={13} color={brand.accent} />
           </View>
         </Pressable>
       </View>
@@ -364,20 +365,20 @@ export default function AddressPicker({
               onPress={() => handleSelectAndReturn(null)}
               className={`flex-row items-center justify-between rounded-2xl border p-3.5 active:opacity-80 ${
                 selectedAddressId === null
-                  ? 'border-[#DE6B80] bg-[#FAF5F2]'
+                  ? 'border-brand bg-[#FAF5F2]'
                   : 'border-[#F0E4DF] bg-white'
               }`}
             >
               <View className="flex-row items-center gap-3">
                 <View
                   className={`h-8 w-8 items-center justify-center rounded-xl ${
-                    selectedAddressId === null ? 'bg-[#FCECEF]' : 'bg-[#FAF5F2]'
+                    selectedAddressId === null ? 'bg-brand-tint' : 'bg-[#FAF5F2]'
                   }`}
                 >
                   <Ionicons
                     name="videocam-outline"
                     size={16}
-                    color={selectedAddressId === null ? '#DE6B80' : '#8C7B77'}
+                    color={selectedAddressId === null ? brand.accent : '#8C7B77'}
                   />
                 </View>
                 <View>
@@ -390,14 +391,14 @@ export default function AddressPicker({
                 </View>
               </View>
               {selectedAddressId === null && (
-                <Ionicons name="checkmark-circle" size={18} color="#DE6B80" />
+                <Ionicons name="checkmark-circle" size={18} color={brand.accent} />
               )}
             </Pressable>
 
             {/* Listado filtrado de domicilios guardados */}
             {loadingAddresses ? (
               <View className="items-center py-6">
-                <ActivityIndicator size="small" color="#DE6B80" />
+                <ActivityIndicator size="small" color={brand.accent} />
               </View>
             ) : (
               filteredAddresses.map((addr) => {
@@ -407,7 +408,7 @@ export default function AddressPicker({
                     key={addr.idAddress}
                     className={`flex-row items-center justify-between rounded-2xl border p-3.5 ${
                       isSelected
-                        ? 'border-[#DE6B80] bg-[#FAF5F2]'
+                        ? 'border-brand bg-[#FAF5F2]'
                         : 'border-[#F0E4DF] bg-white'
                     }`}
                   >
@@ -419,7 +420,7 @@ export default function AddressPicker({
                         <Ionicons
                           name="business-outline"
                           size={14}
-                          color={isSelected ? '#DE6B80' : '#8C7B77'}
+                          color={isSelected ? brand.accent : '#8C7B77'}
                         />
                         <Text
                           className="text-sm font-bold text-[#2B1D1D]"
@@ -463,7 +464,7 @@ export default function AddressPicker({
                         <Ionicons
                           name="checkmark-circle"
                           size={18}
-                          color="#DE6B80"
+                          color={brand.accent}
                         />
                       )}
                     </View>
@@ -475,10 +476,10 @@ export default function AddressPicker({
             {/* Botón "+ Registrar nuevo domicilio" */}
             <Pressable
               onPress={handleStartCreate}
-              className="mt-2 flex-row items-center justify-center gap-2 rounded-2xl border border-dashed border-[#DE6B80] bg-[#FAF5F2] py-3.5 active:opacity-80"
+              className="mt-2 flex-row items-center justify-center gap-2 rounded-2xl border border-dashed border-brand bg-[#FAF5F2] py-3.5 active:opacity-80"
             >
-              <Ionicons name="add-circle-outline" size={16} color="#DE6B80" />
-              <Text className="text-xs font-bold text-[#DE6B80]">
+              <Ionicons name="add-circle-outline" size={16} color={brand.accent} />
+              <Text className="text-xs font-bold text-brand">
                 + Registrar nuevo lugar / domicilio
               </Text>
             </Pressable>
@@ -664,7 +665,7 @@ export default function AddressPicker({
             <Pressable
               onPress={handleSaveForm}
               disabled={saving}
-              className="items-center justify-center rounded-2xl bg-[#D9627A] py-3.5 active:opacity-85"
+              className="items-center justify-center rounded-2xl bg-brand py-3.5 active:opacity-85"
             >
               {saving ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
@@ -721,7 +722,7 @@ export default function AddressPicker({
             className="flex-1"
           >
             {loadingProvinces ? (
-              <ActivityIndicator color="#DE6B80" className="py-6" />
+              <ActivityIndicator color={brand.accent} className="py-6" />
             ) : (
               filteredProvinces.map((prov) => (
                 <Pressable
@@ -739,7 +740,7 @@ export default function AddressPicker({
                     {prov.name}
                   </Text>
                   {selectedProvinceId === prov.idProvince && (
-                    <Ionicons name="checkmark" size={18} color="#DE6B80" />
+                    <Ionicons name="checkmark" size={18} color={brand.accent} />
                   )}
                 </Pressable>
               ))
@@ -788,7 +789,7 @@ export default function AddressPicker({
             className="flex-1"
           >
             {loadingCities ? (
-              <ActivityIndicator color="#DE6B80" className="py-6" />
+              <ActivityIndicator color={brand.accent} className="py-6" />
             ) : filteredCities.length === 0 ? (
               <Text className="py-6 text-center text-xs text-[#8C7B77]">
                 No se encontraron localidades.
@@ -809,7 +810,7 @@ export default function AddressPicker({
                     {city.name}
                   </Text>
                   {formData.idCity === city.idCity && (
-                    <Ionicons name="checkmark" size={18} color="#DE6B80" />
+                    <Ionicons name="checkmark" size={18} color={brand.accent} />
                   )}
                 </Pressable>
               ))

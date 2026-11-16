@@ -3,7 +3,7 @@
     "name": "PetLife",
     "slug": "utn-grupo-02",
     "version": "1.0.0",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icons/original-ios.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "utngrupo02",
@@ -17,8 +17,8 @@
     "android": {
       "package": "com.utn.grupo02",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icons/original-android.png",
+        "backgroundColor": "#E87A8E"
       }
     },
     "plugins": [
@@ -26,7 +26,60 @@
       "expo-secure-store",
       "expo-sharing",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "Navidad",
+            "ios": "./assets/icons/navidad-ios.png",
+            "android": {
+              "foregroundImage": "./assets/icons/navidad-android.png",
+              "backgroundColor": "#B3343B"
+            }
+          },
+          {
+            "name": "SanValentin",
+            "ios": "./assets/icons/sanvalentin-ios.png",
+            "android": {
+              "foregroundImage": "./assets/icons/sanvalentin-android.png",
+              "backgroundColor": "#C8325F"
+            }
+          },
+          {
+            "name": "Pascuas",
+            "ios": "./assets/icons/pascuas-ios.png",
+            "android": {
+              "foregroundImage": "./assets/icons/pascuas-android.png",
+              "backgroundColor": "#7A5BB5"
+            }
+          },
+          {
+            "name": "Halloween",
+            "ios": "./assets/icons/halloween-ios.png",
+            "android": {
+              "foregroundImage": "./assets/icons/halloween-android.png",
+              "backgroundColor": "#4C1D95"
+            }
+          },
+          {
+            "name": "Primavera",
+            "ios": "./assets/icons/primavera-ios.png",
+            "android": {
+              "foregroundImage": "./assets/icons/primavera-android.png",
+              "backgroundColor": "#2F7D5B"
+            }
+          },
+          {
+            "name": "Patrias",
+            "ios": "./assets/icons/patrias-ios.png",
+            "android": {
+              "foregroundImage": "./assets/icons/patrias-android.png",
+              "backgroundColor": "#2F6EA8"
+            }
+          }
+        ]
+      ]
     ],
     "owner": "grupo-02-utn",
     "extra": {

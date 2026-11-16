@@ -25,6 +25,7 @@ import {
 } from '../../types/medicalTest';
 import { ApiError, createMedicalTest, updateMedicalTest } from '../../services/medicalTestService';
 import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 // Mismos límites que el back
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB por archivo
@@ -273,10 +274,10 @@ export default function MedicalTestFormModal({
             <Text className="text-lg font-black text-[#3D2020]">{title}</Text>
             <Pressable
               onPress={onClose}
-              className="h-8 w-8 items-center justify-center rounded-full bg-[#FDF0F3] active:opacity-70"
+              className="h-8 w-8 items-center justify-center rounded-full bg-brand-tint active:opacity-70"
               accessibilityLabel="Cerrar"
             >
-              <Ionicons name="close" size={16} color="#D9627A" />
+              <Ionicons name="close" size={16} color={brand.accent} />
             </Pressable>
           </View>
 
@@ -400,7 +401,7 @@ export default function MedicalTestFormModal({
             <Pressable
               onPress={handleSubmit}
               disabled={submitting}
-              className="items-center rounded-3xl bg-[#D9627A] p-3.5 active:opacity-90"
+              className="items-center rounded-3xl bg-brand p-3.5 active:opacity-90"
             >
               {submitting ? (
                 <ActivityIndicator color="white" />
@@ -461,7 +462,7 @@ function Segmented<T extends string>({
             key={option.value}
             onPress={() => onChange(option.value)}
             className={`flex-1 items-center justify-center rounded-[20px] p-2.5 active:opacity-80 ${
-              active ? 'bg-[#D9627A]' : 'border-[1.5px] border-[#F0DDD5] bg-[#FDF5F0]'
+              active ? 'bg-brand' : 'border-[1.5px] border-[#F0DDD5] bg-[#FDF5F0]'
             }`}
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
@@ -488,7 +489,7 @@ function AttachmentRow({
   const isPdf = name.toLowerCase().endsWith('.pdf');
   return (
     <View className="flex-row items-center gap-2 rounded-[20px] border-[1.5px] border-[#F0DDD5] bg-[#FDF5F0] px-3.5 py-2.5">
-      <Ionicons name={isPdf ? 'document-text-outline' : 'image-outline'} size={18} color="#D9627A" />
+      <Ionicons name={isPdf ? 'document-text-outline' : 'image-outline'} size={18} color={brand.accent} />
       <Text className="flex-1 text-sm font-semibold text-[#3D2020]" numberOfLines={1}>
         {name}
       </Text>
@@ -512,10 +513,10 @@ function PickButton({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[20px] border-[1.5px] border-dashed border-[#D9627A] bg-[#FDF5F0] p-2.5 active:opacity-75"
+      className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[20px] border-[1.5px] border-dashed border-brand bg-[#FDF5F0] p-2.5 active:opacity-75"
     >
-      <Ionicons name={icon} size={16} color="#D9627A" />
-      <Text className="text-xs font-bold text-[#D9627A]">{label}</Text>
+      <Ionicons name={icon} size={16} color={brand.accent} />
+      <Text className="text-xs font-bold text-brand">{label}</Text>
     </Pressable>
   );
 }

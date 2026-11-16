@@ -5,9 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useGoogleAuth } from '../services/googleAuth';
+import { useSeasonTheme } from '../context/ThemeContext';
+import PawLogo from '../components/brand/PawLogo';
+import SeasonDecor from '../components/brand/SeasonDecor';
 
 export default function WelcomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { season, palette } = useSeasonTheme();
   const [errorMsg, setErrorMsg] = useState('');
   const { signInWithGoogle, isGoogleLoading } = useGoogleAuth((msg) => {
     setErrorMsg(msg);
@@ -16,11 +20,16 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF5F3]">
+      {/* Adornos de la temporada, en el color de acento sobre el fondo claro */}
+      <SeasonDecor season={season} variant="splash" color={palette.accent} opacity={0.22} />
       <View className="flex-1 px-6 items-center justify-center pt-10">
-        
-        {/* ILUSTRACION CIRCULAR */}
-        <View className="w-[200px] h-[200px] bg-[#FDE8E8] rounded-full justify-center items-center mb-8 border-[6px] border-[#FFF5F3] shadow-sm">
-           <Ionicons name="paw" size={72} color="#DE6B80" />
+
+        {/* LOGO DE LA TEMPORADA */}
+        <View
+          className="w-[200px] h-[200px] rounded-full justify-center items-center mb-8 border-[6px] border-[#FFF5F3] shadow-sm"
+          style={{ backgroundColor: palette.header }}
+        >
+          <PawLogo season={season} size={112} color="#FFFFFF" cut={palette.header} />
         </View>
 
         {/* TEXTOS */}
@@ -41,17 +50,19 @@ export default function WelcomeScreen() {
         {/* BOTONES */}
         <View className="w-full space-y-4">
           <TouchableOpacity 
-            className="bg-[#D8657B] rounded-full h-[52px] justify-center items-center shadow-sm"
+            className="rounded-full h-[52px] justify-center items-center shadow-sm"
+            style={{ backgroundColor: palette.accent }}
             onPress={() => navigation.navigate('Login')}
           >
             <Text className="text-white text-[16px] font-bold">Iniciar sesión</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            className="bg-transparent border border-[#D8657B] rounded-full h-[52px] justify-center items-center mt-4"
+            className="bg-transparent border rounded-full h-[52px] justify-center items-center mt-4"
+            style={{ borderColor: palette.accent }}
             onPress={() => navigation.navigate('Register')}
           >
-            <Text className="text-[#D8657B] text-[16px] font-bold">Crear cuenta</Text>
+            <Text className="text-[16px] font-bold" style={{ color: palette.accent }}>Crear cuenta</Text>
           </TouchableOpacity>
         </View>
 
@@ -69,7 +80,7 @@ export default function WelcomeScreen() {
           disabled={isGoogleLoading}
         >
           {isGoogleLoading ? (
-            <ActivityIndicator color="#D8657B" />
+            <ActivityIndicator color={palette.accent} />
           ) : (
             <>
               <Ionicons name="logo-google" size={20} color="#2D3748" className="mr-3" />

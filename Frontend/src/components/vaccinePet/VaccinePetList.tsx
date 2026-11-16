@@ -7,6 +7,7 @@ import { deleteVaccinePet, fetchVaccinePets } from '../../services/vaccinePetSer
 import { isoToDisplay } from '../../utils/dates';
 import VaccinePetCard from './VaccinePetCard';
 import CreateVaccinePetModal, { VaccineModalMode } from './CreateVaccinePetModal';
+import { brand } from '../../theme/brand';
 
 interface VaccinePetListProps {
   petId: number;
@@ -95,7 +96,7 @@ export default function VaccinePetList({ petId, species }: VaccinePetListProps) 
         <Text className="flex-1 pr-2 text-base font-bold text-[#2B1D1D]">{countText}</Text>
         <Pressable
           onPress={() => openModal({ kind: 'create' })}
-          className="rounded-full bg-[#D9627A] px-4 py-2 shadow-xs active:opacity-85"
+          className="rounded-full bg-brand px-4 py-2 shadow-xs active:opacity-85"
         >
           <Text className="text-xs font-bold text-white">+ Agregar</Text>
         </Pressable>
@@ -103,23 +104,23 @@ export default function VaccinePetList({ petId, species }: VaccinePetListProps) 
 
       {loading ? (
         <View className="items-center py-12">
-          <ActivityIndicator size="large" color="#DE6B80" />
+          <ActivityIndicator size="large" color={brand.accent} />
           <Text className="mt-3 text-xs text-[#8C7B77]">Cargando vacunas...</Text>
         </View>
       ) : error ? (
         <View className="items-center rounded-2xl border border-red-200 bg-red-50 p-6">
           <Text className="mb-3 text-center text-sm font-semibold text-red-600">{error}</Text>
-          <Pressable onPress={load} className="rounded-xl bg-[#FCECEF] px-4 py-2 active:opacity-80">
-            <Text className="text-xs font-bold text-[#DE6B80]">Reintentar</Text>
+          <Pressable onPress={load} className="rounded-xl bg-brand-tint px-4 py-2 active:opacity-80">
+            <Text className="text-xs font-bold text-brand">Reintentar</Text>
           </Pressable>
         </View>
       ) : items.length === 0 ? (
         <Pressable
           onPress={() => openModal({ kind: 'create' })}
-          className="items-center rounded-3xl border-2 border-dashed border-[#D9627A] bg-[#FDF0F3] p-8 active:opacity-75"
+          className="items-center rounded-3xl border-2 border-dashed border-brand bg-brand-tint p-8 active:opacity-75"
         >
-          <MaterialCommunityIcons name="needle" size={28} color="#D9627A" />
-          <Text className="mt-2 text-sm font-extrabold text-[#D9627A]">Todavía no hay vacunas</Text>
+          <MaterialCommunityIcons name="needle" size={28} color={brand.accent} />
+          <Text className="mt-2 text-sm font-extrabold text-brand">Todavía no hay vacunas</Text>
           <Text className="mt-1 text-center text-xs font-medium text-[#A07878]">
             Tocá acá para registrar la primera vacuna o pipeta.
           </Text>

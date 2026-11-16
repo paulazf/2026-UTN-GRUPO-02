@@ -16,6 +16,8 @@ import { fetchPets } from '../services/petService';
 import { fetchCalendarEvents } from '../services/calendarService';
 import CalendarFilterPills from '../components/calendar/CalendarFilterPills';
 import CalendarEventCard from '../components/calendar/CalendarEventCard';
+import { useSeasonTheme } from '../context/ThemeContext';
+import { brand } from '../theme/brand';
 
 const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -30,6 +32,7 @@ interface MonthGroup {
 }
 
 export default function CalendarScreen() {
+  const { palette } = useSeasonTheme();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
   const [selectedEntityType, setSelectedEntityType] = useState<CalendarEntityType | null>(null);
@@ -154,8 +157,9 @@ export default function CalendarScreen() {
     <View className="flex-1 bg-[#FAF6F3]">
       {/* Header Rosa Superior que va sobre el resto de la página */}
       <View
-        className="bg-[#E87A8E] rounded-b-[40px] shadow-sm z-10"
+        className="rounded-b-[40px] shadow-sm z-10"
         style={{
+          backgroundColor: palette.header,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
@@ -193,14 +197,14 @@ export default function CalendarScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#E87A8E"
-            colors={['#E87A8E']}
+            tintColor={palette.header}
+            colors={[palette.header]}
           />
         }
       >
         {loading && !refreshing ? (
           <View className="py-20 items-center justify-center">
-            <ActivityIndicator size="large" color="#DE6B80" />
+            <ActivityIndicator size="large" color={palette.accent} />
             <Text className="text-sm text-[#8C7B77] mt-3">
               Cargando eventos...
             </Text>
@@ -213,7 +217,8 @@ export default function CalendarScreen() {
             </Text>
             <Pressable
               onPress={loadEvents}
-              className="mt-4 rounded-full bg-[#DE6B80] px-6 py-2.5 active:opacity-80"
+              className="mt-4 rounded-full px-6 py-2.5 active:opacity-80"
+              style={{ backgroundColor: palette.accent }}
             >
               <Text className="text-sm font-bold text-white">Reintentar</Text>
             </Pressable>
@@ -221,7 +226,7 @@ export default function CalendarScreen() {
         ) : isEmpty ? (
           <View className="py-20 items-center px-6">
             <View className="h-20 w-20 items-center justify-center rounded-full bg-[#FCEBED] mb-4">
-              <Ionicons name="calendar-outline" size={38} color="#DE6B80" />
+              <Ionicons name="calendar-outline" size={38} color={palette.accent} />
             </View>
             <Text className="text-lg font-bold text-[#2B1D1D] text-center">
               Sin eventos programados
@@ -234,7 +239,7 @@ export default function CalendarScreen() {
           <>
             {/* Sección 1: Vencidas (Colapsada por defecto, solo visible si hay vacunas vencidas) */}
             {expiredEvents.length > 0 && (
-              <View className="mb-7 rounded-2xl border border-[#FDE8E8] bg-[#FFF5F5] overflow-hidden shadow-xs">
+              <View className="mb-7 rounded-2xl border border-brand-tint bg-[#FFF5F5] overflow-hidden shadow-xs">
                 <Pressable
                   onPress={() => setIsExpiredExpanded(!isExpiredExpanded)}
                   className="flex-row items-center justify-between p-4 active:opacity-75"
@@ -272,7 +277,7 @@ export default function CalendarScreen() {
             {todayEvents.length > 0 && (
               <View className="mb-7">
                 <View className="flex-row items-center gap-2 mb-3">
-                  <View className="h-2.5 w-2.5 rounded-full bg-[#DE6B80]" />
+                  <View className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: palette.accent }} />
                   <Text className="text-lg font-bold text-[#2B1D1D]">Hoy</Text>
                 </View>
                 {todayEvents.map((event) => (
@@ -291,9 +296,9 @@ export default function CalendarScreen() {
 
                   {/* Badge de advertencia de vencimiento en el mes */}
                   {group.hasVaccineExpiration && (
-                    <View className="flex-row items-center gap-1.5 rounded-full bg-[#FDE8E8] px-2.5 py-1 border border-[#f0c0c0]">
-                      <Ionicons name="warning-outline" size={13} color="#DE6B80" />
-                      <Text className="text-xs font-bold text-[#DE6B80]">
+                    <View className="flex-row items-center gap-1.5 rounded-full bg-brand-tint px-2.5 py-1 border border-[#f0c0c0]">
+                      <Ionicons name="warning-outline" size={13} color={brand.accent} />
+                      <Text className="text-xs font-bold text-brand">
                         Vencimiento
                       </Text>
                     </View>

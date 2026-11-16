@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Feeding, FEEDING_TYPE_LABELS } from '../../types/feeding';
 import { isoToDisplay } from '../../utils/dates';
+import { brand } from '../../theme/brand';
 
 interface FeedingCardProps {
   feeding: Feeding;
@@ -119,8 +120,8 @@ function ActionButton({
         danger ? 'bg-[#FCEAEA]' : 'bg-[#FDF5F0]'
       }`}
     >
-      <Ionicons name={icon} size={14} color={danger ? '#B92020' : '#D9627A'} />
-      <Text className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-[#D9627A]'}`}>
+      <Ionicons name={icon} size={14} color={danger ? '#B92020' : brand.accent} />
+      <Text className={`text-xs font-bold ${danger ? 'text-[#B92020]' : 'text-brand'}`}>
         {label}
       </Text>
     </Pressable>

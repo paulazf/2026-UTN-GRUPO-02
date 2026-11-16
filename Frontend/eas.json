@@ -14,13 +14,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://agiles-backend.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://agiles-backend.onrender.com",
+        "EXPO_PUBLIC_SEASON_PREVIEW": "true"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://agiles-backend.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://agiles-backend.onrender.com",
+        "EXPO_PUBLIC_SEASON_PREVIEW": "true"
       }
     }
   },
