@@ -1,5 +1,9 @@
 """Tests de avisos de medicación (TDD-0047, HU-304)."""
 
+from datetime import time
+
+from django.db import connection
+
 from .models import MedicationPet
 from .test_medication_pet import URL, MedicationPetBase, days, detail
 
@@ -27,6 +31,18 @@ class StartTimeTests(MedicationPetBase):
         r = self.client.patch(detail(created["id"]), {"startTime": "08:15"}, format="json")
         self.assertEqual(r.status_code, 200, r.data)
         self.assertEqual(r.data["startTime"], "08:15")
+
+
+    def test_alta_sin_campo_en_el_codigo_usa_default_de_la_base(self):
+        """Código que no conoce startTime (ej. main) puede crear tratamientos: la base pone 09:00."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                'INSERT INTO medication_pet ("idPet", "idMedication", "frequencyHours", "quantityDose", '
+                '"startDate", "endDate", "isDeleted", created_at, updated_at) '
+                "VALUES (%s, %s, 8, 3, %s, %s, false, %s, %s)",
+                [self.luna.pk, self.amoxicilina.pk, days(0), days(1), days(0), days(0)],
+            )
+        self.assertEqual(MedicationPet.objects.get(pet=self.luna).startTime, time(9, 0))
 
 
 class RemindersTests(MedicationPetBase):

@@ -88,7 +88,8 @@ GET /medication-pets/reminders/  -->  planner (función pura)  -->  replaceGroup
 3. **Sincronización:** por cada grupo, borra los avisos programados y programa los nuevos. Es idempotente: se puede llamar cuantas veces haga falta.
 
 ### Backend
-- `MedicationPet.startTime` (`TimeField`, por defecto 09:00): hora de la primera toma. Migración `0026_medicationpet_starttime`.
+- `MedicationPet.startTime` (`TimeField`, por defecto 09:00): hora de la primera toma. Migraciones `0026_medicationpet_starttime` y `0027_medicationpet_starttime_db_default`.
+- `db_default` de 09:00 en la base: como Neon es compartida entre ramas, el código que no conoce el campo (ej. `main` antes del merge) puede seguir creando tratamientos.
 - Serializer: `startTime` en formato `HH:MM`, opcional en alta y edición.
 - `GET /api/v1/medication-pets/reminders/`: tratamientos con `endDate >= hoy` de todas las mascotas activas del dueño (no pide `idPet`).
 
@@ -130,6 +131,7 @@ Ver `docs/notificaciones.md`: agregar el grupo, su canal, un planner y una entra
 8. `test_excluye_mascotas_eliminadas_y_ajenas`
 9. `test_no_pide_id_pet`
 10. `test_requiere_autenticacion`
+11. `test_alta_sin_campo_en_el_codigo_usa_default_de_la_base`
 
 **Frontend** (`Frontend/tests/medicationPlanner.test.ts`, `npm run test:notifications`):
 1. Escenario 1: aviso a las 9:00 con el texto "Hora del Meloxicam de Mandarina".

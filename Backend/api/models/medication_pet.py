@@ -38,7 +38,9 @@ class MedicationPet(models.Model):
     quantityDose = models.IntegerField(db_column="quantityDose")
     startDate = models.DateField(db_column="startDate")
     # Hora de la primera toma. Las siguientes se calculan sumando frequencyHours.
-    startTime = models.TimeField(default=time(9, 0), db_column="startTime")
+    # db_default: la base completa 09:00 aunque el código que inserta no conozca el campo
+    # (la base de Neon es compartida entre ramas).
+    startTime = models.TimeField(default=time(9, 0), db_default=time(9, 0), db_column="startTime")
     endDate = models.DateField(db_column="endDate")
     notes = models.TextField(null=True, blank=True)
     isDeleted = models.BooleanField(default=False, db_column="isDeleted")
