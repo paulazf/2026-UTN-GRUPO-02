@@ -176,6 +176,15 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
         textColor=color_text_dark,
     )
 
+    pet_name_style = ParagraphStyle(
+        "PetNameVal",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=10.5,
+        leading=14,
+        textColor=color_primary_dark,
+    )
+
     story = []
 
     # 1. Cabecera Institucional
@@ -246,15 +255,15 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
     pet_info_data = [
         [
             Paragraph("Nombre", pet_label_style),
-            Paragraph(f"<b>{pet.name}</b>", pet_val_style),
-            Paragraph("Especie", pet_label_style),
-            Paragraph(species_name, pet_val_style),
+            Paragraph(f"<b>{pet.name}</b>", pet_name_style),
+            Paragraph("", pet_label_style),
+            Paragraph("", pet_val_style),
         ],
         [
+            Paragraph("Especie", pet_label_style),
+            Paragraph(species_name, pet_val_style),
             Paragraph("Raza", pet_label_style),
             Paragraph(breed_name, pet_val_style),
-            Paragraph("Peso", pet_label_style),
-            Paragraph(weight_str, pet_val_style),
         ],
         [
             Paragraph("Nacimiento", pet_label_style),
@@ -263,10 +272,10 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
             Paragraph(age_str, pet_val_style),
         ],
         [
+            Paragraph("Peso", pet_label_style),
+            Paragraph(weight_str, pet_val_style),
             Paragraph("Castrado/a", pet_label_style),
             Paragraph(neutered_str, pet_val_style),
-            Paragraph("ID Mascota", pet_label_style),
-            Paragraph(f"#{pet.id}", pet_val_style),
         ],
     ]
 
@@ -279,6 +288,7 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
     pet_info_table.setStyle(
         TableStyle(
             [
+                ("SPAN", (1, 0), (3, 0)),
                 ("BACKGROUND", (0, 0), (-1, -1), color_banner_bg),
                 ("BOX", (0, 0), (-1, -1), 1, color_primary),
                 ("INNERGRID", (0, 0), (-1, -1), 0.5, color_border),
