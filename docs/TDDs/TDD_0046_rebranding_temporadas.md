@@ -50,9 +50,9 @@ titulo: Rebranding de PetLife con temáticas de temporada
    - Al apagarlo, toda la app vuelve a la paleta Original al instante.
    - La preferencia se guarda en el teléfono y se mantiene al cerrar la app.
 5. **Ícono de la app:**
-   - En builds nativos (TestFlight, APK), el ícono de la pantalla de inicio cambia al de la festividad activa al abrir la app.
+   - En builds de TestFlight (iOS), el ícono de la pantalla de inicio cambia al de la festividad activa al abrir la app.
    - Si la temática está apagada, vuelve al ícono Original.
-   - En Android el cambio se aplica al salir de la app (pasar a segundo plano), porque muchos teléfonos cierran la app si el ícono cambia mientras está abierta.
+   - Solo en iOS. En Android el ícono queda en Original: cambiarlo cierra la app en muchos teléfonos (con la app abierta o al abrir la galería o la cámara).
 6. **Accesibilidad:**
    - La animación de carga respeta "Reducir movimiento" del sistema.
    - Los adornos son decorativos: no reciben toques ni los lee el lector de pantalla.
@@ -157,8 +157,9 @@ Pruebas manuales en Expo Go y en un build de TestFlight o APK:
 5. **`test_colores_en_modales`:** crear mascota, detalle, estudios, vacunas y calendario usan el color de la temporada.
 6. **`test_colores_de_estado`:** vencida, por vencer y normal mantienen sus colores en todas las temáticas.
 7. **`test_icono_app`:** en TestFlight, al elegir una festividad en la vista previa el ícono cambia (con el aviso de iOS); con la temática apagada vuelve al Original.
-8. **`test_expo_go_sin_icono`:** en Expo Go la app no falla aunque el módulo de íconos no exista.
-9. **`test_expo_doctor`:** `npx expo-doctor` sin dependencias desfasadas.
+8. **`test_android_sin_cambio_de_icono`:** en el APK, elegir festividades y crear una mascota con foto no cierra la app; el ícono queda en Original.
+9. **`test_expo_go_sin_icono`:** en Expo Go la app no falla aunque el módulo de íconos no exista.
+10. **`test_expo_doctor`:** `npx expo-doctor` sin dependencias desfasadas.
 
 ---
 
