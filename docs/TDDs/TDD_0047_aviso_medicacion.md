@@ -179,6 +179,7 @@ Ver `docs/notificaciones.md`: agregar el grupo, su canal, un planner y una entra
 ## Riesgos
 - **App sin abrir por más de 14 días:** se dejan de programar avisos hasta que se abra. Mitigación: el horizonte es configurable (`MEDICATION_HORIZON_DAYS`); a futuro, una tarea en segundo plano o push desde el backend.
 - **Límite de iOS (64 avisos):** la suma de los `limit` de `sources.ts` no debe pasar de 60.
+- **Alarmas exactas en Android 12+:** sin el permiso, Android atrasa los avisos varios minutos. `app.json` declara `USE_EXACT_ALARM` (Android 13+, se concede solo) y `SCHEDULE_EXACT_ALARM` (Android 12). Si algún día se publica en Play Store, Google pide justificar `USE_EXACT_ALARM`; los recordatorios de medicación entran en los usos permitidos.
 - **Android con ahorro de batería:** algunos fabricantes pueden retrasar el aviso unos minutos.
 - **Cambios desde otro teléfono:** se reflejan al volver a abrir la app en este.
 - **Permiso negado:** la app no insiste; se puede activar desde los ajustes del teléfono.

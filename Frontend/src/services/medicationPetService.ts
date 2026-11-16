@@ -6,6 +6,14 @@ import {
   UpdateMedicationPetPayload,
 } from '../types/medicationPet';
 
+/** Mensaje genérico con el código del servidor, para poder diagnosticar (ej. "error 500"). */
+function serverErrorMessage(error: any, base: string): string {
+  const status = error?.response?.status;
+  return status
+    ? `${base} El servidor respondió con error ${status}. Intentá nuevamente.`
+    : `${base} No hay conexión con el servidor. Intentá nuevamente.`;
+}
+
 /**
  * Obtiene el listado de tratamientos/medicamentos registrados para una mascota específica.
  */
@@ -47,7 +55,7 @@ export async function createMedicationPet(payload: CreateMedicationPetPayload): 
       errorData?.idMedication?.[0] ||
       errorData?.idPet?.[0] ||
       errorData?.notes?.[0] ||
-      'No se pudo registrar la medicación. Intenta nuevamente.';
+      serverErrorMessage(error, 'No se pudo registrar la medicación.');
     throw new Error(message);
   }
 }
@@ -98,7 +106,7 @@ export async function updateMedicationPet(
       errorData?.startTime?.[0] ||
       errorData?.endDate?.[0] ||
       errorData?.notes?.[0] ||
-      'No se pudo modificar la medicación. Intenta nuevamente.';
+      serverErrorMessage(error, 'No se pudo modificar la medicación.');
     throw new Error(message);
   }
 }
