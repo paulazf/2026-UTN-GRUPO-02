@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -9,8 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Sharing from 'expo-sharing';
 import { Pet } from '../../types/pet';
-import { fetchPetById } from '../../services/petService';
+import { downloadMedicalHistoryPdf, fetchPetById } from '../../services/petService';
 import MedicalTestList from '../../components/medicalTest/MedicalTestList';
 import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
@@ -52,6 +54,35 @@ export default function PetDetailScreen({
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState<PetDetailTab>('ESTUDIOS');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!pet || isExporting) return;
+    try {
+      setIsExporting(true);
+      const fileUri = await downloadMedicalHistoryPdf(pet.id, pet.name);
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert(
+          'Descarga completada',
+          'El archivo PDF fue descargado en el dispositivo, pero la opción de compartir no se encuentra disponible.'
+        );
+        return;
+      }
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'application/pdf',
+        dialogTitle: `Libreta sanitaria de ${pet.name}`,
+        UTI: 'com.adobe.pdf',
+      });
+    } catch (err: any) {
+      console.error('Error al exportar libreta sanitaria:', err);
+      Alert.alert(
+        'Error al exportar libreta',
+        err?.message || 'Ocurrió un error al generar o descargar el PDF de la libreta sanitaria.'
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const loadDetail = async () => {
     try {
@@ -101,13 +132,30 @@ export default function PetDetailScreen({
               <Ionicons name="arrow-back" size={20} color="#2B1D1D" />
             </Pressable>
 
-            <Pressable
-              onPress={() => setIsEditModalOpen(true)}
-              className="flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2 shadow-xs active:opacity-80"
-            >
-              <Ionicons name="create-outline" size={16} color={brand.accent} />
-              <Text className="text-xs font-bold text-brand">Modificar</Text>
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              <Pressable
+                onPress={handleExportPdf}
+                disabled={isExporting}
+                className="flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2 shadow-xs active:opacity-80"
+              >
+                {isExporting ? (
+                  <ActivityIndicator size="small" color={brand.accent} />
+                ) : (
+                  <Ionicons name="download-outline" size={16} color={brand.accent} />
+                )}
+                <Text className="text-xs font-bold text-brand">
+                  {isExporting ? 'Exportando...' : 'Exportar libreta'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setIsEditModalOpen(true)}
+                className="flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2 shadow-xs active:opacity-80"
+              >
+                <Ionicons name="create-outline" size={16} color={brand.accent} />
+                <Text className="text-xs font-bold text-brand">Modificar</Text>
+              </Pressable>
+            </View>
           </View>
 
           <View className="flex-row items-center gap-4">
