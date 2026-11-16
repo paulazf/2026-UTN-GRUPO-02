@@ -52,6 +52,7 @@ titulo: Rebranding de PetLife con temáticas de temporada
 5. **Ícono de la app:**
    - En builds nativos (TestFlight, APK), el ícono de la pantalla de inicio cambia al de la festividad activa al abrir la app.
    - Si la temática está apagada, vuelve al ícono Original.
+   - En Android el cambio se aplica al salir de la app (pasar a segundo plano), porque muchos teléfonos cierran la app si el ícono cambia mientras está abierta.
 6. **Accesibilidad:**
    - La animación de carga respeta "Reducir movimiento" del sistema.
    - Los adornos son decorativos: no reciben toques ni los lee el lector de pantalla.
