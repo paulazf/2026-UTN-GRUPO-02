@@ -12,6 +12,7 @@ import { deleteMedicationPet, fetchMedicationPets } from '../../services/medicat
 import MedicationPetCard from './MedicationPetCard';
 import CreateMedicationPetModal from './CreateMedicationPetModal';
 import { brand } from '../../theme/brand';
+import { syncReminders } from '../../notifications';
 
 interface MedicationPetListProps {
   petId: number;
@@ -74,6 +75,7 @@ export default function MedicationPetList({ petId }: MedicationPetListProps) {
             try {
               await deleteMedicationPet(medication.id);
               setMedications((prev) => prev.filter((item) => item.id !== medication.id));
+              syncReminders(['medication']);
             } catch (err: any) {
               Alert.alert(
                 'Error al eliminar',

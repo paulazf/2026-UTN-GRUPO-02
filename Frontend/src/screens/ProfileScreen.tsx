@@ -1,14 +1,15 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
 import { fetchPets } from '../services/petService';
 import ProfileDeletePetModal from '../components/pet/ProfileDeletePetModal';
 import { useSeasonTheme } from '../context/ThemeContext';
 import { SEASON_PREVIEW_ENABLED, SEASONS, SeasonId } from '../theme/seasons';
 import PawLogo from '../components/brand/PawLogo';
+import { getPermissionState, getPrefs, isGroupEnabled, REMINDER_SOURCES } from '../notifications';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -47,6 +48,25 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadPetCount();
   }, []);
+
+  // Subtítulo real de "Notificaciones": se recalcula al volver a esta pantalla.
+  const [notificationSubtitle, setNotificationSubtitle] = useState('');
+  useFocusEffect(
+    useCallback(() => {
+      Promise.all([getPermissionState(), getPrefs()]).then(([permission, prefs]) => {
+        const active = REMINDER_SOURCES.filter((s) => isGroupEnabled(prefs, s.group)).length;
+        setNotificationSubtitle(
+          permission === 'denied'
+            ? 'Desactivadas en el teléfono'
+            : active === 0
+            ? 'Recordatorios apagados'
+            : permission === 'granted'
+            ? 'Recordatorios activados'
+            : 'Tocá para activarlas',
+        );
+      });
+    }, []),
+  );
 
   return (
     <SafeAreaView edges={['left', 'right']} className="flex-1 bg-[#FAF6F3]">
@@ -94,13 +114,16 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs">
+          <TouchableOpacity
+            onPress={() => navigation.navigate('NotificationSettings' as never)}
+            className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs active:opacity-80"
+          >
             <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
               <Ionicons name="notifications-outline" size={24} color={palette.header} />
             </View>
             <View className="flex-1 justify-center">
               <Text className="text-base font-bold text-[#2B1D1D]">Notificaciones</Text>
-              <Text className="mt-0.5 text-xs text-[#8C7B77]">Recordatorios activados</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">{notificationSubtitle || ' '}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
           </TouchableOpacity>

@@ -8,11 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { ThemeProvider, useSeasonTheme } from './context/ThemeContext';
 import LoadingScreen from './components/brand/LoadingScreen';
+import { useReminderSync, useReminderTap } from './notifications';
 
 // Import Screens from main (manual routing components)
 import DashboardScreen from './screens/DashboardScreen';
 import PetListScreen from './screens/pet/PetListScreen';
-import PetDetailScreen from './screens/pet/PetDetailScreen';
+import PetDetailScreen, { PetDetailTab, TAB_BY_EVENT } from './screens/pet/PetDetailScreen';
+import { CalendarEvent } from './types/calendar';
 import CalendarScreen from './screens/CalendarScreen';
 import CreatePetModal from './components/pet/CreatePetModal';
 import BottomNavBar, { NavTab } from './components/BottomNavBar';
@@ -23,6 +25,7 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import NotificationSettingsScreen from './screens/NotificationSettingsScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import ChangePasswordScreen from './screens/ChangePasswordScreen';
 
@@ -33,14 +36,34 @@ const Stack = createNativeStackNavigator();
 function MainTabs() {
   const [currentTab, setCurrentTab] = useState<NavTab>('INICIO');
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
+  const [selectedPetTab, setSelectedPetTab] = useState<PetDetailTab | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const navigation = useNavigation();
   const { palette } = useSeasonTheme();
 
-  const handleSelectPet = (petId: number) => setSelectedPetId(petId);
+  const handleSelectPet = (petId: number) => {
+    setSelectedPetTab(undefined);
+    setSelectedPetId(petId);
+  };
   const handleBack = () => setSelectedPetId(null);
+
+  // Abre la ficha de la mascota directo en una pestaña (Medicación, Vacunas, Turnos).
+  const openPetTab = (petId: number, tab: PetDetailTab) => {
+    setSelectedPetTab(tab);
+    setSelectedPetId(petId);
+  };
+  const handleOpenEvent = (event: CalendarEvent) =>
+    openPetTab(event.petId, TAB_BY_EVENT[event.entityType]);
+
+  // Tocar el aviso de una toma lleva a la Medicación de esa mascota.
+  useReminderTap(({ group, petId }) => {
+    if (group === 'medication' && petId) {
+      navigation.navigate('MainTabs' as never);
+      openPetTab(petId, 'MEDICACION');
+    }
+  });
   const handlePetCreated = () => setRefreshTrigger((prev) => prev + 1);
   const handlePetUpdated = () => setRefreshTrigger((prev) => prev + 1);
 
@@ -60,6 +83,7 @@ function MainTabs() {
         {selectedPetId ? (
           <PetDetailScreen
             petId={selectedPetId}
+            initialTab={selectedPetTab}
             onBack={handleBack}
             onPetUpdated={handlePetUpdated}
           />
@@ -69,6 +93,7 @@ function MainTabs() {
             onViewAllPets={() => setCurrentTab('MASCOTAS')}
             onOpenCreatePet={() => setIsModalOpen(true)}
             onNavigateToCalendar={() => setCurrentTab('CALENDARIO')}
+            onOpenEvent={handleOpenEvent}
             refreshTrigger={refreshTrigger}
           />
         ) : currentTab === 'MASCOTAS' ? (
@@ -78,7 +103,7 @@ function MainTabs() {
             refreshTrigger={refreshTrigger}
           />
           ) : currentTab === 'CALENDARIO' ? (
-          <CalendarScreen />
+          <CalendarScreen onOpenEvent={handleOpenEvent} />
         ) : (
           <SafeAreaView className="flex-1 items-center justify-center p-6">
             <Ionicons name="calendar-outline" size={40} color={palette.accent} style={{ marginBottom: 8 }} />
@@ -111,6 +136,9 @@ function RootNavigator() {
 
   const { isLoading, userToken } = authContext;
 
+  // Avisos locales (medicación, y los que se vayan sumando): ver docs/notificaciones.md
+  useReminderSync(userToken != null);
+
   // La pantalla de carga se muestra al menos 1,5 s al abrir la app, para que se vea la marca.
   const [minSplashDone, setMinSplashDone] = useState(false);
   useEffect(() => {
@@ -135,6 +163,7 @@ function RootNavigator() {
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         </>

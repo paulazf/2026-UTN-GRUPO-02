@@ -23,6 +23,7 @@ interface DashboardScreenProps {
   onViewAllPets: () => void;
   onOpenCreatePet: () => void;
   onNavigateToCalendar?: () => void;
+  onOpenEvent?: (event: CalendarEvent) => void;
   refreshTrigger?: number;
 }
 
@@ -31,6 +32,7 @@ export default function DashboardScreen({
   onViewAllPets,
   onOpenCreatePet,
   onNavigateToCalendar,
+  onOpenEvent,
   refreshTrigger,
 }: DashboardScreenProps) {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -207,7 +209,7 @@ export default function DashboardScreen({
               </View>
             ) : (
               next30DaysEvents.map((event) => (
-                <CalendarEventCard key={event.id} event={event} />
+                <CalendarEventCard key={event.id} event={event} onPress={onOpenEvent} />
               ))
             )}
           </View>
