@@ -1,5 +1,9 @@
+import { Directory, File, Paths } from 'expo-file-system';
+import * as SecureStore from 'expo-secure-store';
 import axiosClient from '../api/axiosClient';
 import { Breed, CreatePetPayload, Pet, PetSpecies, UpdatePetPayload } from '../types/pet';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 const CURRENT_MOCK_OWNER_ID = 1; // Cambiar esto cuando exista owner
 
@@ -109,3 +113,26 @@ export async function deletePet(id: number): Promise<{ message: string; id: numb
     throw new Error(message);
   }
 }
+
+export async function downloadMedicalHistoryPdf(petId: number, petName: string): Promise<string> {
+  const token = await SecureStore.getItemAsync('userToken');
+  const safePetName = petName.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'mascota';
+  const fileName = `libreta_${safePetName}.pdf`;
+
+  const folder = new Directory(Paths.cache, 'medical-history');
+  if (!folder.exists) {
+    folder.create();
+  }
+  const targetFile = new File(folder, fileName);
+  if (targetFile.exists) {
+    targetFile.delete();
+  }
+
+  const url = `${API_URL}/api/v1/pets/${petId}/medical-history/pdf/`;
+  const downloaded = await File.downloadFileAsync(url, targetFile, {
+    headers: token ? { Authorization: `Token ${token}` } : {},
+  });
+
+  return downloaded.uri;
+}
+
