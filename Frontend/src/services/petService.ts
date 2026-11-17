@@ -1,5 +1,6 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
+import * as Sharing from 'expo-sharing';
 import axiosClient from '../api/axiosClient';
 import { Breed, CreatePetPayload, Pet, PetSpecies, UpdatePetPayload } from '../types/pet';
 
@@ -114,7 +115,10 @@ export async function deletePet(id: number): Promise<{ message: string; id: numb
   }
 }
 
-export async function downloadMedicalHistoryPdf(petId: number, petName: string): Promise<string> {
+export async function downloadMedicalHistoryPdf(
+  petId: number,
+  petName: string,
+): Promise<{ uri: string; base64: string }> {
   const token = await SecureStore.getItemAsync('userToken');
   const safePetName = petName.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'mascota';
   const fileName = `libreta_${safePetName}.pdf`;
@@ -133,6 +137,27 @@ export async function downloadMedicalHistoryPdf(petId: number, petName: string):
     headers: token ? { Authorization: `Token ${token}` } : {},
   });
 
-  return downloaded.uri;
+  let base64 = '';
+  try {
+    if (typeof downloaded.base64 === 'function') {
+      base64 = await downloaded.base64();
+    }
+  } catch (err) {
+    console.warn('Could not read base64 from file:', err);
+  }
+
+  return { uri: downloaded.uri, base64 };
 }
 
+export async function shareMedicalHistoryPdf(fileUri: string, petName: string): Promise<void> {
+  const isAvailable = await Sharing.isAvailableAsync();
+  if (!isAvailable) {
+    throw new Error('La función de compartir no se encuentra disponible en este dispositivo.');
+  }
+
+  await Sharing.shareAsync(fileUri, {
+    mimeType: 'application/pdf',
+    dialogTitle: `Libreta sanitaria de ${petName}`,
+    UTI: 'com.adobe.pdf',
+  });
+}

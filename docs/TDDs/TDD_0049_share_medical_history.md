@@ -30,18 +30,22 @@ titulo: Compartir libreta sanitaria en PDF con el veterinario (HU-307)
 - **Estimación:** 2 Story Points (SP).
 
 ### Criterios de Aceptación
-- **Escenario 1 (Compartir):**
-  - **DADO** que se generó el PDF de la libreta sanitaria,
-  - **CUANDO** el dueño toca "Compartir" (o "Compartir libreta"),
+- **Escenario 1 (Vista previa e inicio del flujo):**
+  - **DADO** que el dueño está en el detalle de su mascota,
+  - **CUANDO** toca el botón "Historial",
+  - **ENTONCES** se genera y abre el visor de vista previa en pantalla completa con el contenido de la libreta sanitaria en PDF.
+- **Escenario 2 (Compartir desde la vista previa):**
+  - **DADO** que el dueño está visualizando la libreta sanitaria en la vista previa,
+  - **CUANDO** toca el botón de compartir (ícono de caja con flecha hacia arriba),
   - **ENTONCES** se abre el menú de compartir nativo del celular con el archivo PDF adjunto listo para enviar por WhatsApp, correo u otra app.
-- **Escenario 2 (Copia fija):**
+- **Escenario 3 (Copia fija):**
   - **DADO** que el dueño compartió el PDF ayer con el veterinario,
   - **CUANDO** hoy registra una vacuna nueva en la aplicación,
   - **ENTONCES** el PDF ya enviado no cambia ni se modifica retroactivamente.
 - **Escenario de soporte no disponible:**
   - Si el dispositivo o entorno no cuenta con soporte para invocar el menú nativo de compartir (`Sharing.isAvailableAsync() = false`), la aplicación notifica al usuario mediante un diálogo informativo indicando que la función no está disponible en el dispositivo, evitando fallos o bloqueos.
 - **Escenario de cancelación por el usuario:**
-  - Si el usuario abre el diálogo de compartir pero luego presiona "Cancelar" o pulsa fuera del menú sin seleccionar una aplicación, la pantalla de detalle de la mascota retorna a su estado normal sin emitir errores.
+  - Si el usuario abre el diálogo de compartir pero luego presiona "Cancelar" o pulsa fuera del menú sin seleccionar una aplicación, la vista previa permanece abierta y accesible sin emitir errores.
 
 ### Reglas de Negocio
 - **Copia fija e inmutable:** El archivo compartido es un documento binario independiente con fecha de emisión impresa. No mantiene enlaces dinámicos ni dependencias en vivo con la base de datos de PetLife. Las modificaciones posteriores en el sistema solo se verán reflejadas si el usuario genera y comparte un nuevo PDF.
