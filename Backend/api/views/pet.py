@@ -1,3 +1,4 @@
+import logging
 from django.http import FileResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -7,6 +8,8 @@ from rest_framework.response import Response
 from api.models import Pet
 from api.serializers import PetSerializer
 from api.services.pdf_generator import generate_medical_history_pdf
+
+logger = logging.getLogger(__name__)
 
 
 class PetViewSet(viewsets.ModelViewSet):
@@ -75,9 +78,26 @@ class PetViewSet(viewsets.ModelViewSet):
                 {"detail": "Mascota no encontrada."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        except Exception as e:
+            logger.warning("Error buscando mascota pk=%s: %s", pk, e)
+            return Response(
+                {"detail": "Identificador de mascota inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         owner = getattr(request.user, "owner_profile", None)
-        pdf_buffer = generate_medical_history_pdf(pet, owner)
+        if not owner and getattr(pet, "idOwner", None):
+            from api.models import Owner
+            owner = Owner.objects.filter(idOwner=pet.idOwner, isDeleted=False).first()
+
+        try:
+            pdf_buffer = generate_medical_history_pdf(pet, owner)
+        except Exception as e:
+            logger.exception("Error generando PDF de historia clínica para mascota pk=%s: %s", pk, e)
+            return Response(
+                {"detail": f"Error al generar el PDF de la libreta sanitaria: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         safe_pet_name = "".join(c for c in pet.name.lower() if c.isalnum() or c in ("-", "_")) or "mascota"
         filename = f"libreta_{safe_pet_name}.pdf"

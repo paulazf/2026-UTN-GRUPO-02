@@ -334,3 +334,38 @@ class MedicalHistoryPdfTests(APITestCase):
         self.assertNotEqual(pdf_bytes_t1, pdf_bytes_t2)
         self.assertGreater(len(pdf_bytes_t2), len(pdf_bytes_t1))
 
+    def test_exportar_historia_clinica_caracteres_especiales_xml(self):
+        """
+        Verifica que caracteres reservados de XML (&, <, >, ") en nombres,
+        notas, alimentos o resultados de estudios no rompan el parser de ReportLab.
+        """
+        self.mandarina.name = "Mandarina & Co. <Super>"
+        self.mandarina.save()
+
+        Feeding.objects.create(
+            pet=self.mandarina,
+            food="Dog Chow Carne & Pollo (100% <Natural>)",
+            type=FeedingType.DRY_FOOD,
+            portion="200g & 1/2 taza",
+            frequency="2 veces & noche",
+            sinceDate=date(2023, 1, 1),
+            notes="Tomar con agua & reposo (> 10min)",
+        )
+
+        MedicalTest.objects.create(
+            pet=self.mandarina,
+            name="Hemograma & Perfil",
+            type=MedicalTest.Type.LABORATORY,
+            date=date.today() - timedelta(days=5),
+            veterinarian="Dra. Gómez & Asoc.",
+            status=MedicalTest.Status.NORMAL,
+            resultSummary="Glóbulos < normal & plaquetas > 200",
+        )
+
+        url = f"/api/v1/pets/{self.mandarina.id}/medical-history/pdf/"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        pdf_bytes = b"".join(response.streaming_content) if response.streaming else response.content
+        self.assertTrue(pdf_bytes.startswith(b"%PDF-"))
+
