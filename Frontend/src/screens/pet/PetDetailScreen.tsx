@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Sharing from 'expo-sharing';
 import { Pet } from '../../types/pet';
-import { downloadMedicalHistoryPdf, fetchPetById } from '../../services/petService';
+import { downloadMedicalHistoryPdf, fetchPetById, shareMedicalHistoryPdf } from '../../services/petService';
+import MedicalHistoryModal from '../../components/pet/MedicalHistoryModal';
 import MedicalTestList from '../../components/medicalTest/MedicalTestList';
 import PetDiseaseList from '../../components/petDisease/PetDiseaseList';
 import MedicationPetList from '../../components/medicationPet/MedicationPetList';
@@ -69,33 +69,37 @@ export default function PetDetailScreen({
     if (initialTab) setCurrentTab(initialTab);
   }, [initialTab]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewPdfUri, setPreviewPdfUri] = useState<string | null>(null);
+  const [previewPdfBase64, setPreviewPdfBase64] = useState<string | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const handleExportPdf = async () => {
-    if (!pet || isExporting) return;
+  const handleOpenHistory = async () => {
+    if (!pet || loadingHistory) return;
     try {
-      setIsExporting(true);
-      const fileUri = await downloadMedicalHistoryPdf(pet.id, pet.name);
-      if (!(await Sharing.isAvailableAsync())) {
-        Alert.alert(
-          'Descarga completada',
-          'El archivo PDF fue descargado en el dispositivo, pero la opción de compartir no se encuentra disponible.'
-        );
-        return;
-      }
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'application/pdf',
-        dialogTitle: `Libreta sanitaria de ${pet.name}`,
-        UTI: 'com.adobe.pdf',
-      });
+      setLoadingHistory(true);
+      const result = await downloadMedicalHistoryPdf(pet.id, pet.name);
+      setPreviewPdfUri(result.uri);
+      setPreviewPdfBase64(result.base64);
+      setIsPreviewModalOpen(true);
     } catch (err: any) {
-      console.error('Error al exportar libreta sanitaria:', err);
+      console.error('Error al abrir libreta sanitaria:', err);
       Alert.alert(
-        'Error al exportar libreta',
-        err?.message || 'Ocurrió un error al generar o descargar el PDF de la libreta sanitaria.'
+        'Error al abrir libreta',
+        err?.message || 'Ocurrió un error al generar o descargar la libreta sanitaria.'
       );
     } finally {
-      setIsExporting(false);
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleShareFromModal = async () => {
+    if (!pet || !previewPdfUri) return;
+    try {
+      await shareMedicalHistoryPdf(previewPdfUri, pet.name);
+    } catch (err: any) {
+      console.error('Error al compartir libreta:', err);
+      Alert.alert('Error al compartir', err?.message || 'No se pudo abrir el menú de compartir.');
     }
   };
 
@@ -149,17 +153,17 @@ export default function PetDetailScreen({
 
             <View className="flex-row items-center gap-2">
               <Pressable
-                onPress={handleExportPdf}
-                disabled={isExporting}
+                onPress={handleOpenHistory}
+                disabled={loadingHistory}
                 className="flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2 shadow-xs active:opacity-80"
               >
-                {isExporting ? (
+                {loadingHistory ? (
                   <ActivityIndicator size="small" color={brand.accent} />
                 ) : (
-                  <Ionicons name="download-outline" size={16} color={brand.accent} />
+                  <Ionicons name="document-text-outline" size={16} color={brand.accent} />
                 )}
                 <Text className="text-xs font-bold text-brand">
-                  {isExporting ? 'Exportando...' : 'Exportar libreta'}
+                  {loadingHistory ? 'Cargando...' : 'Exportar libreta'}
                 </Text>
               </Pressable>
 
@@ -284,6 +288,15 @@ export default function PetDetailScreen({
         pet={pet}
         onClose={() => setIsEditModalOpen(false)}
         onPetUpdated={handlePetUpdated}
+      />
+
+      <MedicalHistoryModal
+        visible={isPreviewModalOpen}
+        petName={pet?.name || 'Mascota'}
+        fileUri={previewPdfUri}
+        fileBase64={previewPdfBase64}
+        onClose={() => setIsPreviewModalOpen(false)}
+        onShare={handleShareFromModal}
       />
     </SafeAreaView>
   );
