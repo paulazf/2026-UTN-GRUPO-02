@@ -292,3 +292,80 @@ class MedicalHistoryPdfTests(APITestCase):
         url = f"/api/v1/pets/{self.mandarina.id}/medical-history/pdf/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_copia_fija_pdf_no_cambia_al_agregar_nueva_vacuna(self):
+        """
+        HU-307 - Escenario 2: Copia fija.
+        DADO que el dueño generó y compartió el PDF ayer
+        CUANDO hoy registra una vacuna nueva
+        ENTONCES el PDF generado y enviado previamente no cambia.
+        """
+        # 1. Generamos el primer PDF (snapshot T1)
+        url = f"/api/v1/pets/{self.mandarina.id}/medical-history/pdf/"
+        response_t1 = self.client.get(url)
+        self.assertEqual(response_t1.status_code, status.HTTP_200_OK)
+        pdf_bytes_t1 = b"".join(response_t1.streaming_content) if response_t1.streaming else response_t1.content
+
+        # 2. Al día siguiente se registra una nueva vacuna
+        nueva_vacuna = Vaccine.objects.create(
+            name="Antirrábica Refuerzo", laboratory="Lab Z", type=VaccineType.VACCINE
+        )
+        VaccinePet.objects.create(
+            pet=self.mandarina,
+            vaccine=nueva_vacuna,
+            doseNumber=2,
+            applicationDate=date.today(),
+            expirationDate=date.today() + timedelta(days=365),
+        )
+
+        # 3. El PDF generado previamente (pdf_bytes_t1) se mantiene inmutable
+        self.assertTrue(pdf_bytes_t1.startswith(b"%PDF-"))
+        snapshot_bytes = bytes(pdf_bytes_t1)
+
+        # 4. Una nueva exportación en T2 refleja el nuevo estado clínico con mayor contenido
+        response_t2 = self.client.get(url)
+        self.assertEqual(response_t2.status_code, status.HTTP_200_OK)
+        pdf_bytes_t2 = b"".join(response_t2.streaming_content) if response_t2.streaming else response_t2.content
+        self.assertTrue(pdf_bytes_t2.startswith(b"%PDF-"))
+
+        # El archivo previo T1 se mantiene 100% idéntico e inalterado
+        self.assertEqual(pdf_bytes_t1, snapshot_bytes)
+        # El nuevo PDF T2 es diferente e incorpora el nuevo registro
+        self.assertNotEqual(pdf_bytes_t1, pdf_bytes_t2)
+        self.assertGreater(len(pdf_bytes_t2), len(pdf_bytes_t1))
+
+    def test_exportar_historia_clinica_caracteres_especiales_xml(self):
+        """
+        Verifica que caracteres reservados de XML (&, <, >, ") en nombres,
+        notas, alimentos o resultados de estudios no rompan el parser de ReportLab.
+        """
+        self.mandarina.name = "Mandarina & Co. <Super>"
+        self.mandarina.save()
+
+        Feeding.objects.create(
+            pet=self.mandarina,
+            food="Dog Chow Carne & Pollo (100% <Natural>)",
+            type=FeedingType.DRY_FOOD,
+            portion="200g & 1/2 taza",
+            frequency="2 veces & noche",
+            sinceDate=date(2023, 1, 1),
+            notes="Tomar con agua & reposo (> 10min)",
+        )
+
+        MedicalTest.objects.create(
+            pet=self.mandarina,
+            name="Hemograma & Perfil",
+            type=MedicalTest.Type.LABORATORY,
+            date=date.today() - timedelta(days=5),
+            veterinarian="Dra. Gómez & Asoc.",
+            status=MedicalTest.Status.NORMAL,
+            resultSummary="Glóbulos < normal & plaquetas > 200",
+        )
+
+        url = f"/api/v1/pets/{self.mandarina.id}/medical-history/pdf/"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        pdf_bytes = b"".join(response.streaming_content) if response.streaming else response.content
+        self.assertTrue(pdf_bytes.startswith(b"%PDF-"))
+

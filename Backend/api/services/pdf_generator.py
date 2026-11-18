@@ -1,3 +1,4 @@
+import html
 import io
 from datetime import date
 from reportlab.lib.pagesizes import A4
@@ -55,6 +56,12 @@ class NumberedCanvas(canvas.Canvas):
         self.drawString(1.5 * cm, 0.8 * cm, left_text)
         self.drawRightString(A4[0] - 1.5 * cm, 0.8 * cm, right_text)
         self.restoreState()
+
+
+def safe_text(val):
+    if val is None:
+        return "-"
+    return html.escape(str(val))
 
 
 def format_date(d):
@@ -189,8 +196,8 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
 
     # 1. Cabecera Institucional
     today_str = date.today().strftime("%d/%m/%Y")
-    owner_name = owner.full_name if (owner and hasattr(owner, "full_name")) else "-"
-    owner_email = owner.email if (owner and hasattr(owner, "email")) else ""
+    owner_name = safe_text(owner.full_name) if (owner and hasattr(owner, "full_name")) else "-"
+    owner_email = safe_text(owner.email) if (owner and hasattr(owner, "email")) else ""
 
     header_table_data = [
         [
@@ -236,7 +243,7 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
     )
 
     # 2. Ficha de la Mascota
-    breed_name = pet.breed.name if pet.breed else "-"
+    breed_name = safe_text(pet.breed.name if pet.breed else "-")
     species_name = (
         pet.breed.get_species_display()
         if (pet.breed and hasattr(pet.breed, "get_species_display"))
@@ -246,16 +253,18 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
         species_name = "Perro"
     elif species_name == "CAT":
         species_name = "Gato"
+    species_name = safe_text(species_name)
 
-    age_str = f"{pet.age} {'años' if pet.age != 1 else 'año'}" if pet.age is not None else "-"
-    weight_str = f"{pet.weight} kg" if pet.weight is not None else "-"
+    age_str = safe_text(f"{pet.age} {'años' if pet.age != 1 else 'año'}" if pet.age is not None else "-")
+    weight_str = safe_text(f"{pet.weight} kg" if pet.weight is not None else "-")
     neutered_str = "Sí" if pet.neutered else "No"
-    birth_date_str = format_date(pet.birthDate)
+    birth_date_str = safe_text(format_date(pet.birthDate))
+    safe_pet_name = safe_text(pet.name)
 
     pet_info_data = [
         [
             Paragraph("Nombre", pet_label_style),
-            Paragraph(f"<b>{pet.name}</b>", pet_name_style),
+            Paragraph(f"<b>{safe_pet_name}</b>", pet_name_style),
             Paragraph("", pet_label_style),
             Paragraph("", pet_val_style),
         ],
@@ -307,7 +316,7 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
     # Helper para renderizar secciones
     def build_section(title, columns, col_widths, rows_data):
         section_elements = []
-        section_elements.append(Paragraph(title, section_heading_style))
+        section_elements.append(Paragraph(html.escape(title), section_heading_style))
         section_elements.append(Spacer(1, 4))
 
         if not rows_data:
@@ -318,11 +327,11 @@ def generate_medical_history_pdf(pet, owner=None) -> io.BytesIO:
         # Construir tabla
         table_rows = []
         # Header
-        header_cells = [Paragraph(col, table_header_style) for col in columns]
+        header_cells = [Paragraph(html.escape(col), table_header_style) for col in columns]
         table_rows.append(header_cells)
 
         for row_idx, row in enumerate(rows_data):
-            row_cells = [Paragraph(str(val if val is not None else "-"), table_cell_style) for val in row]
+            row_cells = [Paragraph(safe_text(val), table_cell_style) for val in row]
             table_rows.append(row_cells)
 
         table = Table(table_rows, colWidths=col_widths, repeatRows=1)
