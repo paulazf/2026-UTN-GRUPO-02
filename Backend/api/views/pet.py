@@ -1,9 +1,12 @@
+from django.http import FileResponse
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from api.models import Pet
 from api.serializers import PetSerializer
+from api.services.pdf_generator import generate_medical_history_pdf
 
 
 class PetViewSet(viewsets.ModelViewSet):
@@ -57,5 +60,32 @@ class PetViewSet(viewsets.ModelViewSet):
                 "isDeleted": True,
             },
             status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["get"], url_path="medical-history/pdf")
+    def medical_history_pdf(self, request, pk=None):
+        """
+        Descarga la historia clínica y libreta sanitaria de la mascota en PDF (TDD-0048).
+        Solo accesible por el tutor dueño de la mascota activa.
+        """
+        try:
+            pet = self.get_queryset().get(pk=pk)
+        except Pet.DoesNotExist:
+            return Response(
+                {"detail": "Mascota no encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        owner = getattr(request.user, "owner_profile", None)
+        pdf_buffer = generate_medical_history_pdf(pet, owner)
+
+        safe_pet_name = "".join(c for c in pet.name.lower() if c.isalnum() or c in ("-", "_")) or "mascota"
+        filename = f"libreta_{safe_pet_name}.pdf"
+
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename=filename,
+            content_type="application/pdf",
         )
 
