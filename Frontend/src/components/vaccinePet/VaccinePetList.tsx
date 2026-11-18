@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { PetSpecies } from '../../types/pet';
 import { VaccinePet } from '../../types/vaccinePet';
 import { deleteVaccinePet, fetchVaccinePets } from '../../services/vaccinePetService';
+import { syncReminders } from '../../notifications';
 import { isoToDisplay } from '../../utils/dates';
 import VaccinePetCard from './VaccinePetCard';
 import CreateVaccinePetModal, { VaccineModalMode } from './CreateVaccinePetModal';
@@ -58,6 +59,7 @@ export default function VaccinePetList({ petId, species }: VaccinePetListProps) 
         onPress: async () => {
           try {
             await deleteVaccinePet(item.idVaccinePet);
+            syncReminders(['vaccine']);
             load();
           } catch (err: any) {
             Alert.alert('Error', err?.message || 'No se pudo eliminar.');

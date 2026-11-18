@@ -57,11 +57,14 @@ function MainTabs() {
   const handleOpenEvent = (event: CalendarEvent) =>
     openPetTab(event.petId, TAB_BY_EVENT[event.entityType]);
 
-  // Tocar el aviso de una toma lleva a la Medicación de esa mascota.
+  // Tocar el aviso de una toma o vacuna lleva a la pestaña correspondiente de esa mascota.
   useReminderTap(({ group, petId }) => {
     if (group === 'medication' && petId) {
       navigation.navigate('MainTabs' as never);
       openPetTab(petId, 'MEDICACION');
+    } else if (group === 'vaccine' && petId) {
+      navigation.navigate('MainTabs' as never);
+      openPetTab(petId, 'VACUNAS');
     }
   });
   const handlePetCreated = () => setRefreshTrigger((prev) => prev + 1);

@@ -30,6 +30,7 @@ import type { PermissionState, ReminderGroup, UpcomingReminder } from '../notifi
 
 const GROUP_ICONS: Record<ReminderGroup, keyof typeof Ionicons.glyphMap> = {
   medication: 'medkit-outline',
+  vaccine: 'shield-checkmark-outline',
 };
 
 const UPCOMING_SHOWN = 5;
