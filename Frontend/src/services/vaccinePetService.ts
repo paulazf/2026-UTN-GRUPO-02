@@ -6,6 +6,10 @@ import {
   Vaccine,
   VaccinePet,
 } from '../types/vaccinePet';
+import {
+  autoSyncVaccine,
+  deleteGoogleCalendarEventByPetlifeId,
+} from './googleCalendarService';
 
 const FIELDS_IN_ORDER = [
   'detail',
@@ -55,6 +59,8 @@ export async function fetchVaccines(species?: PetSpecies): Promise<Vaccine[]> {
 export async function createVaccinePet(payload: CreateVaccinePetPayload): Promise<VaccinePet> {
   try {
     const response = await axiosClient.post<VaccinePet>('/vaccine-pets/', payload);
+    // Auto-sincronización en segundo plano del vencimiento en Google Calendar
+    autoSyncVaccine(response.data);
     return response.data;
   } catch (error) {
     throw new Error(apiErrorMessage(error, 'No se pudo registrar la vacuna. Intentá nuevamente.'));
@@ -64,6 +70,8 @@ export async function createVaccinePet(payload: CreateVaccinePetPayload): Promis
 export async function updateVaccinePet(id: number, changes: UpdateVaccinePetPayload): Promise<VaccinePet> {
   try {
     const response = await axiosClient.patch<VaccinePet>(`/vaccine-pets/${id}/`, changes);
+    // Auto-sincronización en segundo plano del vencimiento actualizado en Google Calendar
+    autoSyncVaccine(response.data);
     return response.data;
   } catch (error) {
     throw new Error(apiErrorMessage(error, 'No se pudo actualizar la vacuna. Intentá nuevamente.'));
@@ -73,6 +81,8 @@ export async function updateVaccinePet(id: number, changes: UpdateVaccinePetPayl
 export async function deleteVaccinePet(id: number): Promise<void> {
   try {
     await axiosClient.delete(`/vaccine-pets/${id}/`);
+    // Eliminación automática de Google Calendar
+    deleteGoogleCalendarEventByPetlifeId(`vaccine-${id}-exp`);
   } catch (error) {
     throw new Error(apiErrorMessage(error, 'No se pudo eliminar la vacuna. Intentá nuevamente.'));
   }

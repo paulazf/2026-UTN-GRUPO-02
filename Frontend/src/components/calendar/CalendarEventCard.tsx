@@ -8,6 +8,8 @@ interface CalendarEventCardProps {
   event: CalendarEvent;
   /** Al tocar la tarjeta (ej. abrir la ficha de la mascota en la pestaña del evento). */
   onPress?: (event: CalendarEvent) => void;
+  /** Sincronizar este evento específico con Google Calendar. */
+  onSyncGoogle?: (event: CalendarEvent) => void;
 }
 
 interface EntityStyle {
@@ -62,7 +64,7 @@ function formatDateDDMMAAAA(dateString: string): string {
   }
 }
 
-export default function CalendarEventCard({ event, onPress }: CalendarEventCardProps) {
+export default function CalendarEventCard({ event, onPress, onSyncGoogle }: CalendarEventCardProps) {
   const style = getEntityStyle(event);
   const { palette } = useSeasonTheme();
 
@@ -108,28 +110,41 @@ export default function CalendarEventCard({ event, onPress }: CalendarEventCardP
         </View>
       </View>
 
-      {showCountdown ? (
-        <View
-          className="rounded-full px-3 py-1 items-center justify-center"
-          style={{ backgroundColor: style.badgeBg }}
-        >
-          <Text
-            className="text-xs font-bold"
-            style={{ color: style.badgeText }}
+      <View className="flex-row items-center gap-2">
+        {onSyncGoogle && !event.isExpired && (
+          <Pressable
+            onPress={() => onSyncGoogle(event)}
+            hitSlop={8}
+            className="h-8 w-8 items-center justify-center rounded-full bg-[#F8F3F1] active:bg-[#ECE3E0] border border-[#EADBDA]"
+            accessibilityLabel="Sincronizar con Google Calendar"
           >
-            {`${event.daysRemaining}d`}
-          </Text>
-        </View>
-      ) : isToday ? (
-        <View
-          className="rounded-full px-3 py-1 items-center justify-center"
-          style={{ backgroundColor: palette.tint }}
-        >
-          <Text className="text-xs font-bold" style={{ color: palette.accent }}>
-            Hoy
-          </Text>
-        </View>
-      ) : null}
+            <Ionicons name="calendar-outline" size={14} color="#718096" />
+          </Pressable>
+        )}
+
+        {showCountdown ? (
+          <View
+            className="rounded-full px-3 py-1 items-center justify-center"
+            style={{ backgroundColor: style.badgeBg }}
+          >
+            <Text
+              className="text-xs font-bold"
+              style={{ color: style.badgeText }}
+            >
+              {`${event.daysRemaining}d`}
+            </Text>
+          </View>
+        ) : isToday ? (
+          <View
+            className="rounded-full px-3 py-1 items-center justify-center"
+            style={{ backgroundColor: palette.tint }}
+          >
+            <Text className="text-xs font-bold" style={{ color: palette.accent }}>
+              Hoy
+            </Text>
+          </View>
+        ) : null}
+      </View>
     </Pressable>
   );
 }
