@@ -200,8 +200,14 @@ MAILERS = {
 
 
 # Google OAuth2 (TDD-0044)
-GOOGLE_OAUTH_CLIENT_IDS = [
+DEFAULT_GOOGLE_CLIENT_IDS = [
+    "694639477649-fb70l9j1fk509voi1boib9c481t3k956.apps.googleusercontent.com",  # Web
+    "694639477649-4k0caprehmrshd7hh11m6itb7qvf5r13.apps.googleusercontent.com",  # Android
+    "694639477649-erjcfaeo587npshcou24q428fhrt5bts.apps.googleusercontent.com",  # iOS
+]
+_env_client_ids = [
     client_id.strip()
     for client_id in os.getenv("GOOGLE_OAUTH_CLIENT_IDS", "").split(",")
     if client_id.strip()
 ]
+GOOGLE_OAUTH_CLIENT_IDS = _env_client_ids if _env_client_ids else DEFAULT_GOOGLE_CLIENT_IDS
