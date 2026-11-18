@@ -22,7 +22,20 @@ export default function WelcomeScreen() {
     <SafeAreaView className="flex-1 bg-[#FFF5F3]">
       {/* Adornos de la temporada, en el color de acento sobre el fondo claro */}
       <SeasonDecor season={season} variant="splash" color={palette.accent} opacity={0.22} />
-      <View className="flex-1 px-6 items-center justify-center pt-10">
+
+      {/* Botón de Ayuda superior */}
+      <View className="w-full flex-row justify-end px-6 pt-2 z-10">
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Onboarding', { isHelpMode: true })}
+          className="flex-row items-center bg-white/80 border border-slate-200 px-3 py-1.5 rounded-full shadow-xs active:opacity-70"
+          accessibilityLabel="Ver tutorial de ayuda"
+        >
+          <Ionicons name="help-circle-outline" size={16} color={palette.accent} />
+          <Text className="text-[12px] font-bold text-[#4A5568] ml-1">Ayuda</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-1 px-6 items-center justify-center pt-2">
 
         {/* LOGO DE LA TEMPORADA */}
         <View

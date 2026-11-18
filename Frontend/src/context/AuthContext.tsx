@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import axiosClient from '../api/axiosClient';
 import { cancelAllReminders } from '../notifications';
+import { markOnboardingAsSeen } from '../services/onboardingService';
 
 interface OwnerData {
   idOwner?: number;
@@ -38,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedToken && storedUser) {
         setUserToken(storedToken);
         setUserData(JSON.parse(storedUser));
+        markOnboardingAsSeen().catch(() => {});
       }
     } catch (e) {
       console.error('Error leyendo sesión', e);
@@ -55,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await SecureStore.setItemAsync('userToken', token);
       await SecureStore.setItemAsync('userData', JSON.stringify(owner));
+      await markOnboardingAsSeen();
       setUserToken(token);
       setUserData(owner);
     } catch (e) {
