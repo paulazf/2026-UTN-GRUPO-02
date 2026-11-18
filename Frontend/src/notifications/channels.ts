@@ -15,4 +15,9 @@ export const CHANNELS: Record<
     description: 'Avisos de cada toma de los tratamientos de tus mascotas.',
     importance: AndroidImportance.HIGH,
   },
+  vaccine: {
+    name: 'Vacunas y antiparasitarios',
+    description: 'Avisos de los próximos vencimientos de vacunas y antiparasitarios.',
+    importance: AndroidImportance.DEFAULT,
+  },
 };

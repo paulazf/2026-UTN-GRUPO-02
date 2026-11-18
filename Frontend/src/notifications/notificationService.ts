@@ -27,13 +27,17 @@ export async function configureNotifications(): Promise<void> {
 
   if (Platform.OS === 'android') {
     await Promise.all(
-      (Object.keys(CHANNELS) as ReminderGroup[]).map((group) =>
-        Notifications.setNotificationChannelAsync(group, {
-          ...CHANNELS[group],
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: NOTIFICATION_COLOR,
-        }),
-      ),
+      (Object.keys(CHANNELS) as ReminderGroup[]).map(async (group) => {
+        try {
+          await Notifications.setNotificationChannelAsync(group, {
+            name: CHANNELS[group].name,
+            description: CHANNELS[group].description,
+            importance: CHANNELS[group].importance,
+          });
+        } catch (e) {
+          console.warn(`No se pudo crear el canal '${group}':`, e);
+        }
+      }),
     );
   }
 }

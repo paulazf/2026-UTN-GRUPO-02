@@ -5,7 +5,7 @@
  * alimentación...) se agrega su nombre acá, su canal en channels.ts y su fuente en
  * sources.ts. Ver docs/notificaciones.md.
  */
-export type ReminderGroup = 'medication';
+export type ReminderGroup = 'medication' | 'vaccine';
 
 /** Un aviso concreto, listo para programar en el teléfono. */
 export interface Reminder {
