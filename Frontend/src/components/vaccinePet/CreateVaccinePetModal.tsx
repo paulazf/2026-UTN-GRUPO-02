@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { PetSpecies } from '../../types/pet';
 import { UpdateVaccinePetPayload, Vaccine, VaccinePet, VaccineType } from '../../types/vaccinePet';
 import { createVaccinePet, updateVaccinePet } from '../../services/vaccinePetService';
+import { syncReminders } from '../../notifications';
 import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
 import VaccinePicker from './VaccinePicker';
 import { brand } from '../../theme/brand';
@@ -205,6 +206,7 @@ export default function CreateVaccinePetModal({
       } else {
         saved = await createVaccinePet({ idPet: petId, idVaccine: form.vaccineId!, ...values });
       }
+      syncReminders(['vaccine']);
       onSaved(saved);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'No se pudo guardar. Verificá los datos ingresados.');

@@ -2,8 +2,11 @@ from datetime import date, timedelta
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef
+from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.response import Response
 
 from api.models import VaccinePet, VaccineType
 from api.serializers.medical_test import active_pets
@@ -83,3 +86,32 @@ class VaccinePetViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         instance.isDeleted = True
         instance.save(update_fields=["isDeleted", "updated_at"])
+
+    @action(detail=False, methods=["get"], url_path="reminders")
+    def reminders(self, request):
+        """
+        Aplicaciones de vacunas y antiparasitarios vigentes que vencerán en el futuro,
+        de todas las mascotas activas del dueño autenticado.
+        Excluye aplicaciones ya renovadas (con refuerzo posterior), aplicaciones eliminadas
+        y mascotas eliminadas o ajenas (TDD-0050).
+        """
+        pets = active_pets(request)
+        newer = VaccinePet.objects.filter(
+            pet=OuterRef("pet"),
+            vaccine=OuterRef("vaccine"),
+            isDeleted=False,
+            applicationDate__gt=OuterRef("applicationDate"),
+        )
+        queryset = (
+            VaccinePet.objects.select_related("pet", "vaccine")
+            .filter(
+                isDeleted=False,
+                pet__in=pets,
+                expirationDate__gte=timezone.localdate(),
+            )
+            .annotate(hasNewer=Exists(newer))
+            .filter(hasNewer=False)
+            .order_by("expirationDate", "idVaccinePet")
+        )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

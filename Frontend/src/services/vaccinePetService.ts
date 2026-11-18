@@ -77,3 +77,14 @@ export async function deleteVaccinePet(id: number): Promise<void> {
     throw new Error(apiErrorMessage(error, 'No se pudo eliminar la vacuna. Intentá nuevamente.'));
   }
 }
+
+/**
+ * Vacunas y antiparasitarios no renovados que vencerán a futuro de todas las mascotas activas del dueño.
+ * Usado por el módulo de notificaciones locales (TDD-0050).
+ * GET /api/v1/vaccine-pets/reminders/
+ */
+export async function fetchVaccineReminders(): Promise<VaccinePet[]> {
+  const response = await axiosClient.get<VaccinePet[]>('/vaccine-pets/reminders/');
+  return response.data;
+}
+

@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Pet } from '../../types/pet';
 import { deletePet, fetchPets } from '../../services/petService';
+import { syncReminders } from '../../notifications';
 import { brand } from '../../theme/brand';
 
 interface ProfileDeletePetModalProps {
@@ -62,6 +63,7 @@ export default function ProfileDeletePetModal({
     try {
       setDeleting(true);
       await deletePet(selectedPet.id);
+      syncReminders();
       const petName = selectedPet.name;
       Alert.alert('Mascota dada de baja', `${petName} fue dada de baja correctamente.`);
       onClose();
