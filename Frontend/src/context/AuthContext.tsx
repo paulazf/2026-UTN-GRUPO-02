@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import axiosClient from '../api/axiosClient';
+import { cancelAllReminders } from '../notifications';
 
 interface OwnerData {
   idOwner?: number;
@@ -72,6 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Tolerante a fallos si el dispositivo está sin conexión o el token expiró
         console.warn('No se pudo invalidar la sesión en el servidor:', err);
       }
+      // Que el próximo usuario del teléfono no reciba los avisos de esta cuenta.
+      await cancelAllReminders().catch(() => undefined);
       await SecureStore.deleteItemAsync('userToken');
       await SecureStore.deleteItemAsync('userData');
       setUserToken(null);

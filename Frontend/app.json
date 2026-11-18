@@ -19,7 +19,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/original-android.png",
         "backgroundColor": "#E87A8E"
-      }
+      },
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM"
+      ]
     },
     "plugins": [
       "expo-status-bar",
@@ -27,6 +31,13 @@
       "expo-sharing",
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/notification-icon.png",
+          "color": "#E87A8E"
+        }
+      ],
       [
         "expo-alternate-app-icons",
         [

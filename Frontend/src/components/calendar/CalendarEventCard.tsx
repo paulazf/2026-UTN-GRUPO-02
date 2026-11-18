@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { CalendarEvent } from '../../types/calendar';
 import { useSeasonTheme } from '../../context/ThemeContext';
 
 interface CalendarEventCardProps {
   event: CalendarEvent;
+  /** Al tocar la tarjeta (ej. abrir la ficha de la mascota en la pestaña del evento). */
+  onPress?: (event: CalendarEvent) => void;
 }
 
 interface EntityStyle {
@@ -60,7 +62,7 @@ function formatDateDDMMAAAA(dateString: string): string {
   }
 }
 
-export default function CalendarEventCard({ event }: CalendarEventCardProps) {
+export default function CalendarEventCard({ event, onPress }: CalendarEventCardProps) {
   const style = getEntityStyle(event);
   const { palette } = useSeasonTheme();
 
@@ -72,7 +74,13 @@ export default function CalendarEventCard({ event }: CalendarEventCardProps) {
   const isToday = event.daysRemaining === 0 && !event.isExpired;
 
   return (
-    <View className="mb-3 flex-row items-center justify-between rounded-3xl border border-[#F5ECE8] bg-white p-3.5 shadow-sm">
+    <Pressable
+      onPress={onPress ? () => onPress(event) : undefined}
+      disabled={!onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityHint={onPress ? `Abre la ficha de ${event.petName}` : undefined}
+      className="mb-3 flex-row items-center justify-between rounded-3xl border border-[#F5ECE8] bg-white p-3.5 shadow-sm active:opacity-80"
+    >
       <View className="flex-row items-center gap-3.5 flex-1 mr-2">
         <View
           className="h-11 w-11 items-center justify-center rounded-2xl"
@@ -122,6 +130,6 @@ export default function CalendarEventCard({ event }: CalendarEventCardProps) {
           </Text>
         </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 }

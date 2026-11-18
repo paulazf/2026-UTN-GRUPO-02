@@ -14,7 +14,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Medication, MedicationPet } from '../../types/medicationPet';
 import { createMedicationPet, updateMedicationPet } from '../../services/medicationPetService';
-import { displayToIso, isoToDisplay, maskDate, todayIso } from '../../utils/dates';
+import { displayToIso, isoToDisplay, maskDate, maskTime, todayIso } from '../../utils/dates';
+import { syncReminders } from '../../notifications';
 import MedicationPicker from './MedicationPicker';
 import { brand } from '../../theme/brand';
 
@@ -32,8 +33,12 @@ interface FormState {
   frequencyHours: string;
   quantityDose: string;
   startDate: string; // DD/MM/AAAA
+  startTime: string; // HH:MM
   notes: string;
 }
+
+const DEFAULT_START_TIME = '09:00';
+const isValidTime = (value: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 
 export default function CreateMedicationPetModal({
   visible,
@@ -50,6 +55,7 @@ export default function CreateMedicationPetModal({
     frequencyHours: '',
     quantityDose: '1',
     startDate: '',
+    startTime: DEFAULT_START_TIME,
     notes: '',
   });
 
@@ -63,6 +69,7 @@ export default function CreateMedicationPetModal({
           frequencyHours: String(medicationToEdit.frequencyHours),
           quantityDose: String(medicationToEdit.quantityDose),
           startDate: isoToDisplay(medicationToEdit.startDate),
+          startTime: medicationToEdit.startTime?.slice(0, 5) || DEFAULT_START_TIME,
           notes: medicationToEdit.notes || '',
         });
       } else {
@@ -77,6 +84,7 @@ export default function CreateMedicationPetModal({
       frequencyHours: '',
       quantityDose: '1',
       startDate: '',
+      startTime: DEFAULT_START_TIME,
       notes: '',
     });
     setSubmitting(false);
@@ -148,6 +156,11 @@ export default function CreateMedicationPetModal({
       return false;
     }
 
+    if (!isValidTime(form.startTime)) {
+      Alert.alert('Hora inválida', 'La hora de la primera toma debe tener el formato hh:mm (ej. 09:00).');
+      return false;
+    }
+
     return true;
   };
 
@@ -164,6 +177,7 @@ export default function CreateMedicationPetModal({
           frequencyHours: parseInt(form.frequencyHours, 10),
           quantityDose: parseInt(form.quantityDose, 10),
           startDate: startIso,
+          startTime: form.startTime,
           notes: form.notes.trim() || null,
         });
       } else {
@@ -173,9 +187,13 @@ export default function CreateMedicationPetModal({
           frequencyHours: parseInt(form.frequencyHours, 10),
           quantityDose: parseInt(form.quantityDose, 10),
           startDate: startIso,
+          startTime: form.startTime,
           notes: form.notes.trim() || null,
         });
       }
+
+      // HU-304: reprograma los avisos de cada toma con los datos nuevos.
+      syncReminders(['medication']);
 
       onSaved(result);
       if (onCreated) onCreated(result);
@@ -342,6 +360,28 @@ export default function CreateMedicationPetModal({
                   <Ionicons name="lock-closed-outline" size={16} color="#A89993" />
                 </View>
               </View>
+            </View>
+
+            {/* Hora de la primera toma: desde acá se calculan los avisos (HU-304) */}
+            <View className="mb-4">
+              <Text className="mb-1.5 text-xs font-bold tracking-wider text-[#8C7B77]">
+                HORA DE LA PRIMERA TOMA
+              </Text>
+              <View className="h-[52px] flex-row items-center rounded-2xl border border-[#F0E4DF] px-4 bg-[#FAF5F2]">
+                <TextInput
+                  value={form.startTime}
+                  onChangeText={(val) => setForm((prev) => ({ ...prev, startTime: maskTime(val) }))}
+                  placeholder="hh:mm"
+                  placeholderTextColor="#B5A7A3"
+                  keyboardType="number-pad"
+                  maxLength={5}
+                  className="flex-1 text-base font-medium text-[#2B1D1D]"
+                />
+                <Ionicons name="notifications-outline" size={18} color="#8C7B77" />
+              </View>
+              <Text className="mt-1.5 text-[11px] font-medium text-[#8C7B77]">
+                Te avisamos en cada toma, a partir de esta hora.
+              </Text>
             </View>
 
             {/* Campo 5: Notas / Observaciones */}

@@ -1,4 +1,6 @@
+from django.utils import timezone
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
@@ -15,6 +17,8 @@ class MedicationPetViewSet(viewsets.ModelViewSet):
     - Baja lógica (DELETE /api/v1/medication-pets/{id}/)
     - Listado de medicamentos asignados a mascotas (GET /api/v1/medication-pets/?idPet=) 
     - Detalle de medicamento asignado a mascota(GET /api/v1/medication-pets/{id}/)
+    - Tratamientos activos de todas las mascotas, para programar los avisos
+      (GET /api/v1/medication-pets/reminders/)
     """
 
     serializer_class = MedicationPetSerializer
@@ -42,3 +46,13 @@ class MedicationPetViewSet(viewsets.ModelViewSet):
         instance.isDeleted = True
         instance.save(update_fields=["isDeleted", "updated_at"])
 
+
+    @action(detail=False, methods=["get"], url_path="reminders")
+    def reminders(self, request):
+        """Tratamientos que todavía no terminaron, de todas las mascotas activas del dueño.
+
+        El teléfono usa esta lista para programar los avisos de cada toma (TDD-0047).
+        """
+        queryset = self.get_queryset().filter(endDate__gte=timezone.localdate())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
