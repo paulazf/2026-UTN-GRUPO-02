@@ -9,6 +9,7 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import { ThemeProvider, useSeasonTheme } from './context/ThemeContext';
 import LoadingScreen from './components/brand/LoadingScreen';
 import { useReminderSync, useReminderTap } from './notifications';
+import { hasSeenOnboarding } from './services/onboardingService';
 
 // Import Screens from main (manual routing components)
 import DashboardScreen from './screens/DashboardScreen';
@@ -28,6 +29,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import NotificationSettingsScreen from './screens/NotificationSettingsScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import ChangePasswordScreen from './screens/ChangePasswordScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -138,6 +140,21 @@ function RootNavigator() {
   if (!authContext) throw new Error("AuthContext debe usarse dentro de un AuthProvider");
 
   const { isLoading, userToken } = authContext;
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [seenOnboarding, setSeenOnboarding] = useState(true);
+
+  // Se lee del disco una sola vez, al abrir la app.
+  useEffect(() => {
+    hasSeenOnboarding()
+      .then((seen) => setSeenOnboarding(seen))
+      .catch(() => setSeenOnboarding(true))
+      .finally(() => setCheckingOnboarding(false));
+  }, []);
+
+  // Si hay sesión, el usuario ya conoce la app: al cerrar sesión no debe volver a ver el tutorial.
+  useEffect(() => {
+    if (userToken != null) setSeenOnboarding(true);
+  }, [userToken]);
 
   // Avisos locales (medicación, y los que se vayan sumando): ver docs/notificaciones.md
   useReminderSync(userToken != null);
@@ -149,18 +166,31 @@ function RootNavigator() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading || !minSplashDone) {
+  if (isLoading || !minSplashDone || checkingOnboarding) {
     return <LoadingScreen />;
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      initialRouteName={userToken == null ? (!seenOnboarding ? 'Onboarding' : 'Welcome') : 'MainTabs'}
+      screenOptions={{ headerShown: false }}
+    >
       {userToken == null ? (
-        <>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </>
+        !seenOnboarding ? (
+          <>
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          </>
+        )
       ) : (
         <>
           <Stack.Screen name="MainTabs" component={MainTabs} />
@@ -169,6 +199,7 @@ function RootNavigator() {
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         </>
       )}
     </Stack.Navigator>

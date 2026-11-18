@@ -10,6 +10,7 @@ import { useSeasonTheme } from '../context/ThemeContext';
 import { SEASON_PREVIEW_ENABLED, SEASONS, SeasonId } from '../theme/seasons';
 import PawLogo from '../components/brand/PawLogo';
 import { getPermissionState, getPrefs, isGroupEnabled, REMINDER_SOURCES } from '../notifications';
+import { resetOnboarding } from '../services/onboardingService';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -183,6 +184,18 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 )}
               </View>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  await resetOnboarding();
+                  await authContext?.logout();
+                }}
+                className="mt-3.5 rounded-2xl bg-[#FFF5F3] p-2.5 items-center justify-center border border-[#E87A8E]/30 active:opacity-80"
+              >
+                <Text className="text-xs font-bold text-[#E87A8E]">
+                  Reiniciar tutorial y cerrar sesión (Pruebas · luego recargá la app)
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -204,6 +217,20 @@ export default function ProfileScreen() {
             <View className="flex-1 justify-center">
               <Text className="text-base font-bold text-[#2B1D1D]">Historial completo</Text>
               <Text className="mt-0.5 text-xs text-[#8C7B77]">Exportar PDF</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="mb-3 flex-row items-center rounded-3xl border border-[#F0E4DF] bg-white p-4 shadow-xs active:opacity-80"
+            onPress={() => (navigation as any).navigate('Onboarding', { isHelpMode: true })}
+          >
+            <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-[#FAF6F3]">
+              <Ionicons name="help-circle-outline" size={24} color={palette.header} />
+            </View>
+            <View className="flex-1 justify-center">
+              <Text className="text-base font-bold text-[#2B1D1D]">Ayuda</Text>
+              <Text className="mt-0.5 text-xs text-[#8C7B77]">Tutorial y cómo funciona PetLife</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#8C7B77" />
           </TouchableOpacity>

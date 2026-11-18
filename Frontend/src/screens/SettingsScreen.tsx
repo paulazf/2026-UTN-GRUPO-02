@@ -145,6 +145,25 @@ export default function SettingsScreen() {
           {!isDeleting && <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />}
         </TouchableOpacity>
 
+        <Text className="text-[12px] font-bold text-[#A0AEC0] mb-4 ml-2 tracking-widest uppercase">
+          Ayuda y Soporte
+        </Text>
+
+        <TouchableOpacity 
+          className="flex-row items-center bg-white p-4 rounded-3xl mb-8 shadow-sm border border-slate-50 active:opacity-80"
+          onPress={() => (navigation as any).navigate('Onboarding', { isHelpMode: true })}
+          disabled={isDeleting}
+        >
+          <View className="w-10 h-10 bg-[#FAF6F3] rounded-full justify-center items-center mr-4">
+            <Ionicons name="help-circle-outline" size={22} color={brand.accent} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-[#2D3748] text-[16px] font-semibold">Ayuda</Text>
+            <Text className="text-[11px] text-[#A0AEC0] mt-0.5">Volver a ver el tutorial y funciones clave</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#CBD5E0" />
+        </TouchableOpacity>
+
         {/* Logout Button */}
         <TouchableOpacity 
           className="mt-8 mb-10 flex-row justify-center items-center"
