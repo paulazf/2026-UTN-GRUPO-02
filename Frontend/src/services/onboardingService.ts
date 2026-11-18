@@ -1,5 +1,3 @@
-import * as SecureStore from 'expo-secure-store';
-
 export const ONBOARDING_SEEN_KEY = '@petlife_has_seen_onboarding';
 
 export interface OnboardingSlide {
@@ -46,6 +44,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
  */
 export async function hasSeenOnboarding(): Promise<boolean> {
   try {
+    const SecureStore = await import('expo-secure-store');
     const value = await SecureStore.getItemAsync(ONBOARDING_SEEN_KEY);
     return value === 'true';
   } catch (error) {
@@ -59,6 +58,8 @@ export async function hasSeenOnboarding(): Promise<boolean> {
  */
 export async function markOnboardingAsSeen(): Promise<void> {
   try {
+  const SecureStore = await import('expo-secure-store');
+
     await SecureStore.setItemAsync(ONBOARDING_SEEN_KEY, 'true');
   } catch (error) {
     console.warn('Error guardando flag de onboarding:', error);
