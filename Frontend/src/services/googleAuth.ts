@@ -2,27 +2,67 @@ import { useState, useEffect, useContext } from 'react';
 import { Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { ResponseType } from 'expo-auth-session';
-import Constants from 'expo-constants';
+import { makeRedirectUri, ResponseType } from 'expo-auth-session';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import axiosClient from '../api/axiosClient';
 import { AuthContext } from '../context/AuthContext';
+import { saveGoogleAccessToken } from './googleCalendarService';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const FALLBACK_CLIENT_ID = '694639477649-fb70l9j1fk509voi1boib9c481t3k956.apps.googleusercontent.com';
-const EXPO_PROXY_REDIRECT_URI = 'https://auth.expo.io/@anonymous/utn-grupo-02';
+const FALLBACK_WEB_CLIENT_ID = '694639477649-fb70l9j1fk509voi1boib9c481t3k956.apps.googleusercontent.com';
+const FALLBACK_ANDROID_CLIENT_ID = '694639477649-4k0caprehmrshd7hh11m6itb7qvf5r13.apps.googleusercontent.com';
+const FALLBACK_IOS_CLIENT_ID = '694639477649-erjcfaeo587npshcou24q428fhrt5bts.apps.googleusercontent.com';
+const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+
+// Carga segura y dinámica del SDK nativo para evitar crash en Expo Go o Web
+let GoogleSignin: any = null;
+let statusCodes: any = null;
+
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const isNativeAvailable = Platform.OS !== 'web' && !isExpoGo;
+
+if (isNativeAvailable) {
+  try {
+    const googleModule = require('@react-native-google-signin/google-signin');
+    GoogleSignin = googleModule.GoogleSignin;
+    statusCodes = googleModule.statusCodes;
+  } catch (err) {
+    console.log('[googleAuth] GoogleSignin nativo no se pudo cargar:', err);
+  }
+}
 
 export const useGoogleAuth = (onError?: (msg: string) => void) => {
   const authContext = useContext(AuthContext);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB || FALLBACK_CLIENT_ID;
-  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS || webClientId;
-  const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID || webClientId;
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB || FALLBACK_WEB_CLIENT_ID;
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS || FALLBACK_IOS_CLIENT_ID;
+  const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID || FALLBACK_ANDROID_CLIENT_ID;
 
-  const redirectUri = Platform.OS === 'web' ? undefined : EXPO_PROXY_REDIRECT_URI;
+  // Configuración de GoogleSignin nativo si está disponible (Android e iOS)
+  useEffect(() => {
+    if (isNativeAvailable && GoogleSignin) {
+      try {
+        GoogleSignin.configure({
+          webClientId,
+          ...(Platform.OS === 'ios' ? { iosClientId } : {}),
+          scopes: ['openid', 'profile', 'email', CALENDAR_SCOPE],
+          offlineAccess: true,
+          forceCodeForRefreshToken: false,
+        });
+        console.log('[useGoogleAuth] GoogleSignin nativo configurado con éxito para', Platform.OS);
+      } catch (err) {
+        console.warn('[useGoogleAuth] Error configurando GoogleSignin nativo:', err);
+      }
+    }
+  }, [webClientId, iosClientId]);
 
-  console.log('[useGoogleAuth] Hook render - Client IDs:', { webClientId, androidClientId, redirectUri });
+  // Hook de expo-auth-session como fallback (Web o Expo Go)
+  const redirectUri = makeRedirectUri({
+    scheme: 'utngrupo02',
+    preferLocalhost: false,
+  });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: webClientId,
@@ -31,31 +71,24 @@ export const useGoogleAuth = (onError?: (msg: string) => void) => {
     androidClientId,
     redirectUri,
     responseType: ResponseType.IdToken,
-    scopes: ['openid', 'profile', 'email'],
+    scopes: ['openid', 'profile', 'email', CALENDAR_SCOPE],
     selectAccount: true,
   });
 
   useEffect(() => {
-    console.log('[useGoogleAuth] request actualizado:', {
-      hasRequest: !!request,
-      redirectUri: request?.redirectUri,
-      url: request?.url,
-    });
-  }, [request]);
-
-  useEffect(() => {
-    console.log('[useGoogleAuth] response recibido:', response);
     if (response?.type === 'success') {
       const idToken = response.params?.id_token || response.authentication?.idToken;
-      console.log('[useGoogleAuth] idToken presente?', !!idToken);
+      const accessToken = response.params?.access_token || response.authentication?.accessToken;
+      if (accessToken) {
+        saveGoogleAccessToken(accessToken);
+      }
       if (idToken) {
         authenticateWithBackend(idToken);
       } else {
-        console.warn('[useGoogleAuth] No vino id_token ni authentication.idToken en response.params:', response.params);
         onError?.('No se pudo obtener el token de Google.');
       }
     } else if (response?.type === 'error') {
-      console.error('[useGoogleAuth] response error:', response.error);
+      console.error('[useGoogleAuth] Fallback response error:', response.error);
       onError?.('Ocurrió un error al autenticar con Google.');
     }
   }, [response]);
@@ -67,7 +100,7 @@ export const useGoogleAuth = (onError?: (msg: string) => void) => {
       const res = await axiosClient.post('/auth/google/', { idToken });
       if (res.status === 200) {
         const { token, owner } = res.data;
-        console.log('[useGoogleAuth] Login en backend exitoso para owner:', owner?.id);
+        console.log('[useGoogleAuth] Login exitoso en backend para owner:', owner?.idOwner || owner?.email);
         await authContext?.login(token, owner);
       }
     } catch (error: any) {
@@ -81,58 +114,68 @@ export const useGoogleAuth = (onError?: (msg: string) => void) => {
   };
 
   const signInWithGoogle = async () => {
-    console.log('[useGoogleAuth] signInWithGoogle invocado! hasRequest:', !!request);
+    // 1. Camino Nativo (Standalone APK en Android / Build nativo en iOS) - Sin pantallas de Expo proxy
+    if (isNativeAvailable && GoogleSignin) {
+      setIsGoogleLoading(true);
+      try {
+        if (Platform.OS === 'android') {
+          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+        }
+        const signInResult = await GoogleSignin.signIn();
+
+        // En versiones 13+/17+, signInResult tiene estructura { type: 'success', data: { idToken, user } }
+        let idToken = (signInResult as any)?.data?.idToken || (signInResult as any)?.idToken;
+
+        try {
+          const tokens = await GoogleSignin.getTokens();
+          if (tokens?.idToken && !idToken) {
+            idToken = tokens.idToken;
+          }
+          if (tokens?.accessToken) {
+            await saveGoogleAccessToken(tokens.accessToken);
+          }
+        } catch (tokensErr) {
+          console.warn('[useGoogleAuth] Error obteniendo tokens adicionales:', tokensErr);
+        }
+
+        if (idToken) {
+          await authenticateWithBackend(idToken);
+        } else {
+          onError?.('No se pudo obtener la identidad de Google. Reintentá.');
+        }
+      } catch (err: any) {
+        console.error('[useGoogleAuth] Error en GoogleSignin nativo:', err);
+        if (statusCodes && err.code === statusCodes.SIGN_IN_CANCELLED) {
+          // El usuario canceló la selección de cuenta
+          console.log('[useGoogleAuth] El usuario canceló el inicio de sesión.');
+        } else if (statusCodes && err.code === statusCodes.IN_PROGRESS) {
+          onError?.('El inicio de sesión ya está en curso.');
+        } else if (statusCodes && err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          onError?.('Google Play Services no está disponible o actualizado en tu dispositivo.');
+        } else if (err.code === '10' || err.message?.includes('DEVELOPER_ERROR')) {
+          onError?.('Error de configuración (SHA-1 / Client ID) en Google Cloud Console para este APK.');
+        } else {
+          onError?.('No se pudo conectar con Google. Por favor revisá tu conexión.');
+        }
+      } finally {
+        setIsGoogleLoading(false);
+      }
+      return;
+    }
+
+    // 2. Camino Fallback (Web o Expo Go)
     if (!request) {
-      console.warn('[useGoogleAuth] Advertencia: request todavía es null.');
       onError?.('Conectando con Google, por favor probá en unos segundos.');
       return;
     }
+
     try {
-      if (Platform.OS === 'web') {
-        console.log('[useGoogleAuth] Plataforma Web: usando promptAsync directo...');
-        await promptAsync();
-      } else {
-        try {
-          await WebBrowser.dismissBrowser();
-        } catch (_) {}
-        const devHost = Constants.expoConfig?.hostUri || '192.168.0.185:8081';
-        let returnUrl = Constants.linkingUri;
-        if (!returnUrl || returnUrl.startsWith('utngrupo02://')) {
-          returnUrl = `exp://${devHost}`;
-        }
-        if (!returnUrl.endsWith('/--/expo-auth-session')) {
-          returnUrl = `${returnUrl.replace(/\/--(\/.*)?$/, '')}/--/expo-auth-session`;
-        }
-        const startUrl = `${EXPO_PROXY_REDIRECT_URI}/start?authUrl=${encodeURIComponent(request.url!)}&returnUrl=${encodeURIComponent(returnUrl)}`;
-        console.log('[useGoogleAuth] Proxy startUrl:', startUrl);
-        console.log('[useGoogleAuth] ReturnUrl esperado:', returnUrl);
-        
-        setIsGoogleLoading(true);
-        const res = await WebBrowser.openAuthSessionAsync(startUrl, returnUrl);
-        console.log('[useGoogleAuth] WebBrowser resultado:', res);
-        
-        if (res.type === 'success' && res.url) {
-          try {
-            await WebBrowser.dismissBrowser();
-          } catch (_) {}
-          const parsed: any = request.parseReturnUrl(res.url);
-          console.log('[useGoogleAuth] Resultado parseado del proxy:', parsed);
-          const idToken = parsed.params?.id_token || parsed.authentication?.idToken;
-          if (idToken) {
-            await authenticateWithBackend(idToken);
-          } else {
-            console.warn('[useGoogleAuth] Proxy retorno sin id_token:', parsed);
-            onError?.('No se pudo obtener el token de Google desde el proxy.');
-          }
-        }
-      }
+      setIsGoogleLoading(true);
+      await promptAsync();
     } catch (err: any) {
-      console.error('[useGoogleAuth] Excepción al ejecutar auth:', err);
+      console.error('[useGoogleAuth] Excepción en fallback promptAsync:', err);
       onError?.('No se pudo abrir la ventana de Google.');
     } finally {
-      try {
-        await WebBrowser.dismissBrowser();
-      } catch (_) {}
       setIsGoogleLoading(false);
     }
   };
@@ -140,6 +183,6 @@ export const useGoogleAuth = (onError?: (msg: string) => void) => {
   return {
     signInWithGoogle,
     isGoogleLoading,
-    isReady: !!request,
+    isReady: isNativeAvailable ? true : !!request,
   };
 };

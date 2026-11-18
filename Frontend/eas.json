@@ -15,14 +15,20 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://agiles-backend.onrender.com",
-        "EXPO_PUBLIC_SEASON_PREVIEW": "true"
+        "EXPO_PUBLIC_SEASON_PREVIEW": "true",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB": "694639477649-fb70l9j1fk509voi1boib9c481t3k956.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID": "694639477649-4k0caprehmrshd7hh11m6itb7qvf5r13.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS": "694639477649-erjcfaeo587npshcou24q428fhrt5bts.apps.googleusercontent.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://agiles-backend.onrender.com",
-        "EXPO_PUBLIC_SEASON_PREVIEW": "true"
+        "EXPO_PUBLIC_SEASON_PREVIEW": "true",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB": "694639477649-fb70l9j1fk509voi1boib9c481t3k956.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID": "694639477649-4k0caprehmrshd7hh11m6itb7qvf5r13.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS": "694639477649-erjcfaeo587npshcou24q428fhrt5bts.apps.googleusercontent.com"
       }
     }
   },

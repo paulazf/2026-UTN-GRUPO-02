@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -14,6 +15,13 @@ import { Pet } from '../types/pet';
 import { CalendarEntityType, CalendarEvent } from '../types/calendar';
 import { fetchPets } from '../services/petService';
 import { fetchCalendarEvents } from '../services/calendarService';
+import {
+  getValidGoogleAccessToken,
+  syncEventsListToGoogleCalendar,
+  syncSingleEventToGoogleCalendar,
+  autoSyncAllCalendarEventsSilently,
+} from '../services/googleCalendarService';
+import { useGoogleAuth } from '../services/googleAuth';
 import CalendarFilterPills from '../components/calendar/CalendarFilterPills';
 import CalendarEventCard from '../components/calendar/CalendarEventCard';
 import { useSeasonTheme } from '../context/ThemeContext';
@@ -49,6 +57,10 @@ export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}
   // Sección de vencidas: colapsada por defecto
   const [isExpiredExpanded, setIsExpiredExpanded] = useState(false);
 
+  // Estado de sincronización con Google Calendar
+  const [isSyncingGoogle, setIsSyncingGoogle] = useState(false);
+  const { signInWithGoogle } = useGoogleAuth();
+
   // Carga de mascotas registradas
   useEffect(() => {
     fetchPets()
@@ -66,6 +78,8 @@ export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}
 
       const data = await fetchCalendarEvents(params);
       setEvents(data);
+      // Auto-sincronización transparente con Google Calendar en segundo plano
+      autoSyncAllCalendarEventsSilently(data).catch(() => null);
     } catch (err) {
       console.error('Error cargando eventos del calendario:', err);
       setError('No se pudieron cargar los eventos sanitarios.');
@@ -83,6 +97,102 @@ export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}
   const handleRefresh = () => {
     setRefreshing(true);
     loadEvents();
+  };
+
+  // -------------------------------------------------------------
+  // Sincronización con Google Calendar
+  // -------------------------------------------------------------
+  const executeSync = async () => {
+    try {
+      setIsSyncingGoogle(true);
+      const result = await syncEventsListToGoogleCalendar(events);
+      if (result.synced > 0) {
+        Alert.alert(
+          '¡Sincronización Exitosa!',
+          `Se sincronizaron ${result.synced} eventos sanitarios en tu Google Calendar con recordatorios automáticos.`
+        );
+      } else if (result.failed > 0) {
+        Alert.alert(
+          'Aviso de Google Calendar',
+          `No se pudieron sincronizar algunos eventos (${result.failed}). Por favor revisá los permisos de tu cuenta.`
+        );
+      } else {
+        Alert.alert(
+          'Google Calendar',
+          'No se encontraron eventos futuros pendientes de sincronizar.'
+        );
+      }
+    } catch (err: any) {
+      Alert.alert('Google Calendar', err?.message || 'Error al enviar eventos a Google Calendar.');
+    } finally {
+      setIsSyncingGoogle(false);
+    }
+  };
+
+  const handleSyncGoogleCalendar = async () => {
+    if (events.length === 0) {
+      Alert.alert('Google Calendar', 'No hay eventos en el calendario para sincronizar.');
+      return;
+    }
+
+    try {
+      setIsSyncingGoogle(true);
+      const token = await getValidGoogleAccessToken();
+      if (!token) {
+        setIsSyncingGoogle(false);
+        Alert.alert(
+          'Conectar Google Calendar',
+          'Para sincronizar tus turnos, vacunas y medicación con Google Calendar necesitás autorizar tu cuenta de Google.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Conectar Google',
+              onPress: async () => {
+                await signInWithGoogle();
+                const freshToken = await getValidGoogleAccessToken();
+                if (freshToken) {
+                  await executeSync();
+                }
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      await executeSync();
+    } catch (err: any) {
+      console.error('Error al sincronizar con Google Calendar:', err);
+      Alert.alert('Google Calendar', err?.message || 'Ocurrió un error al sincronizar con Google Calendar.');
+    } finally {
+      setIsSyncingGoogle(false);
+    }
+  };
+
+  const handleSyncSingleEvent = async (event: CalendarEvent) => {
+    try {
+      const token = await getValidGoogleAccessToken();
+      if (!token) {
+        Alert.alert(
+          'Conectar Google Calendar',
+          'Para sincronizar este evento con Google Calendar necesitás autorizar tu cuenta de Google.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Conectar Google', onPress: signInWithGoogle },
+          ]
+        );
+        return;
+      }
+
+      const res = await syncSingleEventToGoogleCalendar(event, token);
+      if (res.success) {
+        Alert.alert('Google Calendar', `"${event.title}" fue sincronizado con tu Google Calendar.`);
+      } else {
+        Alert.alert('Error', res.error || 'No se pudo sincronizar el evento.');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'No se pudo sincronizar el evento.');
+    }
   };
 
   // -------------------------------------------------------------
@@ -173,11 +283,29 @@ export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}
       >
         <SafeAreaView edges={['top']}>
           <View className="pt-3 pb-6">
-            <View className="px-5">
-              <Text className="text-3xl font-extrabold text-white">Eventos</Text>
-              <Text className="text-sm mt-1 mb-2 text-white/90">
-                Vacunas, turnos, tratamientos y vencimientos
-              </Text>
+            <View className="px-5 flex-row items-center justify-between">
+              <View className="flex-1 mr-2">
+                <Text className="text-3xl font-extrabold text-white">Eventos</Text>
+                <Text className="text-sm mt-1 mb-2 text-white/90">
+                  Vacunas, turnos, tratamientos y vencimientos
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={handleSyncGoogleCalendar}
+                disabled={isSyncingGoogle || loading}
+                className="flex-row items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/20 active:bg-white/30 border border-white/30 shadow-xs"
+                accessibilityLabel="Sincronizar con Google Calendar"
+              >
+                {isSyncingGoogle ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="calendar" size={16} color="#FFFFFF" />
+                    <Text className="text-xs font-bold text-white">Sincronizar</Text>
+                  </>
+                )}
+              </Pressable>
             </View>
 
             {/* Barra de filtros (Mascotas y Tipos de Entidad) */}
@@ -285,7 +413,12 @@ export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}
                   <Text className="text-lg font-bold text-[#2B1D1D]">Hoy</Text>
                 </View>
                 {todayEvents.map((event) => (
-                  <CalendarEventCard key={event.id} event={event} onPress={onOpenEvent} />
+                  <CalendarEventCard
+                    key={event.id}
+                    event={event}
+                    onPress={onOpenEvent}
+                    onSyncGoogle={handleSyncSingleEvent}
+                  />
                 ))}
               </View>
             )}
@@ -310,7 +443,12 @@ export default function CalendarScreen({ onOpenEvent }: CalendarScreenProps = {}
                 </View>
 
                 {group.events.map((event) => (
-                  <CalendarEventCard key={event.id} event={event} onPress={onOpenEvent} />
+                  <CalendarEventCard
+                    key={event.id}
+                    event={event}
+                    onPress={onOpenEvent}
+                    onSyncGoogle={handleSyncSingleEvent}
+                  />
                 ))}
               </View>
             ))}

@@ -4,6 +4,10 @@ import {
   CreateAppointmentPayload,
   UpdateAppointmentPayload,
 } from '../types/appointment';
+import {
+  autoSyncAppointment,
+  deleteGoogleCalendarEventByPetlifeId,
+} from './googleCalendarService';
 
 export async function fetchAppointments(petId: number): Promise<Appointment[]> {
   try {
@@ -18,6 +22,8 @@ export async function fetchAppointments(petId: number): Promise<Appointment[]> {
 export async function createAppointment(payload: CreateAppointmentPayload): Promise<Appointment> {
   try {
     const response = await axiosClient.post<Appointment>('/appointments/', payload);
+    // Auto-sincronización en segundo plano con Google Calendar (con su horario particular)
+    autoSyncAppointment(response.data);
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
@@ -44,6 +50,8 @@ export async function updateAppointment(
 ): Promise<Appointment> {
   try {
     const response = await axiosClient.patch<Appointment>(`/appointments/${id}/`, payload);
+    // Auto-sincronización en segundo plano de la actualización
+    autoSyncAppointment(response.data);
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
@@ -67,6 +75,8 @@ export async function updateAppointment(
 export async function deleteAppointment(id: number): Promise<void> {
   try {
     await axiosClient.delete(`/appointments/${id}/`);
+    // Eliminación automática de Google Calendar
+    deleteGoogleCalendarEventByPetlifeId(`appointment-${id}`);
   } catch (error: any) {
     const message = error.response?.data?.detail || 'No se pudo cancelar el turno. Intenta nuevamente.';
     throw new Error(message);

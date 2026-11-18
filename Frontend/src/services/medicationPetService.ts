@@ -5,6 +5,10 @@ import {
   MedicationPet,
   UpdateMedicationPetPayload,
 } from '../types/medicationPet';
+import {
+  autoSyncMedicationTreatment,
+  deleteMedicationTreatmentFromGoogleCalendar,
+} from './googleCalendarService';
 
 /** Mensaje genérico con el código del servidor, para poder diagnosticar (ej. "error 500"). */
 function serverErrorMessage(error: any, base: string): string {
@@ -37,6 +41,8 @@ export async function fetchMedicationReminders(): Promise<MedicationPet[]> {
 export async function createMedicationPet(payload: CreateMedicationPetPayload): Promise<MedicationPet> {
   try {
     const response = await axiosClient.post<MedicationPet>('/medication-pets/', payload);
+    // Auto-sincronización automática de cada dosis particular en Google Calendar
+    autoSyncMedicationTreatment(response.data);
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
@@ -74,6 +80,8 @@ export async function fetchMedications(): Promise<Medication[]> {
 export async function deleteMedicationPet(id: number): Promise<void> {
   try {
     await axiosClient.delete(`/medication-pets/${id}/`);
+    // Eliminación automática de todas las dosis programadas en Google Calendar
+    deleteMedicationTreatmentFromGoogleCalendar(id);
   } catch (error: any) {
     const errorData = error.response?.data;
     const message = errorData?.detail || 'No se pudo eliminar el tratamiento. Intenta nuevamente.';
@@ -90,6 +98,8 @@ export async function updateMedicationPet(
 ): Promise<MedicationPet> {
   try {
     const response = await axiosClient.patch<MedicationPet>(`/medication-pets/${id}/`, payload);
+    // Auto-sincronización automática de las dosis actualizadas en Google Calendar
+    autoSyncMedicationTreatment(response.data);
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
